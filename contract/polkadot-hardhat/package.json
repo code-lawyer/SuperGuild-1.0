@@ -1,0 +1,41 @@
+{
+  "name": "polkadot-hardhat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:local": "hardhat ignition deploy ./ignition/modules/BountyBoard.ts --network localNode",
+    "deploy:testnet": "hardhat ignition deploy ./ignition/modules/BountyBoard.ts --network passetHub"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0",
+    "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@polkadot/api": "^12.4.2",
+    "@polkadot/api-contract": "^12.4.2",
+    "@polkadot/keyring": "^13.2.1",
+    "@polkadot/util-crypto": "^13.2.1",
+    "polkadot-api": "^1.0.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@parity/hardhat-polkadot": "^0.1.9",
+    "@parity/resolc": "^0.4.1",
+    "dockerode": "^4.0.2",
+    "fs-xattr": "^0.3.1",
+    "hardhat": "^2.22.5",
+    "lru-cache": "^11.0.2",
+    "run-container": "^2.0.12",
+    "solc": "0.8.23",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "fs-xattr"
+    ]
+  }
+}

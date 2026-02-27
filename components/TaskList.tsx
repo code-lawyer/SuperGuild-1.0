@@ -27,7 +27,7 @@ import {
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "./ui/badge";
-import SubmitProofModal from "./SubmitProofModal";
+import UploadProofModal from "./UploadProofModal";
 import { useSubmitProof, useSelfCheckSubmission } from "@/hooks/useContract";
 import { useToast } from "./ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ import Image from "next/image";
 import { modalConfigs } from "@/app/board/[id]/page";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-
+import TaskListItem from "./TaskListItem";
 interface TaskListProps {
   boardId: bigint;
   boardConfig: BoardConfig;
@@ -121,20 +121,20 @@ export default function TaskList({
 
   const submitProof = useSubmitProof();
 
-  async function onSubmitProof(data: SubmissionProof) {
+  async function onSubmitProof(fileUrl: string) {
     if (!selectedTask) return;
 
-    const proofString = JSON.stringify(data);
+    const proofString = JSON.stringify({ fileUrl });
 
     try {
-      return await submitProof({
+      await submitProof({
         boardId,
         taskId: selectedTask.id,
         proof: proofString,
       });
     } catch (error) {
       console.error("Error submitting proof:", error);
-      return { error: "Failed to submit proof" };
+      throw error;
     }
   }
 
@@ -179,12 +179,12 @@ export default function TaskList({
           message: !address
             ? "Please connect your wallet"
             : !chain
-            ? "Chain not found"
-            : task.completed
-            ? "Task is already completed"
-            : task.cancelled
-            ? "Task is cancelled"
-            : "Task deadline has passed",
+              ? "Chain not found"
+              : task.completed
+                ? "Task is already completed"
+                : task.cancelled
+                  ? "Task is cancelled"
+                  : "Task deadline has passed",
         });
         return;
       }
@@ -347,229 +347,48 @@ export default function TaskList({
           );
           const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
+          const statusInfo = getTaskStatus(task);
+          const timeInfo = {
+            isExpired,
+            remainingTime,
+            days,
+            hours,
+            minutes,
+            seconds,
+          };
+
           return (
-            <motion.li
+            <TaskListItem
               key={task.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className={cn(
-                "relative p-6 rounded-xl transition-all duration-200",
-                "border border-purple-500/20 bg-black/40 backdrop-blur-sm",
-                "hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10",
-                "group cursor-pointer"
-              )}
-            >
-              {/* Actions Dropdown */}
-              {address && isMember && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-4 right-4 text-purple-300/70 hover:text-purple-300 hover:bg-purple-500/10"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {/* Submit Proof - Only displayed when not submitted or rejected */}
-                    {address &&
-                      (!getTaskStatus(task).isSubmitted ||
-                        getTaskStatus(task).status !== 1) && (
-                        <DropdownMenuItem
-                          onClick={() => handleOpenSubmitProof(task)}
-                        >
-                          Submit Proof
-                        </DropdownMenuItem>
-                      )}
-
-                    {/* Creator Actions */}
-                    {isCreatorProp && (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() => onOpenAddReviewerModal(task.id)}
-                        >
-                          Add Reviewer
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onOpenUpdateTaskModal(task.id)}
-                        >
-                          Update Task
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onCancelTask(task.id)}>
-                          Cancel Task
-                        </DropdownMenuItem>
-                      </>
-                    )}
-
-                    {/* Self Check - Only display when submitted but not yet reviewed */}
-                    {task.allowSelfCheck &&
-                      getTaskStatus(task).isSubmitted &&
-                      getTaskStatus(task).status === 0 && (
-                        <DropdownMenuItem onClick={() => handleSelfCheck(task)}>
-                          Self Check
-                        </DropdownMenuItem>
-                      )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
-              {/* Task Details */}
-              <div
-                className="flex items-start"
-                onClick={() => onTaskSelect(task)}
-              >
-                <div className="space-y-3 w-full">
-                  <div>
-                    <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent">
-                      {task.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-purple-300/70">
-                      {task.description}
-                    </p>
-                  </div>
-
-                  {/* Task Info Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div className="flex items-center gap-2 text-purple-300/70">
-                      <User2 className="h-4 w-4 text-purple-400" />
-                      Creator:
-                      <div className="relative w-4 h-4 flex-shrink-0">
-                        {userProfiles &&
-                        task?.creator &&
-                        userProfiles[task.creator.toLowerCase()]?.avatar ? (
-                          <Image
-                            src={
-                              userProfiles[task.creator.toLowerCase()].avatar
-                            }
-                            alt="Creator avatar"
-                            fill
-                            className="rounded-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/placeholder.png";
-                            }}
-                          />
-                        ) : (
-                          <User2 className="w-4 h-4" />
-                        )}
-                      </div>
-                      <span>
-                        {userProfiles[task.creator.toLowerCase()]?.nickname || (
-                          <Address address={task.creator} size="sm" />
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300/70">
-                      <Coins className="h-4 w-4 text-purple-400" />
-                      <span>Reward: {formatUnits(task.rewardAmount, 18)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300/70">
-                      <UserPlus className="h-4 w-4 text-purple-400" />
-                      <span>
-                        Completions: {Number(task.numCompletions)}/
-                        {Number(task.maxCompletions)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300/70">
-                      <Calendar className="h-4 w-4 text-purple-400" />
-                      <span>
-                        Created:{" "}
-                        {format(new Date(Number(task.createdAt) * 1000), "PPP")}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300/70">
-                      <Clock className="h-4 w-4 text-purple-400" />
-                      <span>
-                        Deadline:{" "}
-                        {format(new Date(Number(task.deadline)), "PPP")}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Countdown and Status */}
-                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-purple-500/10">
-                    {/* Status Badges */}
-                    <div className="flex gap-2">
-                      {task.cancelled && (
-                        <Badge
-                          variant="destructive"
-                          className="bg-red-500/20 text-red-300"
-                        >
-                          Cancelled
-                        </Badge>
-                      )}
-                      {task.completed && (
-                        <Badge className="bg-purple-500/20 text-purple-300">
-                          Completed
-                        </Badge>
-                      )}
-                      {getTaskStatus(task).isSubmitted && (
-                        <Badge
-                          variant={
-                            getTaskStatus(task).status === 1
-                              ? "success"
-                              : getTaskStatus(task).status === -1
-                              ? "destructive"
-                              : "default"
-                          }
-                          className={cn(
-                            getTaskStatus(task).status === 1 &&
-                              "bg-green-500/20 text-green-300",
-                            getTaskStatus(task).status === -1 &&
-                              "bg-red-500/20 text-red-300",
-                            getTaskStatus(task).status === 0 &&
-                              "bg-purple-500/20 text-purple-300"
-                          )}
-                        >
-                          {getTaskStatus(task).status === 1
-                            ? "Approved"
-                            : getTaskStatus(task).status === -1
-                            ? "Rejected"
-                            : "Pending"}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Countdown Timer */}
-                    {!task.cancelled &&
-                      !task.completed &&
-                      (isExpired ? (
-                        <Badge
-                          variant="destructive"
-                          className="bg-red-500/20 text-red-300"
-                        >
-                          Expired
-                        </Badge>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, ease: "easeInOut" }}
-                          className="text-sm font-medium text-purple-300/70"
-                        >
-                          {days}d {hours}h {minutes}m {seconds}s
-                        </motion.div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            </motion.li>
+              task={task}
+              address={address}
+              userProfiles={userProfiles}
+              isCreator={isCreatorProp}
+              isMember={isMember}
+              statusInfo={statusInfo}
+              timeInfo={timeInfo}
+              onTaskSelect={onTaskSelect}
+              onOpenSubmitProofModal={handleOpenSubmitProof}
+              onOpenAddReviewerModal={onOpenAddReviewerModal}
+              onOpenUpdateTaskModal={onOpenUpdateTaskModal}
+              onCancelTask={onCancelTask}
+              onSelfCheck={handleSelfCheck}
+            />
           );
         })}
       </ul>
 
       {selectedTask && (
-        <SubmitProofModal
+        <UploadProofModal
           isOpen={isSubmitProofModalOpen}
           onClose={() => {
             setIsSubmitProofModalOpen(false);
             setSelectedTask(null);
           }}
-          taskConfig={JSON.parse(selectedTask.config)}
-          onSubmit={onSubmitProof}
-          onConfirmed={refetch}
+          onSubmit={async (fileUrl) => {
+            await onSubmitProof(fileUrl);
+            refetch();
+          }}
         />
       )}
 

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "shadcn-ui-setup": {
+      "source": "andrelandgraf/fullstackrecipes",
+      "sourceType": "github",
+      "computedHash": "3cc06eff50bd3087edf4364c81a5272a12f37598e2ca44a58e323cfcd9d23a01"
+    },
+    "solidity": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "computedHash": "be6f631ed5f9322f62cc664323f5537676e71a1f791dd3db7fec624fb56e144e"
+    },
+    "ui-ux-designer": {
+      "source": "lotosbin/claude-skills",
+      "sourceType": "github",
+      "computedHash": "dd0a1b69d9e3abbdc4ccc8ebdde663ab7e01df70f433b8695c06b9cd7d089df6"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+    }
+  }
+}

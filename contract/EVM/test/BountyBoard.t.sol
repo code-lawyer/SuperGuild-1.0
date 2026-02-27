@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {BountyBoard} from "../src/BountyBoard.sol";
 import {IBountyBoard} from "../src/IBountyBoard.sol";
+import {BoardView} from "../src/BoardView.sol";
+import {BoardStorage} from "../src/BoardStorage.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "../src/MockERC20.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -48,9 +50,9 @@ contract BountyBoardTest is Test {
         string memory description = "This is a test board";
         string memory img = "http://example.com/image.png";
 
-        bountyBoard.createBountyBoard(name, description, img, address(rewardToken));
+        bountyBoard.createBountyBoard(name, description, img, address(rewardToken), "{}");
 
-        (uint256 id, address creator, string memory boardName, string memory boardDescription, , , , , ) = bountyBoard.boards(0);
+        (uint256 id, address creator, string memory boardName, string memory boardDescription, , , , , , ) = bountyBoard.boards(0);
 
         assertEq(id, 0);
         assertEq(creator, address(this));
@@ -63,7 +65,7 @@ contract BountyBoardTest is Test {
         string memory boardName = "Test Board";
         string memory boardDescription = "This is a test board";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(boardName, boardDescription, img, address(rewardToken));
+        bountyBoard.createBountyBoard(boardName, boardDescription, img, address(rewardToken), "{}");
 
         // Create task
         string memory taskName = "Test Task";
@@ -86,7 +88,7 @@ contract BountyBoardTest is Test {
         );
 
         // Get tasks using the view function instead of directly accessing the mapping
-        BountyBoard.TaskView[] memory tasks = bountyBoard.getTasksForBoard(0);
+        BoardStorage.Task[] memory tasks = bountyBoard.getBoardDetail(0).tasks;
 
         // Assert the first task's properties
         assertEq(tasks[0].name, taskName);
@@ -106,7 +108,7 @@ contract BountyBoardTest is Test {
         string memory boardName = "Test Board";
         string memory boardDescription = "This is a test board";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(boardName, boardDescription, img, address(rewardToken));
+        bountyBoard.createBountyBoard(boardName, boardDescription, img, address(rewardToken), "{}");
 
         // Join the section with different accounts
         vm.stopPrank();
@@ -119,7 +121,7 @@ contract BountyBoardTest is Test {
         string memory initialName = "Test Board";
         string memory initialDesc = "This is a test board";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(initialName, initialDesc, img, address(rewardToken));
+        bountyBoard.createBountyBoard(initialName, initialDesc, img, address(rewardToken), "{}");
 
         // Update the board
         string memory newName = "Updated Board";
@@ -127,7 +129,7 @@ contract BountyBoardTest is Test {
         string memory newImg = "http://example.com/image2.png";
         address newRewardToken = address(1); // Example address
 
-        bountyBoard.updateBountyBoard(0, newName, newDescription, newImg, newRewardToken);
+        bountyBoard.updateBountyBoard(0, newName, newDescription, newImg, newRewardToken, "{}");
 
         // Get board details using tuple destructuring
         (
@@ -139,7 +141,8 @@ contract BountyBoardTest is Test {
             IERC20 returnedToken,
             ,  // totalPledged
             ,  // createdAt
-            // closed
+            ,  // closed
+            // config
         ) = bountyBoard.boards(0);
 
         assertEq(returnedName, newName);
@@ -152,7 +155,7 @@ contract BountyBoardTest is Test {
         string memory initialName = "Test Board";
         string memory initialDesc = "This is a test board";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(initialName, initialDesc, img, address(rewardToken));
+        bountyBoard.createBountyBoard(initialName, initialDesc, img, address(rewardToken), "{}");
 
         // If using ERC20 tokens, you need to approve first.
         if (address(rewardToken) != address(0)) {
@@ -167,7 +170,7 @@ contract BountyBoardTest is Test {
             bountyBoard.pledgeTokens(0, pledgeAmount);
         }
 
-        (,,,,,, uint256 totalPledged,,) = bountyBoard.boards(0);
+        (,,,,,, uint256 totalPledged,,,) = bountyBoard.boards(0);
         assertEq(totalPledged, pledgeAmount);
     }
 
@@ -176,7 +179,7 @@ contract BountyBoardTest is Test {
         string memory boardName = "Test Board";
         string memory boardDesc = "Test Description";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(boardName, boardDesc, img, address(rewardToken));
+        bountyBoard.createBountyBoard(boardName, boardDesc, img, address(rewardToken), "{}");
 
         string memory taskName = "Test Task";
         string memory taskDesc = "Test Task Description";
@@ -219,7 +222,8 @@ contract BountyBoardTest is Test {
             "Test Board",
             "Test Description",
             "http://example.com/image.png",
-            address(rewardToken)
+            address(rewardToken),
+            "{}"
         );
 
         bountyBoard.createTask(
@@ -267,7 +271,8 @@ contract BountyBoardTest is Test {
             "Test Board",
             "Test Description",
             "http://example.com/image.png",
-            address(rewardToken)
+            address(rewardToken),
+            "{}"
         );
 
         bountyBoard.createTask(
@@ -334,16 +339,17 @@ contract BountyBoardTest is Test {
         assertEq(bountyBoard.signerAddress(), newSigner);
     }
 
-    function testFailSetSignerAddressUnauthorized() public {
+    function test_RevertSetSignerAddressUnauthorized() public {
         address unauthorized = makeAddr("unauthorized");
         vm.prank(unauthorized);
+        vm.expectRevert();
         bountyBoard.setSignerAddress(unauthorized);
     }
 
-    function testFailSelfCheckWithInvalidSignature() public {
+    function test_RevertSelfCheckWithInvalidSignature() public {
         // Create sections and tasks
         string memory boardName = "Test Board";
-        bountyBoard.createBountyBoard(boardName, "", "", address(rewardToken));
+        bountyBoard.createBountyBoard(boardName, "", "", address(rewardToken), "{}");
         bountyBoard.createTask(0, "Task", "", 0, 1, 100, "", true);
 
         // Using the wrong private key to sign
@@ -360,6 +366,7 @@ contract BountyBoardTest is Test {
         bountyBoard.joinBoard(0);
 
         vm.prank(user);
+        vm.expectRevert();
         bountyBoard.selfCheckSubmission(0, 0, signature, checkData);
     }
 
@@ -369,7 +376,8 @@ contract BountyBoardTest is Test {
             "Test Board",
             "Test Description",
             "http://example.com/image.png",
-            address(rewardToken)
+            address(rewardToken),
+            "{}"
         );
 
         // 2. Create two tasks
@@ -405,7 +413,7 @@ contract BountyBoardTest is Test {
         bountyBoard.submitProof(0, 0, proof1);
 
         // 5. Get section details and verify user task status.
-        BountyBoard.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
+        BoardView.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
 
         // Print debug information
         console.log("Number of tasks:");
@@ -417,7 +425,7 @@ contract BountyBoardTest is Test {
         assertEq(boardDetail.userTaskStatuses.length, 2, "Should have status for both tasks");
 
         // 7. Verify the status of the first task (submitted)
-        BountyBoard.UserTaskStatus memory status1 = boardDetail.userTaskStatuses[0];
+        BoardView.UserTaskStatus memory status1 = boardDetail.userTaskStatuses[0];
         console.log("Task 1 - TaskId:");
         console.logUint(uint256(status1.taskId));
         console.log("Task 1 - Submitted:");
@@ -437,7 +445,7 @@ contract BountyBoardTest is Test {
         assertEq(status1.reviewComment, "", "Review comment should be empty");
 
         // 8. Verify the status of the second task (not submitted)
-        BountyBoard.UserTaskStatus memory status2 = boardDetail.userTaskStatuses[1];
+        BoardView.UserTaskStatus memory status2 = boardDetail.userTaskStatuses[1];
         console.log("Task 2 - TaskId:");
         console.logUint(uint256(status2.taskId));
         console.log("Task 2 - Submitted:");
@@ -485,7 +493,8 @@ contract BountyBoardTest is Test {
             "Test Board",
             "Test Description",
             "http://example.com/image.png",
-            address(rewardToken)
+            address(rewardToken),
+            "{}"
         );
 
         bountyBoard.createTask(
@@ -514,8 +523,8 @@ contract BountyBoardTest is Test {
 
             // Get and verify the submission status of each user.
             vm.prank(users[i]);
-            BountyBoard.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
-            BountyBoard.UserTaskStatus memory status = boardDetail.userTaskStatuses[0];
+            BoardView.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
+            BoardView.UserTaskStatus memory status = boardDetail.userTaskStatuses[0];
 
             console.log("User");
             console.logUint(i);
@@ -557,8 +566,8 @@ contract BountyBoardTest is Test {
 
             // Verify the status after review.
             vm.prank(users[i]);
-            BountyBoard.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
-            BountyBoard.UserTaskStatus memory status = boardDetail.userTaskStatuses[0];
+            BoardView.BoardDetailView memory boardDetail = bountyBoard.getBoardDetail(0);
+            BoardView.UserTaskStatus memory status = boardDetail.userTaskStatuses[0];
 
             console.log("After review - User");
             console.logUint(i);
@@ -577,7 +586,7 @@ contract BountyBoardTest is Test {
         string memory boardName = "Test Board";
         string memory boardDesc = "Test Description";
         string memory img = "http://example.com/image.png";
-        bountyBoard.createBountyBoard(boardName, boardDesc, img, address(rewardToken));
+        bountyBoard.createBountyBoard(boardName, boardDesc, img, address(rewardToken), "{}");
 
         // 2. Create task
         bountyBoard.createTask(
@@ -602,7 +611,7 @@ contract BountyBoardTest is Test {
 
         // 5. Test getAllBoards
         console.log("Testing getAllBoards:");
-        BountyBoard.BoardView[] memory allBoards = bountyBoard.getAllBoards();
+        BoardView.BoardViewStruct[] memory allBoards = bountyBoard.getAllBoards();
         for(uint i = 0; i < allBoards.length; i++) {
             console.log("Board", i);
             console.log("- Name:", allBoards[i].name);
@@ -613,7 +622,7 @@ contract BountyBoardTest is Test {
 
         // 6. Test getTasksForBoard
         console.log("\nTesting getTasksForBoard:");
-        BountyBoard.TaskView[] memory tasks = bountyBoard.getTasksForBoard(0);
+        BoardStorage.Task[] memory tasks = bountyBoard.getBoardDetail(0).tasks;
         for(uint i = 0; i < tasks.length; i++) {
             console.log("Task", i);
             console.log("- Name:", tasks[i].name);
@@ -625,7 +634,7 @@ contract BountyBoardTest is Test {
         // 7. Test getBoardDetail
         console.log("\nTesting getBoardDetail:");
         vm.prank(member);  // Use membership to view
-        BountyBoard.BoardDetailView memory detail = bountyBoard.getBoardDetail(0);
+        BoardView.BoardDetailView memory detail = bountyBoard.getBoardDetail(0);
 
         console.log("Board Detail:");
         console.log("- Name:", detail.name);
@@ -644,7 +653,7 @@ contract BountyBoardTest is Test {
 
         // 8. Test getBoardsByMember
         console.log("\nTesting getBoardsByMember:");
-        BountyBoard.BoardView[] memory memberBoards = bountyBoard.getBoardsByMember(member);
+        BoardView.BoardViewStruct[] memory memberBoards = bountyBoard.getBoardsByMember(member);
         for(uint i = 0; i < memberBoards.length; i++) {
             console.log("Board", i);
             console.log("- Name:", memberBoards[i].name);

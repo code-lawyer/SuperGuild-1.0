@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.24;
 
 import "./BoardStorage.sol";
 import "./BoardView.sol";
@@ -189,6 +189,7 @@ contract SubmissionManager is BoardStorage, BoardView {
         submission.submitter = msg.sender;
         submission.status = 1;
         submission.submittedAt = block.timestamp;
+        submission.proof = _checkData;
         submission.reviewComment = _checkData;
 
         // Distribute rewards

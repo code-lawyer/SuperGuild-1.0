@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Antigravity Notification Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for the drawer */
+        .drawer-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .drawer-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-content::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0;
+            border-radius: 20px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-hidden">
+<!-- Main App Container (Background Context) -->
+<div aria-hidden="true" class="relative flex h-screen w-full flex-col overflow-hidden opacity-30 pointer-events-none">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 px-10 py-3 bg-white">
+<div class="flex items-center gap-4 text-slate-900">
+<div class="size-8 flex items-center justify-center bg-primary rounded-lg text-white">
+<span class="material-symbols-outlined text-[20px]">token</span>
+</div>
+<h2 class="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">SuperGuild</h2>
+</div>
+<div class="flex gap-4 items-center">
+<nav class="hidden md:flex gap-6 text-sm font-medium text-slate-500">
+<a class="text-slate-900" href="#">Dashboard</a>
+<a href="#">Quests</a>
+<a href="#">Treasury</a>
+<a href="#">Governance</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 hover:bg-slate-200 text-slate-900 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 hover:bg-slate-200 text-slate-900 transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 p-10 grid grid-cols-12 gap-8">
+<div class="col-span-8 space-y-6">
+<div class="h-64 rounded-xl bg-white shadow-sm border border-slate-100 p-6">
+<div class="h-8 w-48 bg-slate-100 rounded mb-4"></div>
+<div class="h-4 w-full bg-slate-50 rounded mb-2"></div>
+<div class="h-4 w-3/4 bg-slate-50 rounded"></div>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="h-48 rounded-xl bg-white shadow-sm border border-slate-100"></div>
+<div class="h-48 rounded-xl bg-white shadow-sm border border-slate-100"></div>
+</div>
+</div>
+<div class="col-span-4 space-y-6">
+<div class="h-full rounded-xl bg-white shadow-sm border border-slate-100"></div>
+</div>
+</main>
+</div>
+<!-- Antigravity Notification Drawer Overlay -->
+<div class="fixed inset-0 z-50 flex justify-end">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px]"></div>
+<!-- Drawer -->
+<div class="relative w-full max-w-md h-full glass-panel border-l border-white/50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-out translate-x-0">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between px-6 py-5 border-b border-slate-100/50">
+<div>
+<h2 class="text-xl font-bold text-slate-900 tracking-tight">Antigravity Center</h2>
+<p class="text-xs text-slate-500 font-medium mt-0.5">Global Notifications</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
+                        Mark all read
+                    </button>
+<button class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100/50 text-slate-500 transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Category Tabs -->
+<div class="px-6 py-4 flex gap-2 overflow-x-auto no-scrollbar border-b border-slate-100/50">
+<button class="px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-semibold shadow-md shadow-slate-200 hover:shadow-lg transition-all">
+                    All
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 text-xs font-semibold hover:border-primary/30 hover:text-primary transition-colors">
+                    Financial
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 text-xs font-semibold hover:border-primary/30 hover:text-primary transition-colors">
+                    Project
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 text-xs font-semibold hover:border-primary/30 hover:text-primary transition-colors">
+                    Reputation
+                </button>
+</div>
+<!-- Notifications List -->
+<div class="flex-1 overflow-y-auto drawer-content p-4 space-y-3">
+<!-- Time Group: Today -->
+<div class="px-2 pt-2 pb-1">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Today</span>
+</div>
+<!-- Financial Notification -->
+<div class="group relative bg-white/60 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl p-4 hover-lift cursor-pointer transition-all">
+<div class="absolute top-4 right-4 h-2 w-2 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="flex gap-4">
+<div class="shrink-0">
+<div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 leading-snug">Payment Received: 500 USDC</h4>
+<p class="text-xs text-slate-500 mt-1">From <span class="font-mono bg-slate-100 px-1 rounded text-[10px]">0x71C...9A2</span></p>
+<div class="flex items-center gap-3 mt-3">
+<a class="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline" href="#">
+                                    View on BaseScan 
+                                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+<span class="text-[11px] text-slate-400">2 mins ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Project Notification -->
+<div class="group relative bg-white/60 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl p-4 hover-lift cursor-pointer transition-all">
+<div class="absolute top-4 right-4 h-2 w-2 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="flex gap-4">
+<div class="shrink-0">
+<div class="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 leading-snug">Milestone Reached: UI Kit Finalized</h4>
+<p class="text-xs text-slate-500 mt-1">Project "Cosmos Redesign" moved to Review phase.</p>
+<div class="flex items-center gap-3 mt-3">
+<a class="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline" href="#">
+                                    View Project
+                                    <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+</a>
+<span class="text-[11px] text-slate-400">3 hours ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Financial Notification (Read) -->
+<div class="group relative bg-white/40 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl p-4 hover-lift cursor-pointer transition-all opacity-80 hover:opacity-100">
+<div class="flex gap-4">
+<div class="shrink-0">
+<div class="w-10 h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+<span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold text-slate-700 group-hover:text-slate-900 leading-snug">Gas Fee Refund Processed</h4>
+<p class="text-xs text-slate-500 mt-1">Transaction #40291 was successful.</p>
+<div class="flex items-center gap-3 mt-3">
+<a class="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-primary transition-colors" href="#">
+                                    View on BaseScan 
+                                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+<span class="text-[11px] text-slate-400">5 hours ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Time Group: Yesterday -->
+<div class="px-2 pt-4 pb-1">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Yesterday</span>
+</div>
+<!-- Reputation Notification -->
+<div class="group relative bg-white/40 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl p-4 hover-lift cursor-pointer transition-all opacity-80 hover:opacity-100">
+<div class="flex gap-4">
+<div class="shrink-0">
+<div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">military_tech</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold text-slate-700 group-hover:text-slate-900 leading-snug">New Badge: Early Contributor</h4>
+<p class="text-xs text-slate-500 mt-1">You've earned a Soulbound Token (SBT).</p>
+<div class="flex items-center gap-3 mt-3">
+<a class="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-primary transition-colors" href="#">
+                                    View Profile 
+                                    <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+</a>
+<span class="text-[11px] text-slate-400">Yesterday, 4:20 PM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Project Proposal -->
+<div class="group relative bg-white/40 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl p-4 hover-lift cursor-pointer transition-all opacity-80 hover:opacity-100">
+<div class="flex gap-4">
+<div class="shrink-0">
+<div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">how_to_vote</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold text-slate-700 group-hover:text-slate-900 leading-snug">Proposal #402 Approved</h4>
+<p class="text-xs text-slate-500 mt-1">"Treasury Allocation Q3" passed with 92% votes.</p>
+<div class="flex items-center gap-3 mt-3">
+<a class="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-primary transition-colors" href="#">
+                                    View Governance 
+                                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+<span class="text-[11px] text-slate-400">Yesterday, 9:00 AM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer / Empty Space for scroll overflow -->
+<div class="p-6 border-t border-slate-100/50 bg-white/40">
+<button class="w-full py-2.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors">
+                    View Notification Settings
+                </button>
+</div>
+</div>
+</div>
+</body></html>

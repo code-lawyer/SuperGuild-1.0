@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.24;
 
 import "./BoardStorage.sol";
 
@@ -53,10 +53,25 @@ contract TaskManager is BoardStorage {
         bool _allowSelfCheck      // Keep the allowSelfCheck parameter
     ) public {
         Board storage board = boards[_boardId];
+        // Check permissions: Board Creator OR Open Board (if config allows)
+        bool isCreator = board.creator == msg.sender;
+        // In a real DAO, we might check for Reputation Token balance here
+        // require(IERC20(repToken).balanceOf(msg.sender) >= minReputation, "Not enough rep");
+        
+        // For now, allow any member to create tasks if the board is not closed
+        bool isMember = false;
+        for (uint i = 0; i < board.members.length; i++) {
+            if (board.members[i] == msg.sender) {
+                isMember = true;
+                break;
+            }
+        }
+
         require(
-            board.creator == msg.sender,
-            "Only the board creator can create tasks"
+            isCreator || isMember,
+            "Must be a board member to create tasks"
         );
+        require(!board.closed, "Board is closed");
 
         uint256 taskId = board.tasks.length;
         board.tasks.push();

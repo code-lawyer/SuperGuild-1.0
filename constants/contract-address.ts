@@ -14,7 +14,15 @@ const contractAddress = {
     'Mantle Sepolia Testnet': "0xCD40B2D99FBaf151f5C131A7ca3Cd801374Ec785",
     'Linea Sepolia Testnet': "0x6e34fa9fd5926137109Ec7D6ad94d860148c2f75",
     'Monad Devnet': "0xE3945d3fE0f67962220f1f66069Cd9fea9E76659",
-  }
+  },
+
+  // ═══ Super Guild 2026: Arbitrum Sepolia Deployed ═══
+  VCPToken: {
+    'Arbitrum Sepolia': '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C',
+  },
+  MedalNFT: {
+    'Arbitrum Sepolia': '0xef96bE9fFf59B5653085C11583beaC0D16450F1a',
+  },
 };
 
 export default contractAddress;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.21;
+pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {UserProfile} from "../src/UserProfile.sol";
@@ -27,9 +27,9 @@ contract UserProfileTest is Test {
         // Prepare signature data
         bytes32 messageHash = keccak256(
             abi.encode(
-                keccak256(bytes(nickname)),
-                keccak256(bytes(avatar)),
-                keccak256(bytes(socialAccount)),
+                nickname,
+                avatar,
+                socialAccount,
                 address(this)
             )
         );
@@ -79,9 +79,9 @@ contract UserProfileTest is Test {
             // Prepare signature
             bytes32 messageHash = keccak256(
                 abi.encode(
-                    keccak256(bytes(nicknames[i])),
-                    keccak256(bytes(avatars[i])),
-                    keccak256(bytes(socialAccounts[i])),
+                    nicknames[i],
+                    avatars[i],
+                    socialAccounts[i],
                     users[i]
                 )
             );
@@ -143,9 +143,9 @@ contract UserProfileTest is Test {
             // Prepare signature
             bytes32 messageHash = keccak256(
                 abi.encode(
-                    keccak256(bytes(nickname)),
-                    keccak256(bytes(avatar)),
-                    keccak256(bytes(socialAccount)),
+                    nickname,
+                    avatar,
+                    socialAccount,
                     users[i]
                 )
             );
@@ -184,13 +184,14 @@ contract UserProfileTest is Test {
         assertEq(userProfile.signerAddress(), newSigner);
     }
 
-    function testFailSetSignerAddressUnauthorized() public {
+    function test_RevertSetSignerAddressUnauthorized() public {
         address unauthorized = makeAddr("unauthorized");
         vm.prank(unauthorized);
+        vm.expectRevert();
         userProfile.setSignerAddress(unauthorized);
     }
 
-    function testFailSetProfileWithInvalidSignature() public {
+    function test_RevertSetProfileWithInvalidSignature() public {
         string memory nickname = "Alice";
         string memory avatar = "avatar_url";
         string memory socialAccount = "@alice";
@@ -199,9 +200,9 @@ contract UserProfileTest is Test {
         uint256 wrongPrivateKey = 0xB0B;
         bytes32 messageHash = keccak256(
             abi.encode(
-                keccak256(bytes(nickname)),
-                keccak256(bytes(avatar)),
-                keccak256(bytes(socialAccount)),
+                nickname,
+                avatar,
+                socialAccount,
                 address(this)
             )
         );
@@ -216,11 +217,13 @@ contract UserProfileTest is Test {
         );
         bytes memory signature = abi.encodePacked(r, s, v);
 
+        vm.expectRevert();
         userProfile.setProfile(nickname, avatar, socialAccount, signature);
     }
 
-    function testFailGetNonExistentProfile() public {
+    function test_RevertGetNonExistentProfile() public {
         address nonExistentUser = makeAddr("nonExistent");
+        vm.expectRevert();
         userProfile.getProfile(nonExistentUser);
     }
 

@@ -45,25 +45,13 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
         setError(null);
 
         try {
-            // 1. Insert Bulletin
-            const { data: bulletin, error: bError } = await supabase
-                .from('bulletins')
-                .insert({
-                    title: title.trim(),
-                    content: content.trim(),
-                    category: 'pioneer',
-                    author: authorAddress,
-                    is_pinned: false
-                })
-                .select()
-                .single();
+            let attachmentMeta = null;
 
-            if (bError) throw bError;
-
-            // 2. Upload Attachment if exists
-            if (file && bulletin) {
+            // 1. Upload Attachment if exists (Temp state until API confirms)
+            if (file) {
                 const fileExt = file.name.split('.').pop();
-                const fileName = `${bulletin.id}/${Math.random()}.${fileExt}`;
+                const tempId = crypto.randomUUID();
+                const fileName = `temp/${tempId}.${fileExt}`;
                 const filePath = `bulletin-attachments/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -76,18 +64,29 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                     .from('attachments')
                     .getPublicUrl(filePath);
 
-                // 3. Insert Attachment Record
-                const { error: aError } = await supabase
-                    .from('bulletin_attachments')
-                    .insert({
-                        bulletin_id: bulletin.id,
-                        file_name: file.name,
-                        file_url: publicUrl,
-                        file_size: file.size,
-                        mime_type: file.type
-                    });
+                attachmentMeta = {
+                    fileName: file.name,
+                    fileUrl: publicUrl,
+                    fileSize: file.size,
+                    mimeType: file.type
+                };
+            }
 
-                if (aError) throw aError;
+            // 2. Call Secure API
+            const res = await fetch('/api/bulletin/pioneer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: title.trim(),
+                    content: content.trim(),
+                    authorAddress,
+                    attachment: attachmentMeta
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to post announcement');
             }
 
             // Success

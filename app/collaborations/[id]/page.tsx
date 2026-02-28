@@ -6,14 +6,17 @@ import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import {
     useCollaborationDetail,
-    useApplyToAccept,
-    useApproveProvider,
-    useRejectProvider,
+    useApplyToCollab,
+    useCollabApplications,
+    useApproveApplication,
     useAbandonCollaboration,
     useCancelCollaboration,
     useConfirmMilestone,
     CollabStatus,
+    CollabApplication,
 } from '@/hooks/useCollaborations';
+import { useT } from '@/lib/i18n';
+import Markdown from '@/components/ui/Markdown';
 import { useProfileByAddress, displayName } from '@/hooks/useProfile';
 import MilestoneTimeline from '@/components/collaborations/MilestoneTimeline';
 import UploadProofDialog from '@/components/collaborations/UploadProofDialog';
@@ -30,18 +33,21 @@ const statusConfig: Record<CollabStatus, { label: string; badgeClass: string }> 
 };
 
 export default function CollaborationDetailPage() {
+    const t = useT();
     const params = useParams();
     const id = params.id as string;
     const { address } = useAccount();
 
     const { data, isLoading, error } = useCollaborationDetail(id);
-    const applyToAccept = useApplyToAccept();
-    const approveProvider = useApproveProvider();
-    const rejectProvider = useRejectProvider();
+    const { data: applications } = useCollabApplications(id);
+    const applyToCollab = useApplyToCollab();
+    const approveApp = useApproveApplication();
     const abandonCollab = useAbandonCollaboration();
     const cancelCollab = useCancelCollaboration();
     const confirmMs = useConfirmMilestone();
 
+    const [applyMessage, setApplyMessage] = useState('');
+    const [showApplyForm, setShowApplyForm] = useState(false);
     const [proofMilestoneId, setProofMilestoneId] = useState<string | null>(null);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
@@ -69,7 +75,6 @@ export default function CollaborationDetailPage() {
     const status = statusConfig[collab.status] || statusConfig.OPEN;
     const isInitiator = address?.toLowerCase() === collab.initiator_id?.toLowerCase();
     const isProvider = address?.toLowerCase() === collab.provider_id?.toLowerCase();
-    const isPendingProvider = address?.toLowerCase() === collab.pending_provider_id?.toLowerCase();
 
     const completedMs = milestones.filter(m => m.status === 'CONFIRMED');
     const releasedPct = completedMs.reduce((sum, m) => sum + m.amount_percentage, 0);
@@ -101,7 +106,7 @@ export default function CollaborationDetailPage() {
                     </div>
                     <h1 className="text-3xl md:text-4xl font-black text-[#121317] tracking-tight mb-3">{collab.title}</h1>
                     <div className="flex items-center gap-4 text-sm text-[#6A6A71]">
-                        <UserBadge label="发布人" address={collab.initiator_id} isSelf={isInitiator} />
+                        <UserBadge label="发布人" address={collab.initiator_id!} isSelf={isInitiator} />
                         {collab.provider_id && (
                             <>
                                 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -116,12 +121,11 @@ export default function CollaborationDetailPage() {
                     {/* Apply to accept */}
                     {collab.status === 'OPEN' && !isInitiator && address && (
                         <button
-                            onClick={() => applyToAccept.mutateAsync(collab.id)}
-                            disabled={applyToAccept.isPending}
+                            onClick={() => setShowApplyForm(true)}
                             className="ag-btn-primary"
                         >
                             <span className="material-symbols-outlined !text-[18px]">handshake</span>
-                            {applyToAccept.isPending ? '申请中…' : '申请承接'}
+                            {t.quests.pendingQuests}
                         </button>
                     )}
 
@@ -149,23 +153,61 @@ export default function CollaborationDetailPage() {
                 </div>
             </div>
 
-            {/* PENDING_APPROVAL — Initiator sees applicant info */}
-            {collab.status === 'PENDING_APPROVAL' && isInitiator && collab.pending_provider_id && (
-                <ApplicantReviewCard
-                    pendingProviderAddress={collab.pending_provider_id}
-                    onApprove={() => approveProvider.mutateAsync(collab.id)}
-                    onReject={() => rejectProvider.mutateAsync(collab.id)}
-                    isApproving={approveProvider.isPending}
-                    isRejecting={rejectProvider.isPending}
-                />
+            {/* Apply Form Modal (Adventurer side) */}
+            {showApplyForm && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-[#121317]/30 backdrop-blur-sm" onClick={() => setShowApplyForm(false)} />
+                    <div className="relative ag-card p-8 max-w-md w-full space-y-5">
+                        <h3 className="text-[18px] font-bold text-[#121317]">{t.quests.applyPitch}</h3>
+                        <textarea
+                            value={applyMessage}
+                            onChange={(e) => setApplyMessage(e.target.value)}
+                            placeholder={t.quests.applyPitchPlaceholder}
+                            rows={5}
+                            className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:ring-2 focus:ring-primary/8 transition-all resize-none"
+                        />
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowApplyForm(false)} className="ag-btn-secondary flex-1">{t.common.cancel}</button>
+                            <button
+                                onClick={async () => {
+                                    await applyToCollab.mutateAsync({ collabId: collab.id, message: applyMessage });
+                                    setShowApplyForm(false);
+                                }}
+                                disabled={applyToCollab.isPending || !applyMessage.trim()}
+                                className="ag-btn-primary flex-1"
+                            >
+                                {applyToCollab.isPending ? '...' : t.common.submit}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
-            {/* PENDING_APPROVAL — Applicant sees waiting */}
-            {collab.status === 'PENDING_APPROVAL' && isPendingProvider && (
-                <div className="ag-card p-8 text-center space-y-3">
-                    <span className="material-symbols-outlined !text-[40px] text-amber-500">hourglass_top</span>
-                    <h3 className="text-[18px] font-bold text-[#121317]">等待发布人审批</h3>
-                    <p className="text-[14px] text-[#6A6A71]">你的承接申请已发送，请等待发布人确认。</p>
+            {/* Applicant Screening (Initiator side) */}
+            {isInitiator && collab.status === 'OPEN' && applications && applications.length > 0 && (
+                <div className="space-y-4">
+                    <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.viewApplicants}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {applications.map((app: CollabApplication) => (
+                            <ApplicantReviewCard
+                                key={app.id}
+                                application={app}
+                                onApprove={() => approveApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id })}
+                                isApproving={approveApp.isPending}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Application status for current user (if applicant) */}
+            {!isInitiator && applications?.find(a => a.applicant_id.toLowerCase() === address?.toLowerCase()) && collab.status === 'OPEN' && (
+                <div className="ag-card p-6 bg-amber-50/50 border-amber-200/40 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-amber-500">schedule</span>
+                        <span className="text-sm font-medium text-amber-800">你的承接申请正在等待发布人审核</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">Pending</span>
                 </div>
             )}
 
@@ -214,6 +256,19 @@ export default function CollaborationDetailPage() {
                             </div>
                         </div>
                     )}
+
+                    {/* Secret Details (Unlocked) */}
+                    {(isInitiator || isProvider) && (collab.status === 'LOCKED' || collab.status === 'ACTIVE' || collab.status === 'SETTLED') && collab.secret_content && (
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="material-symbols-outlined !text-[18px] text-primary">lock_open</span>
+                                <p className="text-[12px] font-bold text-primary uppercase tracking-wider">{t.quests.secretDetails}</p>
+                            </div>
+                            <div className="ag-card p-6 bg-slate-50 border-slate-200">
+                                <Markdown content={collab.secret_content} />
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -234,7 +289,7 @@ export default function CollaborationDetailPage() {
                             <span className="text-5xl font-black text-[#121317] tracking-tight">
                                 {collab.total_budget.toLocaleString()}
                             </span>
-                            <span className="text-xl font-medium text-[#6A6A71]">USDT</span>
+                            <span className="text-xl font-medium text-[#6A6A71]">USDC</span>
                         </div>
                         <p className="text-sm text-[#6A6A71]">Total Value Locked</p>
                     </div>
@@ -255,8 +310,8 @@ export default function CollaborationDetailPage() {
                             ))}
                         </div>
                         <div className="flex justify-between text-xs text-[#6A6A71]">
-                            <span>{releasedAmount} USDT 已支付</span>
-                            <span>{remainingAmount} USDT 剩余</span>
+                            <span>{releasedAmount} USDC 已支付</span>
+                            <span>{remainingAmount} USDC 剩余</span>
                         </div>
                     </div>
                 </div>
@@ -277,8 +332,8 @@ export default function CollaborationDetailPage() {
                         totalBudget={collab.total_budget}
                         isInitiator={isInitiator}
                         isProvider={isProvider}
-                        onSubmitProof={(msId) => setProofMilestoneId(msId)}
-                        onConfirm={(msId) => confirmMs.mutateAsync({ milestoneId: msId, collabId: collab.id })}
+                        onSubmitProof={(msId: string) => setProofMilestoneId(msId)}
+                        onConfirm={(msId: string) => confirmMs.mutateAsync({ milestoneId: msId, collabId: collab.id })}
                     />
                 )}
             </div>
@@ -288,7 +343,7 @@ export default function CollaborationDetailPage() {
                 <ConfirmDialog
                     title="确认撤销任务？"
                     body={releasedPct > 0
-                        ? `已支付的 ${releasedAmount} USDT（${releasedPct}%）不予退回。确定要撤销吗？`
+                        ? `已支付的 ${releasedAmount} USDC（${releasedPct}%）不予退回。确定要撤销吗？`
                         : '任务撤销后将对所有人不可见。确定要撤销吗？'
                     }
                     confirmLabel="确认撤销"
@@ -344,71 +399,49 @@ function UserBadge({ label, address, isSelf }: { label: string; address: string;
 }
 
 function ApplicantReviewCard({
-    pendingProviderAddress,
+    application,
     onApprove,
-    onReject,
     isApproving,
-    isRejecting,
 }: {
-    pendingProviderAddress: string;
+    application: CollabApplication;
     onApprove: () => void;
-    onReject: () => void;
     isApproving: boolean;
-    isRejecting: boolean;
 }) {
-    const { data: profile } = useProfileByAddress(pendingProviderAddress);
+    const { data: profile } = useProfileByAddress(application.applicant_id);
 
     return (
-        <div className="ag-card p-8 space-y-5 border-amber-200/60">
-            <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <span className="material-symbols-outlined !text-[24px]">person_add</span>
-                </div>
-                <div>
-                    <h3 className="text-[18px] font-bold text-[#121317]">承接申请审批</h3>
-                    <p className="text-[13px] text-[#6A6A71]">以下用户申请承接此任务</p>
-                </div>
-            </div>
-
-            <div className="bg-[#F8F9FC] rounded-2xl p-6 space-y-3">
+        <div className="ag-card p-6 space-y-4 border-slate-200/60 hover:border-primary/40 transition-all group">
+            <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[14px]">
-                        {(profile?.username || '?')[0].toUpperCase()}
+                        {(profile?.username || application.applicant_id)[0].toUpperCase()}
                     </div>
                     <div>
-                        <p className="text-[16px] font-bold text-[#121317]">{displayName(profile, pendingProviderAddress)}</p>
+                        <p className="text-[15px] font-bold text-[#121317]">{displayName(profile, application.applicant_id)}</p>
+                        <p className="text-[11px] text-[#6A6A71] font-mono">{application.applicant_id.slice(0, 6)}...{application.applicant_id.slice(-4)}</p>
                     </div>
                 </div>
-                {profile?.bio && (
-                    <p className="text-[14px] text-[#45474D] leading-relaxed">{profile.bio}</p>
-                )}
-                {profile?.portfolio && (
-                    <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] text-primary font-semibold hover:underline">
-                        <span className="material-symbols-outlined !text-[16px]">work</span>
-                        查看作品集
-                        <span className="material-symbols-outlined !text-[12px]">open_in_new</span>
-                    </a>
-                )}
-            </div>
-
-            <div className="flex gap-3">
                 <button
                     onClick={onApprove}
                     disabled={isApproving}
-                    className="ag-btn-primary flex-1"
+                    className="ag-btn-primary !px-4 !py-2 !text-[12px] shadow-none"
                 >
-                    <span className="material-symbols-outlined !text-[18px]">check_circle</span>
-                    {isApproving ? '处理中…' : '同意承接'}
-                </button>
-                <button
-                    onClick={onReject}
-                    disabled={isRejecting}
-                    className="ag-btn-secondary flex-1 text-red-500 hover:bg-red-50 hover:border-red-200"
-                >
-                    <span className="material-symbols-outlined !text-[18px]">cancel</span>
-                    {isRejecting ? '处理中…' : '拒绝'}
+                    {isApproving ? '...' : '确认承接'}
                 </button>
             </div>
+
+            <div className="bg-[#F8F9FC] rounded-xl p-4">
+                <p className="text-[13px] text-[#45474D] leading-relaxed italic">
+                    “{application.message || '该申请人未提供具体方案说明。'}”
+                </p>
+            </div>
+
+            {profile?.portfolio && (
+                <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-primary font-semibold hover:underline">
+                    <span className="material-symbols-outlined !text-[14px]">work</span>
+                    作品集资料
+                </a>
+            )}
         </div>
     );
 }

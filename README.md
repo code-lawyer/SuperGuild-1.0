@@ -1,92 +1,94 @@
-# BountyBoard
+# 🌌 SuperGuild 5.0 (VCP & AI Oracle)
 
-![Bounty Board](./assets/BountyBoard.png)
+![SuperGuild Cover](https://via.placeholder.com/1280x300.png?text=SuperGuild+v5.0)
 
-BountyBoard is a decentralized Web3 community engagement platform built on blockchain technology, aiming to automate task management and reward distribution, thereby increasing community participation and efficiency.
+**SuperGuild** is a decentralized "Super Individual" collaboration platform powered by an AI Oracle. It leverages the "Blind Box" audit mechanism of an AI judge (via LLM APIs like Claude/GPT-4o) and on-chain credibility (VCP Token & dynamic 3D SBT Medals) to enable intermediate-free, zero-fee P2P collaboration.
 
-## Key Advantages:
+## 🚀 Key Features
 
-* **Decentralization**: Utilizes blockchain technology to ensure transparency and trust in platform operations.
-* **Smart Contracts**: Automates task management and reward distribution using smart contracts, improving efficiency and transparency.
-* **AI-Agent (Eliza)**: Provides intelligent Q&A, task auditing, data analysis, and task notifications to enhance community interaction and efficiency.
-* **User-Friendly Interface**: Offers a simple and intuitive interface for users to create and manage tasks, track progress, and monitor participation.
+- **Decentralized Reputation (VCP Token):**
+  SuperGuild ditches traditional fiat/token payments for direct tasks. Instead, contributions are rewarded with **VCP (Value Contribution Points)**, an ERC-20 token minted as Proof-of-Work onto the Arbitrum Sepolia network. VCP determines your governance weight.
+  
+- **AI Oracle Evaluation Engine:**
+  An autonomous evaluator parsing GitHub PR/Commits and web deliverables through Jina Reader. It calculates rewards using a multi-dimensional standard (`ln(budget) * Difficulty * Quality * Efficiency`), ensuring objective, blind-box auditing.
+  
+- **Dynamic 3D On-chain Medals (SBTs):**
+  Built with React Three Fiber (`@react-three/fiber`), SuperGuild introduces dynamic 3D Medals (ERC-7496 format). A user's accumulated VCP directly mutating the glTF physical material rendering effects on their Web3 Profile.
+  
+- **Pioneer Recruitment System:**
+  Built-in invite-code system (`SG-XXXXXX`) featuring EIP-191 cryptographic signatures for wallet minting. Secures the initial "100 Founders" genesis block of the protocol.
 
-## Key Features
+## 🛠 Tech Stack
 
-**Task Management**:
+- **Frontend & App Framework:** Next.js 15 (App Router), React 19, Tailwind CSS v4
+- **Web3 Interaction:** Wagmi v3, Viem, RainbowKit
+- **Database Backend:** Supabase (PostgreSQL), Next.js Server Actions
+- **3D Engine:** React Three Fiber, Three.js
+- **Network Layer:** Arbitrum Sepolia (Primary)
+- **AI Oracle Engine:** Claude 3.5 Sonnet / OpenAI / Gemini APIs
 
-* **Multiple Task Types**: Supports various task types to cater to different community activities and engagement needs.
-* **Customizable Completion Criteria**: Allows users to set specific conditions for task completion, ensuring tasks are tailored to individual project requirements.
-* **Progress Tracking Dashboard**: Provides real-time monitoring of task progress and participant performance.
+## 📦 Getting Started
 
-**Reward Distribution**:
+### 1. Pre-requisites
 
-* **Smart Contract Automation**: Automates reward distribution using smart contracts, ensuring transparency and fairness.
-* **Multiple Token Support**: Supports various tokens for rewards, providing flexibility to cater to different community preferences.
+- Node.js v18+ (v20+ recommended)
+- `pnpm` package manager
+- A Supabase Project (for PostgreSQL and Realtime sync)
+- Alchemy API Key (for Arbitrum Sepolia RPC)
 
-**Community Management**:
-
-* **AI-Agent (Eliza)**: Offers intelligent Q&A, task auditing, data analysis, and task notifications to enhance community interaction and efficiency.
-* **Community Verification**: Enables community validation of AI-Agent operations, ensuring privacy and security.
-
-## Start
-
-### Install
-
-First, install the dependencies:
+### 2. Installation
 
 ```bash
+git clone https://github.com/code-lawyer/SuperGuild.git
+cd SuperGuild
 pnpm install
 ```
 
-Second, set the environment variables:
+### 3. Environment Variables
+
+Copy the example environment file and fill in your keys:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-### Run
+**Critical `.env.local` Variables:**
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Web3 & RPC
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
+NEXT_PUBLIC_ALCHEMY_ID=your-alchemy-key
+
+# AI Oracle
+ORACLE_LLM_API_KEY=your-claude-or-openai-api-key
+
+# Hot Wallet (For VCP Minting via API)
+HOT_WALLET_PRIVATE_KEY=0x...
+```
+
+### 4. Development Server
+
+Start the Next.js development server:
 
 ```bash
 pnpm dev
 ```
 
-## Set up the agent
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-First, clone the agent repository:
+## 📜 Smart Contracts
 
-```bash
-git clone https://github.com/ai16z/eliza.git
-```
+Contracts are deployed on **Arbitrum Sepolia**:
 
-Second, set the environment variables, you need to set the `DISCORD_APPLICATION_ID`, `DISCORD_API_TOKEN`,`BOUNTYBOARD_PRIVATE_KEY`(the private key of the account that will review the tasks), `BOUNTYBOARD_ADDRESS`, `GAIANET_MODEL`, `GAIANET_SERVER_URL`, `GAIANET_EMBEDDING_MODEL`, `USE_GAIANET_EMBEDDING`, `DSTACK_SIMULATOR_ENDPOINT`(the endpoint of the TEE simulator), `WALLET_SECRET_SALT`(the TEE secret salt) in the `.env` file.
+- `VCPTokenV2` (UUPS Proxy): `0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C`
+- `MedalNFT`: `0xef96bE9fFf59B5653085C11583beaC0D16450F1a`
 
-```bash
-cp .env.example .env
-```
+*All protocol hot wallet private keys must be strictly isolated to the secure server API environments.*
 
-Third, install the dependencies:
+## ⚖️ License
 
-```bash
-pnpm install
-```
-
-Fourth, copy the `eliza-add` directory to the `eliza` directory:
-
-Then, you can build and start the agent:
-
-```bash
-pnpm build
-pnpm start --characters="characters/BountyBoard.character.json"
-```
-
-## Screenshot
-
-**Home**
-
-![Bounty Board](./assets/ScreenshotHome.png)
-
-**Task**
-
-![Bounty Board](./assets/ScreenshotTask.png)
-
+[MIT License](LICENSE)

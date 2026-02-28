@@ -19,37 +19,94 @@ export default function Header() {
     useEffect(() => setMounted(true), []);
 
     const navItems = [
-        { href: '/', label: t.nav.dashboard },
-        { href: '/services', label: t.nav.services },
-        { href: '/collaborations', label: t.nav.bounties },
-        { href: '/bulletin', label: t.nav.docs },
+        {
+            label: t.nav.docs,
+            href: '/bulletin',
+            subItems: [
+                { label: t.nav.sub_docs_announcements, href: '/bulletin' },
+                { label: t.nav.sub_docs_pioneers, href: '/bulletin' },
+            ]
+        },
+        {
+            label: t.nav.services,
+            href: '/services',
+            subItems: [
+                { label: t.nav.sub_services_infra, href: '/services#infra' },
+                { label: t.nav.sub_services_core, href: '/services#core' },
+                { label: t.nav.sub_services_co_create, href: '/services#co-create' },
+            ]
+        },
+        {
+            label: t.nav.bounties,
+            href: '/collaborations',
+            subItems: [
+                { label: t.nav.sub_bounties_lobby, href: '/collaborations' },
+                { label: t.nav.sub_bounties_post, href: '/collaborations/create' },
+                { label: t.nav.sub_bounties_manage, href: '/collaborations/manage' },
+            ]
+        },
+        {
+            label: t.nav.governance,
+            href: '/council',
+            subItems: [
+                { label: t.nav.sub_council_proposals, href: '/council/proposals' },
+                { label: t.nav.sub_council_arbitration, href: '/council/arbitration' },
+                { label: t.nav.sub_council_ai, href: '/council/ai' },
+                { label: t.nav.sub_council_records, href: '/council/records' },
+            ]
+        }
     ];
 
     return (
         <>
-            <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-bg-dark/80 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+            <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-[#0a0f18]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
                 <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-                        <div className="text-primary transition-transform duration-500 group-hover:rotate-180">
-                            <span className="material-symbols-outlined !text-[28px] font-light">token</span>
+                    <Link href="/" className="flex items-center gap-3 group cursor-pointer relative z-10 transition-transform active:scale-95">
+                        <div className="text-primary transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(var(--primary),0.5)]">
+                            <span className="material-symbols-outlined !text-[32px] font-light">token</span>
                         </div>
                         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">SuperGuild</h1>
                     </Link>
 
                     {/* Nav Links */}
-                    <nav className="hidden md:flex items-center gap-8">
-                        {navItems.map(item => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`text-sm font-medium transition-colors ${pathname === item.href
-                                    ? 'text-primary'
-                                    : 'text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary'
-                                    }`}
-                            >
-                                {item.label}
-                            </Link>
+                    <nav className="hidden md:flex items-center gap-4 lg:gap-8">
+                        {navItems.map((item, idx) => (
+                            <div key={idx} className="relative group/nav">
+                                <Link
+                                    href={item.href}
+                                    className={`flex items-center gap-1.5 py-5 text-sm font-bold transition-all ${pathname.startsWith(item.href) && item.href !== '/'
+                                        ? 'text-primary'
+                                        : 'text-slate-600 hover:text-primary dark:text-slate-400 dark:hover:text-primary'
+                                        }`}
+                                >
+                                    {item.label}
+                                    <span className="material-symbols-outlined !text-[18px] opacity-40 group-hover/nav:opacity-100 group-hover/nav:rotate-180 transition-all duration-300">
+                                        arrow_drop_down
+                                    </span>
+                                </Link>
+
+                                {/* Dropdown Menu */}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50">
+                                    <div className="w-64 p-2 rounded-xl bg-white/95 dark:bg-[#0a0f18]/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_0_30px_rgba(var(--primary),0.15)] flex flex-col relative overflow-hidden">
+                                        {/* Top glowing edge */}
+                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
+                                        {item.subItems.map((sub, sIdx) => (
+                                            <Link
+                                                key={sIdx}
+                                                href={sub.href}
+                                                className="px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-all flex items-center gap-2 group/sub relative"
+                                            >
+                                                <span className="truncate">{sub.label}</span>
+                                                <span className="material-symbols-outlined !text-[18px] ml-auto opacity-0 -translate-x-2 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all text-primary">
+                                                    chevron_right
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         ))}
                     </nav>
 
@@ -92,13 +149,13 @@ export default function Header() {
                                     return (
                                         <button
                                             onClick={openAccountModal}
-                                            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-full hover:border-primary/50 transition-colors group"
+                                            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-full hover:border-primary/50 transition-colors group"
                                         >
                                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                                                 {account.displayName}
                                             </span>
-                                            <span className="material-symbols-outlined !text-[16px] text-slate-400 group-hover:text-primary">
+                                            <span className="material-symbols-outlined !text-[18px] text-slate-400 group-hover:text-primary transition-colors">
                                                 expand_more
                                             </span>
                                         </button>

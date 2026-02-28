@@ -29,12 +29,29 @@ const zh: TranslationKeys = {
     },
 
     nav: {
-        dashboard: '仪表盘',
-        services: '服务中心',
-        bounties: '任务大厅',
-        governance: '治理',
-        docs: '公告板',
-        profile: '个人档案',
+        dashboard: '中心枢纽',
+        services: '自治商办',
+        bounties: '冒险者大厅',
+        governance: '提灯议会',
+        docs: '先行者信标',
+        profile: '个体主页',
+
+        // Navigation Sub-items
+        sub_docs_announcements: '公会公告',
+        sub_docs_pioneers: '先行者信标',
+
+        sub_services_infra: '基础设施',
+        sub_services_core: '核心服务',
+        sub_services_co_create: '协同共创',
+
+        sub_bounties_lobby: '任务大厅面板',
+        sub_bounties_post: '任务发布',
+        sub_bounties_manage: '我的工作台',
+
+        sub_council_proposals: '星火广场',
+        sub_council_arbitration: '公义之手',
+        sub_council_ai: '柴薪王座',
+        sub_council_records: '黑曜石刻刀',
     },
 
     landing: {
@@ -42,12 +59,36 @@ const zh: TranslationKeys = {
         heroTitle: '超级个体',
         heroHighlight: '工作平台',
         heroDescription: 'AI时代的去中心化公会——消灭一切中间层，劳动价值只属于自己',
-        featureServices: '标准万用中后台',
-        featureServicesDesc: '你专心于创造，剩下的交给公会。',
-        featureCollabs: '任务模式协作网络',
-        featureCollabsDesc: '任务面板，平等个体之间的分工合作',
-        featureVCP: '去中心化信用治理',
-        featureVCPDesc: 'SBT信用积分，DAO治理体系，无需背书的信任。',
+        connectTerminal: '进入工作台',
+        scrollToLoad: '向下滚动发现更多',
+        initSequence: 'Super Guild 协议状态',
+
+        coreValues: [
+            {
+                id: "01",
+                title: '万用中后台',
+                subtitle: 'Universal Back-office',
+                description: '这是为超级个体打造的数字补给协议。通过覆盖法律合规、财税统筹、IP 防御及跨境贸易的标准化服务抽屉体系，替你接管繁琐冗余的后勤运转过程，将个人的每一寸精力还给纯粹的创造与建造。'
+            },
+            {
+                id: "02",
+                title: '多边任务分发网络',
+                subtitle: 'Peer-to-Peer Networks',
+                description: '在冒险者大厅，每个人都是工作节点。无许可发起或承接协作，设置阶段式的里程碑资金托管。所有的契约协议与资产清算由系统合约保障和执行，以不可篡改的透明度彻底消弭传统的信任层摩擦。'
+            },
+            {
+                id: "03",
+                title: '不可篡改的声誉图谱',
+                subtitle: 'On-chain Reputation',
+                description: '深度集成的 VCP 灵魂绑定信誉系统与 3D 悬浮勋章体系。我们不关注过去头衔，只衡量真实产出。你的每一次成功交付、每一次纠纷裁决，都将化成信用体系的底层权重，决定你在整个治理矩阵中的层级权限。'
+            },
+            {
+                id: "04",
+                title: '提灯人议决中枢',
+                subtitle: 'Code-driven Governance',
+                description: '公会的权利与治理体系通过提灯人议会运转。通过星火广场流转的代码提案、极简的纠纷仲裁机制，以及赋能特定席位的 AI 自动化人格代理，真正实现中立、冰冷却极具效率的 DAO 系统共识管理。'
+            }
+        ]
     },
 
     dashboard: {
@@ -66,8 +107,8 @@ const zh: TranslationKeys = {
     services: {
         title: '服务货架',
         subtitle: '浏览和激活中后台服务，按需即用。',
-        heroTitle: '超级个体的',
-        heroHighlight: '协作基础设施',
+        heroTitle: '万用',
+        heroHighlight: '中后台货架',
         heroDescription: '去中心化、非托管工具，赋能你在 Base 上的专业自主权。即时激活服务。',
         availableServices: '可用服务',
         activeContracts: '已激活合约',
@@ -76,23 +117,44 @@ const zh: TranslationKeys = {
         uptime: '运行时间',
         activationDate: '激活日期',
         infrastructure: '基础设施',
+        infrastructureDesc: '为超级个体打造的数字基座，提供基础作业规范和安全保障',
         specialized: '专项服务',
+        specializedDesc: '确保每一分利润都在阳光下合法避险，提供专业的业务服务方案',
         consulting: '专家咨询',
+        consultingDesc: '连接资源与机会的生态网络，为超级个体提供专业顾问服务',
+        itemsCount: '项服务',
+        noServices: '暂无服务方案',
     },
 
     quests: {
-        title: '任务大厅',
-        subtitle: '发起或参与 P2P 协作任务。',
-        newQuest: '发起任务',
-        allQuests: '全部',
+        title: '任务工作台',
+        subtitle: '发起或参与去中心化协作。',
+        newQuest: '发布新任务',
+        difficulty: '难度评价',
+        difficultyEasy: '简单',
+        difficultyMedium: '中等',
+        difficultyHard: '困难',
+        difficultyEpic: '史诗',
+        rewardAmount: '报酬金额 (USDC)',
+        secretDetails: '任务私密细节',
+        secretDetailsDesc: '仅在确认承接人后对其解锁可见。',
+        secretAttachments: '私密附件',
+        applyPitch: '承接申请',
+        applyPitchPlaceholder: '简述你的优势或实施方案...',
+        viewApplicants: '查看申请人',
+        approveApplicant: '确认承接人',
+        questWorkbench: '任务工作台',
+        allQuests: '全部任务',
         activeQuests: '进行中',
-        pendingQuests: '待接单',
+        pendingQuests: '待处理',
         completedQuests: '已完成',
         cancelledQuests: '已取消',
-        noQuests: '暂无任务',
-        noQuestsDesc: '发起你的第一个 P2P 协作任务。',
-        noQuestsFilterDesc: '当前分类没有匹配的任务。',
-        budget: '预算',
+        noQuests: '暂无活跃任务',
+        noQuestsDesc: '目前没有任何活跃的任务。你可以发起一个新项目。',
+        noQuestsFilterDesc: '当前过滤条件下未发现对应任务。',
+        budget: '权益池',
+        status: '状态',
+        id: '任务 ID',
         created: '创建时间',
         workspace: '工作台',
         milestones: '里程碑',
@@ -163,6 +225,20 @@ const zh: TranslationKeys = {
         general: '综合',
         update: '更新',
         event: '活动',
+        pioneer: '先行者信标',
+        pioneerTitle: '先行者信标',
+        pioneerSubtitle: '先行者勋章持有者的专属发布频道。',
+        postButton: '发布公告',
+        modalTitle: '先行者播报',
+        titleLabel: '标题',
+        contentLabel: '内容',
+        contentPlaceholder: '在此输入内容... (支持 Markdown 格式)',
+        attachmentLabel: '附件 (最大 10MB)',
+        uploading: '上传中...',
+        submit: '发布',
+        success: '公告发布成功',
+        errorNoNft: '需要持有先行者勋章 (Sepolia ID: 5) 才能发布。',
+        errorTooLarge: '文件大小超过 10MB 限制。',
     },
 
     badges: {
@@ -183,6 +259,27 @@ const zh: TranslationKeys = {
         terms: '服务条款',
         documentation: '开发文档',
         support: '技术支持',
+    },
+
+    // ── 提灯人议会 / 治理 ──
+    council: {
+        title: '提灯人议会',
+        subtitle: '超级公会协议生态系统的治理核心。',
+        sparkPlaza: '星火广场',
+        sparkPlazaDesc: '议案流转与治理提案提交。',
+        handOfJustice: '公义之手',
+        handOfJusticeDesc: '去中心化仲裁与任务纠纷裁决。',
+        throneOfKindling: '柴薪王座',
+        throneOfKindlingDesc: 'AI 动态人格代理与核心成员档案。',
+        obsidianStele: '黑曜石刻刀',
+        obsidianSteleDesc: '已生效决议与执行情况的不可篡改记录。',
+        statusActive: '执行中',
+        statusDraft: '草案中',
+        statusPassed: '已通过',
+        statusRejected: '已否决',
+        votePower: '投票权重',
+        initiateProposal: '发起议案',
+        access: '进入',
     },
 };
 

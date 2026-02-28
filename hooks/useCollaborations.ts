@@ -19,6 +19,9 @@ export interface Collaboration {
     deadline: string | null;
     delivery_standard: string | null;
     total_budget: number;
+    reward_token: string;
+    difficulty: string | null;
+    secret_content: string | null;
     status: CollabStatus;
     escrow_address: string | null;
     created_at: string;
@@ -121,6 +124,10 @@ export interface CreateCollabInput {
     deadline?: string;
     delivery_standard?: string;
     total_budget: number;
+    reward_token?: string;
+    difficulty?: string;
+    secret_content?: string;
+    secret_attachments?: any[];
     milestones: { title: string; amount_percentage: number }[];
 }
 
@@ -142,6 +149,10 @@ export function useCreateCollaboration() {
                     deadline: input.deadline || null,
                     delivery_standard: input.delivery_standard || null,
                     total_budget: input.total_budget,
+                    reward_token: input.reward_token || 'USDC',
+                    difficulty: input.difficulty || 'MEDIUM',
+                    secret_content: input.secret_content || null,
+                    secret_attachments: input.secret_attachments || [],
                     status: 'OPEN',
                 })
                 .select()
@@ -470,6 +481,138 @@ export function useConfirmMilestone() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collaboration'] });
             queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+        },
+    });
+}
+
+// ── Applicant & Applications Logic ──
+
+export interface CollabApplication {
+    id: string;
+    collab_id: string;
+    applicant_id: string;
+    message: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+    created_at: string;
+    applicant_profile?: {
+        username: string | null;
+        bio: string | null;
+    };
+}
+
+// ── Apply to a collaboration (Adventurer side) ──
+export function useApplyToCollab() {
+    const { address } = useAccount();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ collabId, message }: { collabId: string; message: string }) => {
+            if (!address) throw new Error('请先连接钱包');
+
+            // Insert into collaboration_applications
+            const { error: appErr } = await supabase
+                .from('collaboration_applications')
+                .insert({
+                    collab_id: collabId,
+                    applicant_id: address,
+                    message: message,
+                    status: 'PENDING',
+                });
+
+            if (appErr) throw appErr;
+
+            // Get collab for notification
+            const { data: collab } = await supabase
+                .from('collaborations')
+                .select('initiator_id, title')
+                .eq('id', collabId)
+                .single();
+
+            if (collab) {
+                await createNotification({
+                    user_address: collab.initiator_id,
+                    type: 'ACCEPT_REQUEST',
+                    title: '有人申请承接你的任务',
+                    body: `「${collab.title}」收到并正在排队申请`,
+                    metadata: {
+                        collab_id: collabId,
+                        applicant_address: address,
+                    },
+                });
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collab_applications'] });
+        },
+    });
+}
+
+// ── List applications for a quest (Initiator side) ──
+export function useCollabApplications(collabId: string) {
+    return useQuery({
+        queryKey: ['collab_applications', collabId],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('collaboration_applications')
+                .select(`
+                    *,
+                    applicant_profile:profiles!collaboration_applications_applicant_id_fkey(username, bio)
+                `)
+                .eq('collab_id', collabId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data as CollabApplication[];
+        },
+        enabled: !!collabId,
+    });
+}
+
+// ── Approve an application (Initiator side) ──
+export function useApproveApplication() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ collabId, applicationId, applicantId }: { collabId: string; applicationId: string; applicantId: string }) => {
+            // 1. Update collaboration state
+            const { error: collabErr } = await supabase
+                .from('collaborations')
+                .update({
+                    provider_id: applicantId,
+                    status: 'LOCKED',
+                })
+                .eq('id', collabId);
+
+            if (collabErr) throw collabErr;
+
+            // 2. Update application states (one accepted, others rejected or left as is)
+            await supabase
+                .from('collaboration_applications')
+                .update({ status: 'ACCEPTED' })
+                .eq('id', applicationId);
+
+            await supabase
+                .from('collaboration_applications')
+                .update({ status: 'REJECTED' })
+                .eq('collab_id', collabId)
+                .neq('id', applicationId);
+
+            // 3. Notify the approved provider
+            const { data: collab } = await supabase.from('collaborations').select('title').eq('id', collabId).single();
+            if (collab) {
+                await createNotification({
+                    user_address: applicantId,
+                    type: 'ACCEPT_APPROVED',
+                    title: '你的承接申请已通过！',
+                    body: `「${collab.title}」的发布人已选择你作为合作伙伴。`,
+                    metadata: { collab_id: collabId },
+                });
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+            queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+            queryClient.invalidateQueries({ queryKey: ['collab_applications'] });
         },
     });
 }

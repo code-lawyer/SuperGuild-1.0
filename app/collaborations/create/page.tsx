@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useT } from '@/lib/i18n';
 import { useCreateCollaboration } from '@/hooks/useCollaborations';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MilestoneInput {
     title: string;
@@ -24,34 +26,38 @@ const DELIVERY_PRESETS = [
 ];
 
 export default function CreateCollaborationPage() {
+    const t = useT();
     const router = useRouter();
     const createCollab = useCreateCollaboration();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [difficulty, setDifficulty] = useState('MEDIUM');
+    const [rewardToken, setRewardToken] = useState('USDC');
+    const [totalBudget, setTotalBudget] = useState('');
+    const [secretContent, setSecretContent] = useState('');
     const [referenceLinks, setReferenceLinks] = useState<ReferenceLink[]>([]);
     const [deadline, setDeadline] = useState('');
     const [deliveryStandard, setDeliveryStandard] = useState('');
     const [customDelivery, setCustomDelivery] = useState('');
-    const [totalBudget, setTotalBudget] = useState('');
     const [milestones, setMilestones] = useState<MilestoneInput[]>([
         { title: '', amount_percentage: 100 },
     ]);
 
-    const totalPercentage = milestones.reduce((sum, m) => sum + m.amount_percentage, 0);
+    const totalPercentage = milestones.reduce((sum: number, m: MilestoneInput) => sum + m.amount_percentage, 0);
     const finalDelivery = deliveryStandard === 'custom' ? customDelivery : deliveryStandard;
     const isValid =
         title.trim() &&
         description.trim() &&
         Number(totalBudget) > 0 &&
         totalPercentage === 100 &&
-        milestones.every(m => m.title.trim()) &&
+        milestones.every((m: MilestoneInput) => m.title.trim()) &&
         finalDelivery.trim();
 
     const addMilestone = () => setMilestones([...milestones, { title: '', amount_percentage: 0 }]);
     const removeMilestone = (i: number) => {
         if (milestones.length <= 1) return;
-        setMilestones(milestones.filter((_, idx) => idx !== i));
+        setMilestones(milestones.filter((_: MilestoneInput, idx: number) => idx !== i));
     };
     const updateMilestone = (i: number, field: keyof MilestoneInput, val: string | number) => {
         const updated = [...milestones];
@@ -74,10 +80,13 @@ export default function CreateCollaborationPage() {
             const result = await createCollab.mutateAsync({
                 title: title.trim(),
                 description: description.trim(),
-                reference_links: referenceLinks.filter(r => r.url.trim()),
+                difficulty: difficulty,
+                reward_token: rewardToken,
+                total_budget: Number(totalBudget),
+                secret_content: secretContent.trim(),
+                reference_links: referenceLinks.filter((r: ReferenceLink) => r.url.trim()),
                 deadline: deadline || undefined,
                 delivery_standard: finalDelivery.trim(),
-                total_budget: Number(totalBudget),
                 milestones,
             });
             router.push(`/collaborations/${result.id}`);
@@ -100,6 +109,31 @@ export default function CreateCollaborationPage() {
                         发起新协作
                     </h1>
                     <p className="text-[#6A6A71] text-[15px] font-medium">详细描述任务内容，让潜在承接人充分了解需求。</p>
+                </div>
+
+                <div className="fade-up">
+                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        {t.quests.difficulty} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[
+                            { key: 'EASY', label: t.quests.difficultyEasy, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/20' },
+                            { key: 'MEDIUM', label: t.quests.difficultyMedium, color: 'text-blue-500', bg: 'bg-blue-500/5', border: 'border-blue-500/20' },
+                            { key: 'HARD', label: t.quests.difficultyHard, color: 'text-orange-500', bg: 'bg-orange-500/5', border: 'border-orange-500/20' },
+                            { key: 'EPIC', label: t.quests.difficultyEpic, color: 'text-purple-500', bg: 'bg-purple-500/5', border: 'border-purple-500/20' },
+                        ].map((d) => (
+                            <button
+                                key={d.key}
+                                onClick={() => setDifficulty(d.key)}
+                                className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
+                                    ? `ring-2 ring-primary border-primary ${d.bg}`
+                                    : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                    }`}
+                            >
+                                <span className={`text-[13px] font-black tracking-tight ${d.color}`}>{d.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Title */}
@@ -143,7 +177,7 @@ export default function CreateCollaborationPage() {
                         <p className="text-[13px] text-[#B8BACA] italic">暂无参考资料，点击上方添加</p>
                     )}
                     <div className="space-y-2">
-                        {referenceLinks.map((ref, i) => (
+                        {referenceLinks.map((ref: ReferenceLink, i: number) => (
                             <div key={i} className="flex gap-2">
                                 <input
                                     type="text"
@@ -222,15 +256,38 @@ export default function CreateCollaborationPage() {
                 {/* Budget */}
                 <div className="fade-up">
                     <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        总预算 (USDT) <span className="text-red-500">*</span>
+                        {t.quests.rewardAmount} <span className="text-red-500">*</span>
                     </label>
-                    <input
-                        type="number"
-                        value={totalBudget}
-                        onChange={(e) => setTotalBudget(e.target.value)}
-                        placeholder="500"
-                        min="0"
-                        className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 tabular-nums shadow-sm"
+                    <div className="relative">
+                        <input
+                            type="number"
+                            value={totalBudget}
+                            onChange={(e) => setTotalBudget(e.target.value)}
+                            placeholder="500"
+                            min="0"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 tabular-nums shadow-sm"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <span className="text-[14px] font-black text-slate-400">USDC</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Secret Details */}
+                <div className="fade-up">
+                    <div className="flex items-center gap-2 mb-2.5">
+                        <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">
+                            {t.quests.secretDetails}
+                        </label>
+                        <span className="material-symbols-outlined !text-[16px] text-primary" title={t.quests.secretDetailsDesc}>lock</span>
+                    </div>
+                    <p className="text-[12px] text-slate-400 mb-3">{t.quests.secretDetailsDesc}</p>
+                    <textarea
+                        value={secretContent}
+                        onChange={(e) => setSecretContent(e.target.value)}
+                        placeholder="在此输入只有承接人可见的私密信息、联系方式、特定 API KEY 或详细附件说明..."
+                        rows={4}
+                        className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
                     />
                 </div>
 
@@ -244,7 +301,7 @@ export default function CreateCollaborationPage() {
                     </div>
 
                     <div className="space-y-3">
-                        {milestones.map((ms, i) => (
+                        {milestones.map((ms: MilestoneInput, i: number) => (
                             <div key={i} className="ag-card p-5 flex items-start gap-3">
                                 <span className="text-[12px] font-bold text-[#D1D5E0] pt-3 shrink-0 tabular-nums">#{i + 1}</span>
                                 <div className="flex-1 space-y-3">
@@ -267,7 +324,7 @@ export default function CreateCollaborationPage() {
                                         <span className="text-[12px] text-[#6A6A71] font-bold">%</span>
                                         {Number(totalBudget) > 0 && (
                                             <span className="text-[13px] text-[#6A6A71] ml-2 tabular-nums">
-                                                ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDT
+                                                ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
                                             </span>
                                         )}
                                     </div>

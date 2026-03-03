@@ -60,7 +60,7 @@ const en = {
         heroTitle: 'Infrastructure for',
         heroHighlight: 'Super Individual',
         heroDescription: 'Decentralized Guilds in the AI Era — Abolish All Intermediaries, Labor Value Belongs Solely to the Individual.',
-        connectTerminal: 'Enter Dashboard',
+        connectTerminal: 'Begin Adventure',
         scrollToLoad: 'Scroll to Explore',
         initSequence: 'Super Guild Protocol',
 

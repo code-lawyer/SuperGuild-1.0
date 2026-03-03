@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '@/lib/i18n';
 import { MagneticButton } from '@/components/ui/MagneticButton';
@@ -56,6 +57,16 @@ function ScrollTypewriter({ text, className }: { text: string; className?: strin
 function LandingPage() {
   const t = useT();
   const router = useRouter();
+  const { isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
+
+  const handleAdventure = () => {
+    if (isConnected) {
+      router.push('/collaborations');
+    } else if (openConnectModal) {
+      openConnectModal();
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] relative overflow-hidden selection:bg-primary/20 selection:text-primary">
@@ -93,10 +104,10 @@ function LandingPage() {
 
         <FadeInUp delay={2.0} yOffset={20} className="flex gap-4 pt-4">
           <MagneticButton
-            onClick={() => router.push('/dashboard')}
+            onClick={handleAdventure}
             className="px-10 py-4 bg-primary text-white font-bold text-base rounded-2xl transition-all flex items-center gap-3 shadow-xl hover:shadow-primary/30 hover:-translate-y-1 active:scale-95"
           >
-            <span>{t.landing.connectTerminal || 'Enter Dashboard'}</span>
+            <span>{t.landing.connectTerminal || 'Begin Adventure'}</span>
             <span className="material-symbols-outlined !text-[20px]">arrow_forward</span>
           </MagneticButton>
         </FadeInUp>

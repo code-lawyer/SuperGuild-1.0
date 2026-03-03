@@ -59,7 +59,7 @@ const zh: TranslationKeys = {
         heroTitle: '超级个体',
         heroHighlight: '工作平台',
         heroDescription: 'AI时代的去中心化公会——消灭一切中间层，劳动价值只属于自己',
-        connectTerminal: '进入工作台',
+        connectTerminal: '开始冒险',
         scrollToLoad: '向下滚动发现更多',
         initSequence: 'Super Guild 协议状态',
 

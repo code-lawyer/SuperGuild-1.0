@@ -1,27 +1,34 @@
 'use client';
 
+import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import { useAccount } from 'wagmi';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { motion } from 'framer-motion';
 import { MagneticButton } from '@/components/ui/MagneticButton';
 import { RequireWallet } from '@/components/ui/RequireWallet';
+import { CreateProposalModal } from '@/components/council/CreateProposalModal';
+import { ProposalCard } from '@/components/council/ProposalCard';
+import { useProposalsList, useGovernorStats } from '@/hooks/useProposals';
+import { useVCP } from '@/hooks/useVCP';
 
 export default function SparkPlazaPage() {
     const t = useT();
+    const { address } = useAccount();
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
+    // 链上数据
+    const { threshold, totalSupply, proposalCount } = useGovernorStats();
+    const { data: proposals, isLoading } = useProposalsList();
+    const { vcp: userVCP } = useVCP();
 
     return (
-        <div className="relative min-h-screen selection:bg-primary/20">
-            {/* Terminal Grid Background */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:50px_50px]" />
-            </div>
-
-            <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col relative z-10 w-full min-h-screen">
+        <div className="relative selection:bg-primary/20">
+            <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col w-full h-full min-h-[calc(100vh-80px)]">
                 <PageHeader
                     title={t.council.sparkPlaza}
                     description={t.council.sparkPlazaDesc}
                     action={
-                        <RequireWallet onAuthorized={() => console.log('Initiate proposal')}>
+                        <RequireWallet onAuthorized={() => setShowCreateModal(true)}>
                             {(handleClick) => (
                                 <MagneticButton
                                     onClick={handleClick}
@@ -35,24 +42,63 @@ export default function SparkPlazaPage() {
                     }
                 />
 
-                <div className="mt-12 flex flex-col items-center justify-center py-40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-white/50 dark:bg-slate-900/10">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col items-center text-center"
-                    >
-                        <span className="material-symbols-outlined !text-[64px] text-slate-300 dark:text-slate-700 mb-6 animate-pulse">
-                            dynamic_form
-                        </span>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight mb-2">
-                            0 Active Proposals
-                        </h3>
-                        <p className="text-sm text-slate-500 font-semibold tracking-wide uppercase">
-                            Governance Status: Idle
-                        </p>
-                    </motion.div>
+                {/* System Stats Bar */}
+                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                        { label: 'VCP 总量', value: totalSupply.toLocaleString(), icon: 'token' },
+                        { label: '1% 阈值', value: `${threshold.toLocaleString()} VCP`, icon: 'trending_up' },
+                        { label: '活跃提案', value: String(proposalCount), icon: 'description' },
+                        { label: '你的 VCP', value: address ? (userVCP ?? 0).toLocaleString() : '—', icon: 'account_balance_wallet' },
+                    ].map((stat) => (
+                        <div
+                            key={stat.label}
+                            className="p-4 rounded-xl bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 flex items-center gap-3"
+                        >
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
+                                <span className="material-symbols-outlined !text-[20px] text-slate-500">{stat.icon}</span>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                                <p className="text-lg font-black text-slate-900 dark:text-white font-mono">{stat.value}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Proposals List */}
+                <div className="mt-12 flex flex-col gap-6">
+                    {isLoading ? (
+                        <div className="flex flex-col gap-6">
+                            {[1, 2].map(i => (
+                                <div key={i} className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
+                            ))}
+                        </div>
+                    ) : proposals && proposals.length > 0 ? (
+                        proposals.map((proposal, index) => (
+                            <ProposalCard
+                                key={proposal.id}
+                                proposal={proposal}
+                                threshold={threshold}
+                                index={index}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center py-24">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
+                                <span className="material-symbols-outlined !text-[40px] text-slate-300 dark:text-slate-600">auto_awesome_motion</span>
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">暂无提案</h3>
+                            <p className="text-sm text-slate-400 dark:text-slate-600">成为第一个发起提案的人吧</p>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Create Modal */}
+            <CreateProposalModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+            />
         </div>
     );
 }

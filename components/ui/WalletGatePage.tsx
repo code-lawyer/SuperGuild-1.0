@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useState, useEffect, ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { useT } from '@/lib/i18n';
 
 interface WalletGatePageProps {
     children: ReactNode;
@@ -18,6 +19,7 @@ export function WalletGatePage({ children }: WalletGatePageProps) {
     const { isConnected } = useAccount();
     const { openConnectModal } = useConnectModal();
     const [mounted, setMounted] = useState(false);
+    const t = useT();
 
     useEffect(() => setMounted(true), []);
 
@@ -40,10 +42,10 @@ export function WalletGatePage({ children }: WalletGatePageProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-md w-full text-center"
+                className="max-w-md w-full flex flex-col items-center text-center"
             >
                 {/* Icon */}
-                <div className="w-24 h-24 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 flex items-center justify-center">
+                <div className="w-24 h-24 mb-8 rounded-3xl bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 flex items-center justify-center">
                     <span className="material-symbols-outlined !text-[48px] text-primary">
                         account_balance_wallet
                     </span>
@@ -51,27 +53,28 @@ export function WalletGatePage({ children }: WalletGatePageProps) {
 
                 {/* Title */}
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">
-                    连接钱包以继续
+                    {t.common.walletGateTitle}
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
-                    此页面需要验证你的链上身份。<br />
-                    请连接你的钱包以访问完整功能。
+                    {t.common.walletGateDesc1}<br />
+                    {t.common.walletGateDesc2}
                 </p>
 
                 {/* Connect Button */}
                 <button
                     onClick={() => openConnectModal?.()}
-                    className="px-8 py-3.5 bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-colors transition-transform flex items-center gap-2 mx-auto"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-colors transition-transform"
                 >
                     <span className="material-symbols-outlined !text-[20px]">link</span>
-                    连接钱包
+                    {t.common.connectWallet}
                 </button>
 
                 {/* Hint */}
                 <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
-                    支持 MetaMask、Coinbase Wallet、WalletConnect 等
+                    {t.common.walletGateHint}
                 </p>
             </motion.div>
         </div>
     );
 }
+

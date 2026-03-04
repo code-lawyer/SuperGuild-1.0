@@ -25,6 +25,10 @@ const en = {
         getStarted: 'Get Started',
         viewDocs: 'View Docs',
         all: 'All',
+        walletGateTitle: 'Connect Wallet to Continue',
+        walletGateDesc1: 'This page requires on-chain identity verification.',
+        walletGateDesc2: 'Please connect your wallet to access full features.',
+        walletGateHint: 'Supports MetaMask, Coinbase Wallet, WalletConnect, etc.',
     },
 
     // ── Nav ──

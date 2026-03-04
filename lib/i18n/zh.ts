@@ -26,6 +26,10 @@ const zh: TranslationKeys = {
         getStarted: '开始使用',
         viewDocs: '查看文档',
         all: '全部',
+        walletGateTitle: '连接钱包以继续',
+        walletGateDesc1: '此页面需要验证你的链上身份。',
+        walletGateDesc2: '请连接你的钱包以访问完整功能。',
+        walletGateHint: '支持 MetaMask、Coinbase Wallet、WalletConnect 等',
     },
 
     nav: {

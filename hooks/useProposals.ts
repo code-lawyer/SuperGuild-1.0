@@ -79,7 +79,8 @@ export interface CosignerData {
 
 /** 读取治理合约全局状态 */
 export function useGovernorStats() {
-    const { data, isLoading } = useReadContracts({
+    // Governor 合约查询（proposalCount + getThreshold）
+    const { data: govData, isLoading: govLoading } = useReadContracts({
         contracts: SPARK_GOVERNOR.address ? [
             {
                 address: SPARK_GOVERNOR.address,
@@ -93,20 +94,23 @@ export function useGovernorStats() {
                 functionName: 'getThreshold',
                 chainId: SPARK_GOVERNOR.chainId,
             },
-            {
-                address: VCP_TOKEN.address,
-                abi: vcpAbi,
-                functionName: 'totalSupply',
-                chainId: VCP_TOKEN.chainId,
-            },
         ] : [],
     });
 
+    // VCP totalSupply 独立查询（不依赖 Governor 合约是否可用）
+    const { data: supplyData, isLoading: supplyLoading } = useReadContract({
+        address: VCP_TOKEN.address,
+        abi: vcpAbi,
+        functionName: 'totalSupply',
+        chainId: VCP_TOKEN.chainId,
+        query: { enabled: true },
+    });
+
     return {
-        proposalCount: data?.[0]?.result ? Number(data[0].result) : 0,
-        threshold: data?.[1]?.result ? Number(data[1].result) : 0,
-        totalSupply: data?.[2]?.result ? Number(data[2].result) : 0,
-        isLoading,
+        proposalCount: govData?.[0]?.status === 'success' ? Number(govData[0].result) : 0,
+        threshold: govData?.[1]?.status === 'success' ? Number(govData[1].result) : 0,
+        totalSupply: supplyData !== undefined ? Number(supplyData) : 0,
+        isLoading: govLoading || supplyLoading,
     };
 }
 

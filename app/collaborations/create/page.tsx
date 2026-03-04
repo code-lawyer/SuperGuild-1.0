@@ -6,6 +6,7 @@ import { useT } from '@/lib/i18n';
 import { useCreateCollaboration } from '@/hooks/useCollaborations';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { WalletGatePage } from '@/components/ui/WalletGatePage';
 
 interface MilestoneInput {
     title: string;
@@ -96,274 +97,276 @@ export default function CreateCollaborationPage() {
     };
 
     return (
-        <div className="max-w-[640px] mx-auto px-6 py-16">
-            <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-[#6A6A71] hover:text-[#121317] transition-colors duration-200 mb-10 font-medium">
-                <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
-                返回列表
-            </Link>
+        <WalletGatePage>
+            <div className="max-w-[640px] mx-auto px-6 py-16">
+                <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-[#6A6A71] hover:text-[#121317] transition-colors duration-200 mb-10 font-medium">
+                    <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
+                    返回列表
+                </Link>
 
-            <div className="space-y-10">
-                {/* Header */}
-                <div className="fade-up">
-                    <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-[#121317] tracking-[-0.02em] mb-2">
-                        发起新协作
-                    </h1>
-                    <p className="text-[#6A6A71] text-[15px] font-medium">详细描述任务内容，让潜在承接人充分了解需求。</p>
-                </div>
-
-                <div className="fade-up">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        {t.quests.difficulty} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {[
-                            { key: 'EASY', label: t.quests.difficultyEasy, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/20' },
-                            { key: 'MEDIUM', label: t.quests.difficultyMedium, color: 'text-blue-500', bg: 'bg-blue-500/5', border: 'border-blue-500/20' },
-                            { key: 'HARD', label: t.quests.difficultyHard, color: 'text-orange-500', bg: 'bg-orange-500/5', border: 'border-orange-500/20' },
-                            { key: 'EPIC', label: t.quests.difficultyEpic, color: 'text-purple-500', bg: 'bg-purple-500/5', border: 'border-purple-500/20' },
-                        ].map((d) => (
-                            <button
-                                key={d.key}
-                                onClick={() => setDifficulty(d.key)}
-                                className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
-                                    ? `ring-2 ring-primary border-primary ${d.bg}`
-                                    : 'bg-white border-[#E8EAF0] hover:border-primary/40'
-                                    }`}
-                            >
-                                <span className={`text-[13px] font-black tracking-tight ${d.color}`}>{d.label}</span>
-                            </button>
-                        ))}
+                <div className="space-y-10">
+                    {/* Header */}
+                    <div className="fade-up">
+                        <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-[#121317] tracking-[-0.02em] mb-2">
+                            发起新协作
+                        </h1>
+                        <p className="text-[#6A6A71] text-[15px] font-medium">详细描述任务内容，让潜在承接人充分了解需求。</p>
                     </div>
-                </div>
 
-                {/* Title */}
-                <div className="fade-up fade-up-delay-1">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        任务标题 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="例如：品牌视觉设计 / DApp 前端开发…"
-                        className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
-                    />
-                </div>
-
-                {/* Description */}
-                <div className="fade-up fade-up-delay-2">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        任务详情 <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="详细描述任务背景、目标、范围、技能要求等…"
-                        rows={5}
-                        className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
-                    />
-                </div>
-
-                {/* Reference Links */}
-                <div className="fade-up">
-                    <div className="flex items-center justify-between mb-2.5">
-                        <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">参考资料</label>
-                        <button onClick={addRef} className="text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                            <span className="material-symbols-outlined !text-[14px]">add</span>
-                            添加链接
-                        </button>
-                    </div>
-                    {referenceLinks.length === 0 && (
-                        <p className="text-[13px] text-[#B8BACA] italic">暂无参考资料，点击上方添加</p>
-                    )}
-                    <div className="space-y-2">
-                        {referenceLinks.map((ref: ReferenceLink, i: number) => (
-                            <div key={i} className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={ref.label}
-                                    onChange={(e) => updateRef(i, 'label', e.target.value)}
-                                    placeholder="标题（选填）"
-                                    className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
-                                />
-                                <input
-                                    type="url"
-                                    value={ref.url}
-                                    onChange={(e) => updateRef(i, 'url', e.target.value)}
-                                    placeholder="https://..."
-                                    className="flex-1 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
-                                />
-                                <button onClick={() => removeRef(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors">
-                                    <span className="material-symbols-outlined !text-[18px]">close</span>
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            {t.quests.difficulty} <span className="text-red-500">*</span>
+                        </label>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {[
+                                { key: 'EASY', label: t.quests.difficultyEasy, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/20' },
+                                { key: 'MEDIUM', label: t.quests.difficultyMedium, color: 'text-blue-500', bg: 'bg-blue-500/5', border: 'border-blue-500/20' },
+                                { key: 'HARD', label: t.quests.difficultyHard, color: 'text-orange-500', bg: 'bg-orange-500/5', border: 'border-orange-500/20' },
+                                { key: 'EPIC', label: t.quests.difficultyEpic, color: 'text-purple-500', bg: 'bg-purple-500/5', border: 'border-purple-500/20' },
+                            ].map((d) => (
+                                <button
+                                    key={d.key}
+                                    onClick={() => setDifficulty(d.key)}
+                                    className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
+                                        ? `ring-2 ring-primary border-primary ${d.bg}`
+                                        : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                        }`}
+                                >
+                                    <span className={`text-[13px] font-black tracking-tight ${d.color}`}>{d.label}</span>
                                 </button>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Deadline */}
-                <div className="fade-up">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        截止日期 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="date"
-                        value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
-                        className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
-                    />
-                </div>
+                    {/* Title */}
+                    <div className="fade-up fade-up-delay-1">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            任务标题 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="例如：品牌视觉设计 / DApp 前端开发…"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                        />
+                    </div>
 
-                {/* Delivery Standard */}
-                <div className="fade-up">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        交付标准 <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        {DELIVERY_PRESETS.map((p) => (
+                    {/* Description */}
+                    <div className="fade-up fade-up-delay-2">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            任务详情 <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="详细描述任务背景、目标、范围、技能要求等…"
+                            rows={5}
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
+                        />
+                    </div>
+
+                    {/* Reference Links */}
+                    <div className="fade-up">
+                        <div className="flex items-center justify-between mb-2.5">
+                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">参考资料</label>
+                            <button onClick={addRef} className="text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                                <span className="material-symbols-outlined !text-[14px]">add</span>
+                                添加链接
+                            </button>
+                        </div>
+                        {referenceLinks.length === 0 && (
+                            <p className="text-[13px] text-[#B8BACA] italic">暂无参考资料，点击上方添加</p>
+                        )}
+                        <div className="space-y-2">
+                            {referenceLinks.map((ref: ReferenceLink, i: number) => (
+                                <div key={i} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={ref.label}
+                                        onChange={(e) => updateRef(i, 'label', e.target.value)}
+                                        placeholder="标题（选填）"
+                                        className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
+                                    />
+                                    <input
+                                        type="url"
+                                        value={ref.url}
+                                        onChange={(e) => updateRef(i, 'url', e.target.value)}
+                                        placeholder="https://..."
+                                        className="flex-1 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
+                                    />
+                                    <button onClick={() => removeRef(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors">
+                                        <span className="material-symbols-outlined !text-[18px]">close</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Deadline */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            截止日期 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                        />
+                    </div>
+
+                    {/* Delivery Standard */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            交付标准 <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {DELIVERY_PRESETS.map((p) => (
+                                <button
+                                    key={p.value}
+                                    onClick={() => { setDeliveryStandard(p.value); setCustomDelivery(''); }}
+                                    className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === p.value
+                                        ? 'bg-primary text-white border-primary shadow-sm'
+                                        : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
+                                        }`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
                             <button
-                                key={p.value}
-                                onClick={() => { setDeliveryStandard(p.value); setCustomDelivery(''); }}
-                                className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === p.value
+                                onClick={() => setDeliveryStandard('custom')}
+                                className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === 'custom'
                                     ? 'bg-primary text-white border-primary shadow-sm'
                                     : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
                                     }`}
                             >
-                                {p.label}
+                                自定义
                             </button>
-                        ))}
-                        <button
-                            onClick={() => setDeliveryStandard('custom')}
-                            className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === 'custom'
-                                ? 'bg-primary text-white border-primary shadow-sm'
-                                : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
-                                }`}
-                        >
-                            自定义
-                        </button>
+                        </div>
+                        {deliveryStandard === 'custom' && (
+                            <input
+                                type="text"
+                                value={customDelivery}
+                                onChange={(e) => setCustomDelivery(e.target.value)}
+                                placeholder="请描述你的交付标准…"
+                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                            />
+                        )}
                     </div>
-                    {deliveryStandard === 'custom' && (
-                        <input
-                            type="text"
-                            value={customDelivery}
-                            onChange={(e) => setCustomDelivery(e.target.value)}
-                            placeholder="请描述你的交付标准…"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
-                        />
-                    )}
-                </div>
 
-                {/* Budget */}
-                <div className="fade-up">
-                    <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                        {t.quests.rewardAmount} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                        <input
-                            type="number"
-                            value={totalBudget}
-                            onChange={(e) => setTotalBudget(e.target.value)}
-                            placeholder="500"
-                            min="0"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 tabular-nums shadow-sm"
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <span className="text-[14px] font-black text-slate-400">USDC</span>
+                    {/* Budget */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            {t.quests.rewardAmount} <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={totalBudget}
+                                onChange={(e) => setTotalBudget(e.target.value)}
+                                placeholder="500"
+                                min="0"
+                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 tabular-nums shadow-sm"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                <span className="text-[14px] font-black text-slate-400">USDC</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Secret Details */}
-                <div className="fade-up">
-                    <div className="flex items-center gap-2 mb-2.5">
-                        <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">
-                            {t.quests.secretDetails}
-                        </label>
-                        <span className="material-symbols-outlined !text-[16px] text-primary" title={t.quests.secretDetailsDesc}>lock</span>
-                    </div>
-                    <p className="text-[12px] text-slate-400 mb-3">{t.quests.secretDetailsDesc}</p>
-                    <textarea
-                        value={secretContent}
-                        onChange={(e) => setSecretContent(e.target.value)}
-                        placeholder="在此输入只有承接人可见的私密信息、联系方式、特定 API KEY 或详细附件说明..."
-                        rows={4}
-                        className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
-                    />
-                </div>
-
-                {/* Milestones */}
-                <div className="fade-up">
-                    <div className="flex items-center justify-between mb-4">
-                        <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">里程碑拆解</label>
-                        <span className={`text-[13px] font-bold tabular-nums ${totalPercentage === 100 ? 'text-emerald-500' : 'text-red-500'}`}>
-                            合计: {totalPercentage}%
-                        </span>
+                    {/* Secret Details */}
+                    <div className="fade-up">
+                        <div className="flex items-center gap-2 mb-2.5">
+                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">
+                                {t.quests.secretDetails}
+                            </label>
+                            <span className="material-symbols-outlined !text-[16px] text-primary" title={t.quests.secretDetailsDesc}>lock</span>
+                        </div>
+                        <p className="text-[12px] text-slate-400 mb-3">{t.quests.secretDetailsDesc}</p>
+                        <textarea
+                            value={secretContent}
+                            onChange={(e) => setSecretContent(e.target.value)}
+                            placeholder="在此输入只有承接人可见的私密信息、联系方式、特定 API KEY 或详细附件说明..."
+                            rows={4}
+                            className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
+                        />
                     </div>
 
-                    <div className="space-y-3">
-                        {milestones.map((ms: MilestoneInput, i: number) => (
-                            <div key={i} className="ag-card p-5 flex items-start gap-3">
-                                <span className="text-[12px] font-bold text-[#D1D5E0] pt-3 shrink-0 tabular-nums">#{i + 1}</span>
-                                <div className="flex-1 space-y-3">
-                                    <input
-                                        type="text"
-                                        value={ms.title}
-                                        onChange={(e) => updateMilestone(i, 'title', e.target.value)}
-                                        placeholder="里程碑标题…"
-                                        className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-all duration-200"
-                                    />
-                                    <div className="flex items-center gap-2">
+                    {/* Milestones */}
+                    <div className="fade-up">
+                        <div className="flex items-center justify-between mb-4">
+                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">里程碑拆解</label>
+                            <span className={`text-[13px] font-bold tabular-nums ${totalPercentage === 100 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                合计: {totalPercentage}%
+                            </span>
+                        </div>
+
+                        <div className="space-y-3">
+                            {milestones.map((ms: MilestoneInput, i: number) => (
+                                <div key={i} className="ag-card p-5 flex items-start gap-3">
+                                    <span className="text-[12px] font-bold text-[#D1D5E0] pt-3 shrink-0 tabular-nums">#{i + 1}</span>
+                                    <div className="flex-1 space-y-3">
                                         <input
-                                            type="number"
-                                            value={ms.amount_percentage}
-                                            onChange={(e) => updateMilestone(i, 'amount_percentage', e.target.value)}
-                                            min="0"
-                                            max="100"
-                                            className="w-24 bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary tabular-nums"
+                                            type="text"
+                                            value={ms.title}
+                                            onChange={(e) => updateMilestone(i, 'title', e.target.value)}
+                                            placeholder="里程碑标题…"
+                                            className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-all duration-200"
                                         />
-                                        <span className="text-[12px] text-[#6A6A71] font-bold">%</span>
-                                        {Number(totalBudget) > 0 && (
-                                            <span className="text-[13px] text-[#6A6A71] ml-2 tabular-nums">
-                                                ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
-                                            </span>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={ms.amount_percentage}
+                                                onChange={(e) => updateMilestone(i, 'amount_percentage', e.target.value)}
+                                                min="0"
+                                                max="100"
+                                                className="w-24 bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary tabular-nums"
+                                            />
+                                            <span className="text-[12px] text-[#6A6A71] font-bold">%</span>
+                                            {Number(totalBudget) > 0 && (
+                                                <span className="text-[13px] text-[#6A6A71] ml-2 tabular-nums">
+                                                    ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
+                                    {milestones.length > 1 && (
+                                        <button onClick={() => removeMilestone(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors duration-200 pt-3" aria-label="Remove milestone">
+                                            <span className="material-symbols-outlined !text-[18px]">remove_circle</span>
+                                        </button>
+                                    )}
                                 </div>
-                                {milestones.length > 1 && (
-                                    <button onClick={() => removeMilestone(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors duration-200 pt-3" aria-label="Remove milestone">
-                                        <span className="material-symbols-outlined !text-[18px]">remove_circle</span>
-                                    </button>
-                                )}
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+
+                        <button onClick={addMilestone} className="ag-btn-secondary w-full mt-4 py-3 text-[13px]">
+                            <span className="material-symbols-outlined !text-[16px]">add_circle</span>
+                            添加里程碑
+                        </button>
                     </div>
 
-                    <button onClick={addMilestone} className="ag-btn-secondary w-full mt-4 py-3 text-[13px]">
-                        <span className="material-symbols-outlined !text-[16px]">add_circle</span>
-                        添加里程碑
+                    {/* Submit */}
+                    <button
+                        onClick={handleSubmit}
+                        disabled={!isValid || createCollab.isPending}
+                        className="ag-btn-primary w-full py-4 text-[14px] font-bold"
+                    >
+                        {createCollab.isPending ? (
+                            <>
+                                <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
+                                创建中…
+                            </>
+                        ) : '发布协作任务'}
                     </button>
+
+                    {totalPercentage !== 100 && milestones.length > 0 && (
+                        <p className="text-[13px] text-red-500 font-medium text-center">
+                            ⚠ 里程碑占比之和必须等于 100%（当前: {totalPercentage}%）
+                        </p>
+                    )}
                 </div>
-
-                {/* Submit */}
-                <button
-                    onClick={handleSubmit}
-                    disabled={!isValid || createCollab.isPending}
-                    className="ag-btn-primary w-full py-4 text-[14px] font-bold"
-                >
-                    {createCollab.isPending ? (
-                        <>
-                            <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
-                            创建中…
-                        </>
-                    ) : '发布协作任务'}
-                </button>
-
-                {totalPercentage !== 100 && milestones.length > 0 && (
-                    <p className="text-[13px] text-red-500 font-medium text-center">
-                        ⚠ 里程碑占比之和必须等于 100%（当前: {totalPercentage}%）
-                    </p>
-                )}
             </div>
-        </div>
+        </WalletGatePage>
     );
 }

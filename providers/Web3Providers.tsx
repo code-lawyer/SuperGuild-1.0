@@ -1,9 +1,9 @@
 'use client';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi'
 import { config } from './config';
-import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, lightTheme, darkTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 
 import { useSyncProfile } from '@/hooks/useSyncProfile';
@@ -22,18 +22,34 @@ function SyncProfileWrapper({ children }: { children: ReactNode }) {
   );
 }
 
+function useIsDarkMode() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDark(mq.matches || document.documentElement.classList.contains('dark'));
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isDark;
+}
+
+const themeConfig = {
+  accentColor: '#137fec',
+  accentColorForeground: 'white',
+  borderRadius: 'large' as const,
+  fontStack: 'system' as const,
+  overlayBlur: 'small' as const,
+};
+
 export default function Web3Providers({ children }: { children: ReactNode }) {
+  const isDark = useIsDarkMode();
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          theme={lightTheme({
-            accentColor: '#137fec',
-            accentColorForeground: 'white',
-            borderRadius: 'large',
-            fontStack: 'system',
-            overlayBlur: 'small',
-          })}
+          theme={isDark ? darkTheme(themeConfig) : lightTheme(themeConfig)}
           modalSize="compact"
           showRecentTransactions={true}
         >

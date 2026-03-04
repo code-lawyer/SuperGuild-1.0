@@ -47,7 +47,7 @@ export default function SparkPlazaPage() {
                     {[
                         { label: 'VCP 总量', value: totalSupply.toLocaleString(), icon: 'token' },
                         { label: '1% 阈值', value: `${threshold.toLocaleString()} VCP`, icon: 'trending_up' },
-                        { label: '活跃提案', value: String(proposalCount), icon: 'description' },
+                        { label: '总提案数', value: String(proposalCount), icon: 'description' },
                         { label: '你的 VCP', value: address ? (userVCP ?? 0).toLocaleString() : '—', icon: 'account_balance_wallet' },
                     ].map((stat) => (
                         <div

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createWalletClient, createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { arbitrumSepolia } from 'viem/chains'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabase/admin'
 import { parseAllPoWs } from '@/lib/oracle/parsePoW'
 import {
     buildEvaluationPrompt,
@@ -13,11 +13,6 @@ import {
 import vcpAbi from '@/constants/VCPTokenV2.json'
 
 const VCP_ADDRESS = '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C' as const
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 export async function POST(request: Request) {
     const LLM_KEY = process.env.ORACLE_LLM_API_KEY

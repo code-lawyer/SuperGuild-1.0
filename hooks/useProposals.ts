@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient } from 'wagmi';
 import { keccak256, toBytes, parseUnits } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
@@ -226,6 +226,7 @@ export function useCreateProposal() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
 
     return useMutation({
         mutationFn: async (params: { title: string; body: string; attachmentUrls: string[] }) => {
@@ -253,7 +254,7 @@ export function useCreateProposal() {
 
             // 2. Approve USDC
             toast({ title: '步骤 1/2: 授权 USDC...' });
-            const approveTx = await writeContractAsync({
+            await writeContractAsync({
                 address: MOCK_USDC.address,
                 abi: erc20ApproveAbi,
                 functionName: 'approve',
@@ -271,10 +272,23 @@ export function useCreateProposal() {
                 chainId: SPARK_GOVERNOR.chainId,
             });
 
-            // 4. 更新 Supabase 记录
+            // 4. 等待交易确认，读取链上 proposalCount 作为 onchainId
+            if (publicClient) {
+                await publicClient.waitForTransactionReceipt({ hash: createTx });
+            }
+            const onchainId = publicClient ? await publicClient.readContract({
+                address: SPARK_GOVERNOR.address,
+                abi: sparkGovernorAbi,
+                functionName: 'proposalCount',
+            }) : null;
+
+            // 5. 更新 Supabase 记录（回写 onchain_id + tx_hash）
             await supabase
                 .from('proposals')
-                .update({ create_tx_hash: createTx })
+                .update({
+                    create_tx_hash: createTx,
+                    onchain_id: onchainId ? Number(onchainId) : null,
+                })
                 .eq('id', proposalId);
 
             return { proposalId, txHash: createTx };
@@ -294,11 +308,24 @@ export function useCosign() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
             if (!address) throw new Error('请先连接钱包');
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
+
+            // 读取联署人的 VCP 余额
+            let vcpAmount = 0;
+            if (publicClient) {
+                const balance = await publicClient.readContract({
+                    address: VCP_TOKEN.address,
+                    abi: vcpAbi,
+                    functionName: 'balanceOf',
+                    args: [address],
+                });
+                vcpAmount = Number(balance);
+            }
 
             const tx = await writeContractAsync({
                 address: SPARK_GOVERNOR.address,
@@ -308,10 +335,11 @@ export function useCosign() {
                 chainId: SPARK_GOVERNOR.chainId,
             });
 
-            // 记录到 Supabase
+            // 记录到 Supabase（含 vcp_amount）
             await supabase.from('proposal_cosigners').insert({
                 proposal_id: params.proposalDbId,
                 cosigner_address: address.toLowerCase(),
+                vcp_amount: vcpAmount,
                 tx_hash: tx,
             });
 
@@ -328,17 +356,40 @@ export function useCosign() {
     });
 }
 
-/** 链上投票 */
+/** 链上投票（自动检查 delegate） */
 export function useCastVote() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number; support: boolean }) => {
             if (!address) throw new Error('请先连接钱包');
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
 
+            // 检查投票权重，如果为 0 则自动 delegate 给自己
+            if (publicClient) {
+                const votes = await publicClient.readContract({
+                    address: VCP_TOKEN.address,
+                    abi: vcpAbi,
+                    functionName: 'getVotes',
+                    args: [address],
+                });
+                if (Number(votes) === 0) {
+                    toast({ title: '⚡ 首次投票需激活投票权...' });
+                    const delegateTx = await writeContractAsync({
+                        address: VCP_TOKEN.address,
+                        abi: vcpAbi,
+                        functionName: 'delegate',
+                        args: [address],
+                        chainId: VCP_TOKEN.chainId,
+                    });
+                    await publicClient.waitForTransactionReceipt({ hash: delegateTx });
+                }
+            }
+
+            toast({ title: '🗳️ 提交投票中...' });
             const tx = await writeContractAsync({
                 address: SPARK_GOVERNOR.address,
                 abi: sparkGovernorAbi,
@@ -368,10 +419,11 @@ export function useCastVote() {
     });
 }
 
-/** 结算提案 */
+/** 结算提案（同步 Supabase 状态） */
 export function useFinalizeProposal() {
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
@@ -384,6 +436,23 @@ export function useFinalizeProposal() {
                 args: [BigInt(params.onchainId)],
                 chainId: SPARK_GOVERNOR.chainId,
             });
+
+            // 等待交易确认后，读取链上结果并同步到 Supabase
+            if (publicClient) {
+                await publicClient.waitForTransactionReceipt({ hash: tx });
+                const onchainProposal = await publicClient.readContract({
+                    address: SPARK_GOVERNOR.address,
+                    abi: sparkGovernorAbi,
+                    functionName: 'getProposal',
+                    args: [BigInt(params.onchainId)],
+                }) as any;
+
+                const finalStatus = Number(onchainProposal.status) === 2 ? 'PASSED' : 'REJECTED';
+                await supabase
+                    .from('proposals')
+                    .update({ status: finalStatus })
+                    .eq('id', params.proposalDbId);
+            }
 
             return { txHash: tx };
         },

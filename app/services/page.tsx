@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n';
 import { useServices, type Service } from '@/hooks/useServices';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { RequireWallet } from '@/components/ui/RequireWallet';
+import { WalletGatePage } from '@/components/ui/WalletGatePage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Channel metadata with Protocol Aesthetic styling
@@ -48,123 +49,125 @@ export default function ServicesPage() {
     const channelServices = (channelId: number) => allServices.filter(s => s.channel === channelId);
 
     return (
-        <div className="relative min-h-screen selection:bg-primary/20">
-            {/* Terminal Grid Background */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:60px_60px]" />
-            </div>
+        <WalletGatePage>
+            <div className="relative min-h-screen selection:bg-primary/20">
+                {/* Terminal Grid Background */}
+                <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:60px_60px]" />
+                </div>
 
-            <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col relative z-10 w-full min-h-screen">
-                <PageHeader
-                    title={t.services.heroTitle}
-                    description={t.services.heroDescription}
-                />
+                <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col relative z-10 w-full min-h-screen">
+                    <PageHeader
+                        title={t.services.heroTitle}
+                        description={t.services.heroDescription}
+                    />
 
-                <section className="space-y-6 flex-grow pb-32">
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-32 text-slate-400 gap-4">
-                            <span className="material-symbols-outlined animate-spin shadow-glow !text-[40px] text-primary">progress_activity</span>
-                            <span className="text-xs font-semibold uppercase tracking-wider animate-pulse">Loading Services...</span>
-                        </div>
-                    ) : (
-                        channels.map((ch, index) => {
-                            const label = channelLabels[ch.id];
-                            const items = channelServices(ch.id);
-                            const isExpanded = expandedChannel === ch.id;
+                    <section className="space-y-6 flex-grow pb-32">
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center py-32 text-slate-400 gap-4">
+                                <span className="material-symbols-outlined animate-spin shadow-glow !text-[40px] text-primary">progress_activity</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider animate-pulse">Loading Services...</span>
+                            </div>
+                        ) : (
+                            channels.map((ch, index) => {
+                                const label = channelLabels[ch.id];
+                                const items = channelServices(ch.id);
+                                const isExpanded = expandedChannel === ch.id;
 
-                            return (
-                                <motion.div
-                                    key={ch.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className={`relative border transition-all duration-500 overflow-hidden bg-white/50 dark:bg-slate-900/30 ${isExpanded ? `shadow-[0_20px_50px_-20px_${ch.glowColor}] ${ch.borderColor}` : 'border-slate-200 dark:border-slate-800'
-                                        }`}
-                                    style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}
-                                >
-                                    {/* Channel Header */}
-                                    <button
-                                        onClick={() => setExpandedChannel(isExpanded ? null : ch.id)}
-                                        className="w-full flex flex-col md:flex-row md:items-center gap-6 p-8 text-left group"
+                                return (
+                                    <motion.div
+                                        key={ch.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className={`relative border transition-all duration-500 overflow-hidden bg-white/50 dark:bg-slate-900/30 ${isExpanded ? `shadow-[0_20px_50px_-20px_${ch.glowColor}] ${ch.borderColor}` : 'border-slate-200 dark:border-slate-800'
+                                            }`}
+                                        style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}
                                     >
-                                        <div className={`w-16 h-16 rounded-sm border ${ch.borderColor} bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center shrink-0 relative overflow-hidden group-hover:scale-105 transition-transform`}>
-                                            <div className="absolute inset-x-0 top-0 h-[1px] bg-white opacity-20" />
-                                            <span className={`material-symbols-outlined !text-[32px] bg-gradient-to-br ${ch.gradient} bg-clip-text text-transparent drop-shadow-sm`}>
-                                                {ch.icon}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono">
-                                                    {label?.title}
-                                                </h3>
-                                                <div className="h-[2px] w-8 bg-primary/20" />
-                                            </div>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">
-                                                {label?.desc}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-6 shrink-0 mt-4 md:mt-0">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Available Services</span>
-                                                <span className="text-lg font-bold text-primary">
-                                                    {items.length.toString().padStart(2, '0')}
+                                        {/* Channel Header */}
+                                        <button
+                                            onClick={() => setExpandedChannel(isExpanded ? null : ch.id)}
+                                            className="w-full flex flex-col md:flex-row md:items-center gap-6 p-8 text-left group"
+                                        >
+                                            <div className={`w-16 h-16 rounded-sm border ${ch.borderColor} bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center shrink-0 relative overflow-hidden group-hover:scale-105 transition-transform`}>
+                                                <div className="absolute inset-x-0 top-0 h-[1px] bg-white opacity-20" />
+                                                <span className={`material-symbols-outlined !text-[32px] bg-gradient-to-br ${ch.gradient} bg-clip-text text-transparent drop-shadow-sm`}>
+                                                    {ch.icon}
                                                 </span>
                                             </div>
-                                            <div className={`w-10 h-10 border flex items-center justify-center transition-all ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
-                                                <span className="material-symbols-outlined !text-[24px]">expand_more</span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono">
+                                                        {label?.title}
+                                                    </h3>
+                                                    <div className="h-[2px] w-8 bg-primary/20" />
+                                                </div>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">
+                                                    {label?.desc}
+                                                </p>
                                             </div>
-                                        </div>
-                                    </button>
+                                            <div className="flex items-center gap-6 shrink-0 mt-4 md:mt-0">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Available Services</span>
+                                                    <span className="text-lg font-bold text-primary">
+                                                        {items.length.toString().padStart(2, '0')}
+                                                    </span>
+                                                </div>
+                                                <div className={`w-10 h-10 border flex items-center justify-center transition-all ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
+                                                    <span className="material-symbols-outlined !text-[24px]">expand_more</span>
+                                                </div>
+                                            </div>
+                                        </button>
 
-                                    {/* Expanded Service List */}
-                                    <AnimatePresence>
-                                        {isExpanded && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="border-t border-slate-100 dark:border-slate-800/50 overflow-hidden"
-                                            >
-                                                {items.length === 0 ? (
-                                                    <div className="p-12 text-center text-slate-400 font-mono text-xs uppercase tracking-widest bg-slate-50/50 dark:bg-black/20">
-                                                        {`[ ${t.services.noServices || 'NO_SERVICES_INDEXED'} ]`}
-                                                    </div>
-                                                ) : (
-                                                    <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                                                        {items.map(s => (
-                                                            <ServiceItem
-                                                                key={s.id}
-                                                                service={s}
-                                                                isUnlocked={unlockedIds?.includes(s.id)}
-                                                                isExpanded={expandedService === s.id}
-                                                                onToggleExpand={() => setExpandedService(expandedService === s.id ? null : s.id)}
-                                                                onUnlock={unlockService}
-                                                                t={t}
-                                                                channelColor={ch.gradient}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.div>
-                            );
-                        })
-                    )}
-                </section>
+                                        {/* Expanded Service List */}
+                                        <AnimatePresence>
+                                            {isExpanded && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="border-t border-slate-100 dark:border-slate-800/50 overflow-hidden"
+                                                >
+                                                    {items.length === 0 ? (
+                                                        <div className="p-12 text-center text-slate-400 font-mono text-xs uppercase tracking-widest bg-slate-50/50 dark:bg-black/20">
+                                                            {`[ ${t.services.noServices || 'NO_SERVICES_INDEXED'} ]`}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                                            {items.map(s => (
+                                                                <ServiceItem
+                                                                    key={s.id}
+                                                                    service={s}
+                                                                    isUnlocked={unlockedIds?.includes(s.id)}
+                                                                    isExpanded={expandedService === s.id}
+                                                                    onToggleExpand={() => setExpandedService(expandedService === s.id ? null : s.id)}
+                                                                    onUnlock={unlockService}
+                                                                    t={t}
+                                                                    channelColor={ch.gradient}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })
+                        )}
+                    </section>
 
-                {/* Protocol Footer info */}
-                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Status: Online (Base Mainnet)</span>
+                    {/* Protocol Footer info */}
+                    <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>Status: Online (Base Mainnet)</span>
+                        </div>
+                        <span>{`System ID: ${Math.random().toString(16).slice(2, 10).toUpperCase()}`}</span>
                     </div>
-                    <span>{`System ID: ${Math.random().toString(16).slice(2, 10).toUpperCase()}`}</span>
                 </div>
             </div>
-        </div>
+        </WalletGatePage>
     );
 }
 

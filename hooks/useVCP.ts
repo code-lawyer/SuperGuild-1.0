@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { supabase } from '@/utils/supabase/client'
-import contractAddress from '@/constants/contract-address'
+import { VCP_TOKEN } from '@/constants/nft-config'
 import vcpAbi from '@/constants/VCPTokenV2.json'
-import { arbitrumSepolia } from 'wagmi/chains'
 
-const VCP_ADDRESS = contractAddress.VCPToken['Arbitrum Sepolia'] as `0x${string}`
+const VCP_ADDRESS = VCP_TOKEN.address
 
 /**
  * useVCP — Hybrid VCP hook (Chain-first, Supabase-fallback)
@@ -23,7 +22,7 @@ export function useVCP() {
         abi: vcpAbi,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
-        chainId: arbitrumSepolia.id, // 强制跨链查询
+        chainId: VCP_TOKEN.chainId, // 强制跨链查询
         query: { enabled: !!address },
     })
 
@@ -33,7 +32,7 @@ export function useVCP() {
         abi: vcpAbi,
         functionName: 'getVotes',
         args: address ? [address] : undefined,
-        chainId: arbitrumSepolia.id,
+        chainId: VCP_TOKEN.chainId,
         query: { enabled: !!address },
     })
 
@@ -42,7 +41,7 @@ export function useVCP() {
         address: VCP_ADDRESS,
         abi: vcpAbi,
         functionName: 'locked',
-        chainId: arbitrumSepolia.id,
+        chainId: VCP_TOKEN.chainId,
         query: { enabled: true },
     })
 

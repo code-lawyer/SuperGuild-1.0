@@ -8,15 +8,20 @@ import { useState, useEffect } from 'react';
 import { useI18n, useT } from '@/lib/i18n';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
 
+const adminWalletsEnv = process.env.NEXT_PUBLIC_ADMIN_WALLETS || '';
+const ADMIN_WALLETS = adminWalletsEnv.split(',').map(addr => addr.trim().toLowerCase());
+
 export default function Header() {
     const pathname = usePathname();
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
     const { locale, setLocale } = useI18n();
     const t = useT();
 
     useEffect(() => setMounted(true), []);
+
+    const isAdmin = mounted && isConnected && address && ADMIN_WALLETS.includes(address.toLowerCase());
 
     const navItems = [
         {
@@ -162,6 +167,15 @@ export default function Header() {
                                     );
                                 }}
                             </ConnectButton.Custom>
+                        )}
+
+                        {/* Admin Link */}
+                        {isAdmin && (
+                            <Link href="/admin" className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]" title="Admin Panel">
+                                <div className="rounded-full w-full h-full bg-white dark:bg-bg-dark flex items-center justify-center">
+                                    <span className="material-symbols-outlined !text-[18px] text-amber-500">admin_panel_settings</span>
+                                </div>
+                            </Link>
                         )}
 
                         {/* Profile Avatar */}

@@ -127,7 +127,7 @@ export default function CreateCollaborationPage() {
                                 <button
                                     key={d.key}
                                     onClick={() => setDifficulty(d.key)}
-                                    className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
+                                    className={`p-4 rounded-2xl border transition-colors transition-transform duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
                                         ? `ring-2 ring-primary border-primary ${d.bg}`
                                         : 'bg-white border-[#E8EAF0] hover:border-primary/40'
                                         }`}
@@ -148,7 +148,7 @@ export default function CreateCollaborationPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="例如：品牌视觉设计 / DApp 前端开发…"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                         />
                     </div>
 
@@ -162,7 +162,7 @@ export default function CreateCollaborationPage() {
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="详细描述任务背景、目标、范围、技能要求等…"
                             rows={5}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
                     </div>
 
@@ -186,14 +186,14 @@ export default function CreateCollaborationPage() {
                                         value={ref.label}
                                         onChange={(e) => updateRef(i, 'label', e.target.value)}
                                         placeholder="标题（选填）"
-                                        className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
+                                        className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-colors transition-transform"
                                     />
                                     <input
                                         type="url"
                                         value={ref.url}
                                         onChange={(e) => updateRef(i, 'url', e.target.value)}
                                         placeholder="https://..."
-                                        className="flex-1 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-all"
+                                        className="flex-1 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-colors transition-transform"
                                     />
                                     <button onClick={() => removeRef(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors">
                                         <span className="material-symbols-outlined !text-[18px]">close</span>
@@ -212,7 +212,7 @@ export default function CreateCollaborationPage() {
                             type="date"
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                         />
                     </div>
 
@@ -226,7 +226,7 @@ export default function CreateCollaborationPage() {
                                 <button
                                     key={p.value}
                                     onClick={() => { setDeliveryStandard(p.value); setCustomDelivery(''); }}
-                                    className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === p.value
+                                    className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-colors transition-transform duration-200 ${deliveryStandard === p.value
                                         ? 'bg-primary text-white border-primary shadow-sm'
                                         : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
                                         }`}
@@ -236,7 +236,7 @@ export default function CreateCollaborationPage() {
                             ))}
                             <button
                                 onClick={() => setDeliveryStandard('custom')}
-                                className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200 ${deliveryStandard === 'custom'
+                                className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-colors transition-transform duration-200 ${deliveryStandard === 'custom'
                                     ? 'bg-primary text-white border-primary shadow-sm'
                                     : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
                                     }`}
@@ -250,7 +250,7 @@ export default function CreateCollaborationPage() {
                                 value={customDelivery}
                                 onChange={(e) => setCustomDelivery(e.target.value)}
                                 placeholder="请描述你的交付标准…"
-                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm"
+                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                             />
                         )}
                     </div>
@@ -267,7 +267,7 @@ export default function CreateCollaborationPage() {
                                 onChange={(e) => setTotalBudget(e.target.value)}
                                 placeholder="500"
                                 min="0"
-                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 tabular-nums shadow-sm"
+                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 tabular-nums shadow-sm"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                 <span className="text-[14px] font-black text-slate-400">USDC</span>
@@ -289,7 +289,7 @@ export default function CreateCollaborationPage() {
                             onChange={(e) => setSecretContent(e.target.value)}
                             placeholder="在此输入只有承接人可见的私密信息、联系方式、特定 API KEY 或详细附件说明..."
                             rows={4}
-                            className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all duration-200 shadow-sm resize-none"
+                            className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
                     </div>
 
@@ -312,7 +312,7 @@ export default function CreateCollaborationPage() {
                                             value={ms.title}
                                             onChange={(e) => updateMilestone(i, 'title', e.target.value)}
                                             placeholder="里程碑标题…"
-                                            className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-all duration-200"
+                                            className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors transition-transform duration-200"
                                         />
                                         <div className="flex items-center gap-2">
                                             <input

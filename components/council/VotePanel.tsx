@@ -90,7 +90,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                 <div>
                     <div className="flex items-center gap-3 mb-3">
                         <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-md font-mono">
-                            #{proposal.onchain_id ? `OS-${String(proposal.onchain_id).padStart(3, '0')}` : '...'}
+                            #{proposal.onchain_id ? `OS-${String(proposal.onchain_id).padStart(3, '0')}` : '…'}
                         </span>
                         {isActive && !votingEnded && (
                             <span className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-[10px] font-bold uppercase tracking-wider rounded-md animate-pulse">
@@ -121,7 +121,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                 {isActive && !votingEnded && (
                     <div className="text-right">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Time Remaining</p>
-                        <div className="text-xl font-mono font-bold text-purple-500">
+                        <div className="text-xl font-mono font-bold text-purple-500 tabular-nums">
                             {timeLeft}
                         </div>
                     </div>
@@ -136,11 +136,11 @@ export function VotePanel({ proposal }: VotePanelProps) {
                         <span className="material-symbols-outlined !text-[80px] text-emerald-500">thumb_up</span>
                     </div>
                     <h4 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">For</h4>
-                    <div className="text-3xl font-black text-emerald-600 dark:text-emerald-500 mb-2">
+                    <div className="text-3xl font-black text-emerald-600 dark:text-emerald-500 mb-2 tabular-nums">
                         {votesFor.toLocaleString()} VCP
                     </div>
                     <div className="w-full bg-emerald-200 dark:bg-emerald-900/50 h-1.5 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${forPercent}%` }} />
+                        <div className="h-full bg-emerald-500 rounded-full transition-colors transition-transform duration-500" style={{ width: `${forPercent}%` }} />
                     </div>
                 </div>
 
@@ -150,11 +150,11 @@ export function VotePanel({ proposal }: VotePanelProps) {
                         <span className="material-symbols-outlined !text-[80px] text-rose-500">thumb_down</span>
                     </div>
                     <h4 className="text-sm font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider mb-2">Against</h4>
-                    <div className="text-3xl font-black text-rose-600 dark:text-rose-500 mb-2">
+                    <div className="text-3xl font-black text-rose-600 dark:text-rose-500 mb-2 tabular-nums">
                         {votesAgainst.toLocaleString()} VCP
                     </div>
                     <div className="w-full bg-rose-200 dark:bg-rose-900/50 h-1.5 rounded-full overflow-hidden">
-                        <div className="h-full bg-rose-500 rounded-full transition-all duration-500" style={{ width: `${againstPercent}%` }} />
+                        <div className="h-full bg-rose-500 rounded-full transition-colors transition-transform duration-500" style={{ width: `${againstPercent}%` }} />
                     </div>
                 </div>
             </div>
@@ -194,7 +194,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                             disabled={finalizeMutation.isPending}
                             className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
                         >
-                            {finalizeMutation.isPending ? '结算中...' : '结算提案'}
+                            {finalizeMutation.isPending ? '结算中…' : '结算提案'}
                         </button>
                     )}
                     {isActive && !votingEnded && !hasVoted && (
@@ -203,7 +203,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                                 <button
                                     onClick={handleClick}
                                     disabled={voteMutation.isPending}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-rose-600 border border-rose-300 dark:border-rose-800 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all disabled:opacity-50"
+                                    className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-rose-600 border border-rose-300 dark:border-rose-800 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors transition-transform disabled:opacity-50"
                                 >
                                     Vote Against
                                 </button>

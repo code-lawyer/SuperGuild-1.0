@@ -85,7 +85,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                         onClick={startEdit}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary transition-all"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary transition-colors transition-transform"
                     >
                         {t.profile.editProfile}
                         <span className="material-symbols-outlined !text-[16px]">edit</span>

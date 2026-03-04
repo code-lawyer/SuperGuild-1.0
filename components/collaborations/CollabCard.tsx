@@ -34,7 +34,7 @@ export default function CollabCard({ collab }: CollabCardProps) {
     return (
         <Link
             href={`/collaborations/${collab.id}`}
-            className="group bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-antigravity-hover transition-all duration-300 hover:-translate-y-1 block"
+            className="group bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-antigravity-hover transition-colors transition-transform duration-300 hover:-translate-y-1 block"
         >
             <div className="flex items-start justify-between mb-4">
                 <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 pr-2">

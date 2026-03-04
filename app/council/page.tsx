@@ -58,7 +58,7 @@ export default function CouncilPage() {
                         >
                             <Link
                                 href={m.href}
-                                className="group relative flex flex-col p-8 bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-all duration-500 overflow-hidden h-full"
+                                className="group relative flex flex-col p-8 bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors transition-transform duration-500 overflow-hidden h-full"
                                 style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}
                             >
                                 {/* Decorative elements */}
@@ -68,7 +68,7 @@ export default function CouncilPage() {
                                 </div>
 
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6 shadow-sm group-hover:border-primary/30 transition-all">
+                                    <div className="w-12 h-12 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6 shadow-sm group-hover:border-primary/30 transition-colors transition-transform">
                                         <span className={`material-symbols-outlined !text-[28px] bg-gradient-to-br ${m.color} bg-clip-text text-transparent`}>
                                             {m.icon}
                                         </span>
@@ -81,7 +81,7 @@ export default function CouncilPage() {
                                     </p>
                                 </div>
 
-                                <div className="mt-auto pt-8 flex items-center gap-2 text-[11px] font-bold text-primary uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                                <div className="mt-auto pt-8 flex items-center gap-2 text-[11px] font-bold text-primary uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-colors transition-transform translate-y-2 group-hover:translate-y-0">
                                     <span>{t.council.access}</span>
                                     <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
                                 </div>

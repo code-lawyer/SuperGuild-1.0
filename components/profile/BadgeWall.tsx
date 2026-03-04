@@ -66,7 +66,7 @@ export default function BadgeWall() {
                         <div
                             key={badge.type}
                             onClick={() => handleOpenShowcase(badge.type, badge.name)}
-                            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0f1115] border border-slate-100 dark:border-[#1f2229] p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-500 ease-out hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl"
+                            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0f1115] border border-slate-100 dark:border-[#1f2229] p-6 flex flex-col items-center justify-center cursor-pointer transition-colors transition-transform duration-500 ease-out hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl"
                         >
                             {/* 标准大小的外框包裹 3D 图标 */}
                             <div className="w-32 h-32 mb-6 relative rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-black/20 overflow-hidden flex items-center justify-center">

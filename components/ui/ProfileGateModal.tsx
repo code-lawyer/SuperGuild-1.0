@@ -85,7 +85,7 @@ export default function ProfileGateModal() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="你的公开昵称"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
@@ -99,7 +99,7 @@ export default function ProfileGateModal() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="your@email.com"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
@@ -113,7 +113,7 @@ export default function ProfileGateModal() {
                             value={telegram}
                             onChange={(e) => setTelegram(e.target.value)}
                             placeholder="@username"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
@@ -127,7 +127,7 @@ export default function ProfileGateModal() {
                             onChange={(e) => setBio(e.target.value)}
                             placeholder="简单介绍下你自己…"
                             rows={2}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all resize-none"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
                         />
                     </div>
 
@@ -141,7 +141,7 @@ export default function ProfileGateModal() {
                             value={portfolio}
                             onChange={(e) => setPortfolio(e.target.value)}
                             placeholder="https://your-portfolio.com"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all"
+                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VotePanel } from '@/components/council/VotePanel';
+import { VotePanelSkeleton } from '@/components/council/VotePanelSkeleton';
 import { useProposalsList, ProposalStatus } from '@/hooks/useProposals';
 
 export default function ObsidianStelePage() {
@@ -33,7 +34,7 @@ export default function ObsidianStelePage() {
                     <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/50">
                         <button
                             onClick={() => setActiveTab('active')}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'active'
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-colors transition-transform ${activeTab === 'active'
                                 ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
                                 : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
@@ -47,7 +48,7 @@ export default function ObsidianStelePage() {
                         </button>
                         <button
                             onClick={() => setActiveTab('history')}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history'
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-colors transition-transform ${activeTab === 'history'
                                 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
@@ -68,7 +69,7 @@ export default function ObsidianStelePage() {
                                 className="flex flex-col gap-6"
                             >
                                 {isActiveLoading ? (
-                                    <div className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
+                                    <VotePanelSkeleton />
                                 ) : activeProposals && activeProposals.length > 0 ? (
                                     activeProposals.map(proposal => (
                                         <VotePanel key={proposal.id} proposal={proposal} />
@@ -104,7 +105,7 @@ export default function ObsidianStelePage() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.05 }}
-                                                className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/40 flex items-center justify-between hover:opacity-100 transition-all cursor-default"
+                                                className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/40 flex items-center justify-between hover:opacity-100 transition-colors transition-transform cursor-default"
                                                 style={{ opacity: opacity / 100 }}
                                             >
                                                 <div className="flex items-center gap-6">
@@ -148,7 +149,7 @@ export default function ObsidianStelePage() {
                                                             rel="noopener noreferrer"
                                                             className="block mt-2 text-[10px] font-mono text-slate-400 hover:text-purple-500 transition-colors"
                                                         >
-                                                            {proposal.create_tx_hash.slice(0, 10)}...
+                                                            {proposal.create_tx_hash.slice(0, 10)}&hellip;
                                                         </a>
                                                     )}
                                                 </div>

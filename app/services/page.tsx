@@ -80,7 +80,7 @@ export default function ServicesPage() {
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.1 }}
-                                        className={`relative border transition-all duration-500 overflow-hidden bg-white/50 dark:bg-slate-900/30 ${isExpanded ? `shadow-[0_20px_50px_-20px_${ch.glowColor}] ${ch.borderColor}` : 'border-slate-200 dark:border-slate-800'
+                                        className={`relative border transition-colors transition-transform duration-500 overflow-hidden bg-white/50 dark:bg-slate-900/30 ${isExpanded ? `shadow-[0_20px_50px_-20px_${ch.glowColor}] ${ch.borderColor}` : 'border-slate-200 dark:border-slate-800'
                                             }`}
                                         style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}
                                     >
@@ -113,7 +113,7 @@ export default function ServicesPage() {
                                                         {items.length.toString().padStart(2, '0')}
                                                     </span>
                                                 </div>
-                                                <div className={`w-10 h-10 border flex items-center justify-center transition-all ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
+                                                <div className={`w-10 h-10 border flex items-center justify-center transition-colors transition-transform ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
                                                     <span className="material-symbols-outlined !text-[24px]">expand_more</span>
                                                 </div>
                                             </div>
@@ -240,7 +240,7 @@ function ServiceItem({
 
                     <div className="flex items-center gap-3">
                         {isUnlocked ? (
-                            <button className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest transition-all hover:bg-primary dark:hover:bg-primary dark:hover:text-white" style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)" }}>
+                            <button className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest transition-colors transition-transform hover:bg-primary dark:hover:bg-primary dark:hover:text-white" style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)" }}>
                                 {t.common.manage}
                             </button>
                         ) : (
@@ -248,7 +248,7 @@ function ServiceItem({
                                 {(handleClick) => (
                                     <button
                                         onClick={handleClick}
-                                        className="px-6 py-2 bg-primary text-white text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--primary),0.3)] hover:shadow-[0_0_25px_rgba(var(--primary),0.5)] transition-all"
+                                        className="px-6 py-2 bg-primary text-white text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--primary),0.3)] hover:shadow-[0_0_25px_rgba(var(--primary),0.5)] transition-colors transition-transform"
                                         style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)" }}
                                     >
                                         {t.common.activate}
@@ -260,7 +260,7 @@ function ServiceItem({
                         {hasChildren && (
                             <button
                                 onClick={onToggleExpand}
-                                className={`w-8 h-8 flex items-center justify-center transition-all ${isExpanded ? 'text-primary' : 'text-slate-400'}`}
+                                className={`w-8 h-8 flex items-center justify-center transition-colors transition-transform ${isExpanded ? 'text-primary' : 'text-slate-400'}`}
                             >
                                 <span className={`material-symbols-outlined !text-[22px] transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
                                     expand_more

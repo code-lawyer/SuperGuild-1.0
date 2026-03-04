@@ -99,7 +99,7 @@ export default function ImageUpload({ value, onChange, label, className }: Image
     <div className={className}>
       <AnimatePresence>
         <motion.div
-          className={`relative aspect-square rounded-2xl overflow-hidden transition-all duration-300
+          className={`relative aspect-square rounded-2xl overflow-hidden transition-colors transition-transform duration-300
             ${isDragging ? 'border-purple-500 bg-purple-500/10' : 'border-purple-500/30 bg-black/20'}
             border-2 border-dashed backdrop-blur-sm
             hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20`}

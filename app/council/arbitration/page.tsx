@@ -172,7 +172,7 @@ export default function HandOfJusticePage() {
                                     Draft Arbitration Report
                                 </label>
                                 <textarea
-                                    className="w-full h-32 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                                    className="w-full h-32 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-colors transition-transform placeholder:text-slate-400"
                                     placeholder="Detail your findings, evidence analysis, and proposed resolution (e.g., 50/50 split, 100% refund, or 100% pay)..."
                                 />
                             </div>

@@ -28,7 +28,7 @@ ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 const toastVariants = cva(
   cn(
     "group pointer-events-auto relative flex w-full items-center justify-between space-x-4",
-    "overflow-hidden rounded-xl border p-6 pr-8 shadow-lg transition-all",
+    "overflow-hidden rounded-xl border p-6 pr-8 shadow-lg transition-colors transition-transform",
     "backdrop-blur-md",
     // Animation
     "data-[swipe=cancel]:translate-x-0",

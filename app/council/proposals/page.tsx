@@ -8,6 +8,7 @@ import { MagneticButton } from '@/components/ui/MagneticButton';
 import { RequireWallet } from '@/components/ui/RequireWallet';
 import { CreateProposalModal } from '@/components/council/CreateProposalModal';
 import { ProposalCard } from '@/components/council/ProposalCard';
+import { ProposalSkeleton } from '@/components/ui/ProposalSkeleton';
 import { useProposalsList, useGovernorStats } from '@/hooks/useProposals';
 import { useVCP } from '@/hooks/useVCP';
 
@@ -32,7 +33,7 @@ export default function SparkPlazaPage() {
                             {(handleClick) => (
                                 <MagneticButton
                                     onClick={handleClick}
-                                    className="px-6 py-2.5 bg-orange-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 flex items-center gap-2"
+                                    className="px-6 py-2.5 bg-orange-500 text-white font-bold text-sm rounded-xl transition-colors transition-transform shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 flex items-center gap-2"
                                 >
                                     <span className="material-symbols-outlined !text-[18px]">bolt</span>
                                     {t.council.initiateProposal}
@@ -59,7 +60,7 @@ export default function SparkPlazaPage() {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                                <p className="text-lg font-black text-slate-900 dark:text-white font-mono">{stat.value}</p>
+                                <p className="text-lg font-black text-slate-900 dark:text-white font-mono tabular-nums tracking-tight">{stat.value}</p>
                             </div>
                         </div>
                     ))}
@@ -70,7 +71,7 @@ export default function SparkPlazaPage() {
                     {isLoading ? (
                         <div className="flex flex-col gap-6">
                             {[1, 2].map(i => (
-                                <div key={i} className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
+                                <ProposalSkeleton key={i} />
                             ))}
                         </div>
                     ) : proposals && proposals.length > 0 ? (

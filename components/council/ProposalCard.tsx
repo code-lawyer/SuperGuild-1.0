@@ -41,8 +41,8 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
 
     // 状态颜色
     const statusColor = isActive || thresholdMet
-        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-        : 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20';
+        ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 dark:shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+        : 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20 dark:shadow-[0_0_15px_rgba(249,115,22,0.1)]';
 
     const statusLabel = thresholdMet && isSignaling
         ? 'Threshold Met'
@@ -59,7 +59,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                         <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-md font-mono">
-                            #{proposal.onchain_id ? `SP-${String(proposal.onchain_id).padStart(3, '0')}` : '...'}
+                            #{proposal.onchain_id ? `SP-${String(proposal.onchain_id).padStart(3, '0')}` : '…'}
                         </span>
                         <span className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-wider rounded-md ${statusColor} ${thresholdMet ? 'animate-pulse' : ''}`}>
                             {statusLabel}
@@ -76,7 +76,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                 {/* Proposer info */}
                 <div className="shrink-0 flex items-center gap-2 text-xs text-slate-400">
                     <span className="material-symbols-outlined !text-[14px]">person</span>
-                    <span className="font-mono">{proposal.proposer_address.slice(0, 6)}...{proposal.proposer_address.slice(-4)}</span>
+                    <span className="font-mono">{proposal.proposer_address.slice(0, 6)}&hellip;{proposal.proposer_address.slice(-4)}</span>
                 </div>
             </div>
 
@@ -111,7 +111,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Signaling Progress</p>
                         )}
                         <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
+                            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tabular-nums tracking-tight">
                                 {totalVCPSignaled.toLocaleString()}
                             </span>
                             <span className="text-sm font-semibold text-slate-400">
@@ -149,9 +149,9 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                                 <button
                                     onClick={handleClick}
                                     disabled={hasCosigned || cosignMutation.isPending}
-                                    className="px-5 py-2 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-orange-600 border border-orange-500/30 hover:bg-orange-500 hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-900 disabled:hover:text-orange-600"
+                                    className="px-5 py-2 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-orange-600 border border-orange-500/30 hover:bg-orange-500 hover:text-white transition-colors transition-transform shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-900 disabled:hover:text-orange-600"
                                 >
-                                    {hasCosigned ? '已联署 ✓' : cosignMutation.isPending ? '签名中...' : '附议联署'}
+                                    {hasCosigned ? '已联署 ✓' : cosignMutation.isPending ? '签名中…' : '附议联署'}
                                 </button>
                             )}
                         </RequireWallet>

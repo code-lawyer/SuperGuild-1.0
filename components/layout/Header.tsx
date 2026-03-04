@@ -80,19 +80,19 @@ export default function Header() {
                             <div key={idx} className="relative group/nav">
                                 <Link
                                     href={item.href}
-                                    className={`flex items-center gap-1.5 py-5 text-sm font-bold transition-all ${pathname.startsWith(item.href) && item.href !== '/'
+                                    className={`flex items-center gap-1.5 py-5 text-sm font-bold transition-colors transition-transform ${pathname.startsWith(item.href) && item.href !== '/'
                                         ? 'text-primary'
                                         : 'text-slate-600 hover:text-primary dark:text-slate-400 dark:hover:text-primary'
                                         }`}
                                 >
                                     {item.label}
-                                    <span className="material-symbols-outlined !text-[18px] opacity-40 group-hover/nav:opacity-100 group-hover/nav:rotate-180 transition-all duration-300">
+                                    <span className="material-symbols-outlined !text-[18px] opacity-40 group-hover/nav:opacity-100 group-hover/nav:rotate-180 transition-colors transition-transform duration-300">
                                         arrow_drop_down
                                     </span>
                                 </Link>
 
                                 {/* Dropdown Menu */}
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-colors transition-transform duration-300 z-50">
                                     <div className="w-64 p-2 rounded-xl bg-white/95 dark:bg-[#0a0f18]/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_0_30px_rgba(var(--primary),0.15)] flex flex-col relative overflow-hidden">
                                         {/* Top glowing edge */}
                                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -101,10 +101,10 @@ export default function Header() {
                                             <Link
                                                 key={sIdx}
                                                 href={sub.href}
-                                                className="px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-all flex items-center gap-2 group/sub relative"
+                                                className="px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors transition-transform flex items-center gap-2 group/sub relative"
                                             >
                                                 <span className="truncate">{sub.label}</span>
-                                                <span className="material-symbols-outlined !text-[18px] ml-auto opacity-0 -translate-x-2 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all text-primary">
+                                                <span className="material-symbols-outlined !text-[18px] ml-auto opacity-0 -translate-x-2 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-colors transition-transform text-primary">
                                                     chevron_right
                                                 </span>
                                             </Link>
@@ -120,8 +120,9 @@ export default function Header() {
                         {/* Language Toggle */}
                         <button
                             onClick={() => setLocale(locale === 'en' ? 'zh' : 'en')}
-                            className="flex items-center justify-center w-9 h-9 rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-all text-xs font-bold"
+                            className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-colors transition-transform text-xs font-bold"
                             title="Switch language"
+                            aria-label="Toggle language between English and Chinese"
                         >
                             {locale === 'en' ? '中' : 'EN'}
                         </button>
@@ -130,9 +131,11 @@ export default function Header() {
                         {mounted && isConnected && (
                             <button
                                 onClick={() => setNotifOpen(true)}
-                                className="flex items-center justify-center w-9 h-9 rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-all"
+                                className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-colors transition-transform"
+                                aria-label="Open notifications"
+                                title="Notifications"
                             >
-                                <span className="material-symbols-outlined !text-[20px]">notifications</span>
+                                <span className="material-symbols-outlined !text-[20px] pointer-events-none">notifications</span>
                             </button>
                         )}
 
@@ -171,18 +174,18 @@ export default function Header() {
 
                         {/* Admin Link */}
                         {isAdmin && (
-                            <Link href="/admin" className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]" title="Admin Panel">
+                            <Link href="/admin" className="min-w-[44px] min-h-[44px] rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]" title="Admin Panel" aria-label="Admin Panel">
                                 <div className="rounded-full w-full h-full bg-white dark:bg-bg-dark flex items-center justify-center">
-                                    <span className="material-symbols-outlined !text-[18px] text-amber-500">admin_panel_settings</span>
+                                    <span className="material-symbols-outlined !text-[18px] text-amber-500 pointer-events-none">admin_panel_settings</span>
                                 </div>
                             </Link>
                         )}
 
                         {/* Profile Avatar */}
                         {mounted && isConnected && (
-                            <Link href="/profile" className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-400 p-[2px]">
+                            <Link href="/profile" className="min-w-[44px] min-h-[44px] rounded-full bg-gradient-to-tr from-primary to-purple-400 p-[2px]" title="My Profile" aria-label="My Profile">
                                 <div className="rounded-full w-full h-full bg-white dark:bg-bg-dark flex items-center justify-center">
-                                    <span className="material-symbols-outlined !text-[18px] text-primary">person</span>
+                                    <span className="material-symbols-outlined !text-[18px] text-primary pointer-events-none">person</span>
                                 </div>
                             </Link>
                         )}

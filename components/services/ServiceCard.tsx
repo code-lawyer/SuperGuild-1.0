@@ -20,7 +20,7 @@ export default function ServiceCard({ service, isUnlocked, onUnlock, isUnlocking
     };
 
     return (
-        <div className="group relative bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-antigravity-hover transition-all duration-300 hover:-translate-y-1">
+        <div className="group relative bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-antigravity-hover transition-colors transition-transform duration-300 hover:-translate-y-1">
             {/* Status dot */}
             <div className={`absolute top-8 right-8 w-2 h-2 rounded-full ${isUnlocked ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-200 dark:bg-slate-600 group-hover:bg-emerald-400'
                 } transition-colors`} />

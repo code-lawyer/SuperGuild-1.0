@@ -67,7 +67,7 @@ export default function CollaborationsPage() {
                                 {(handleClick) => (
                                     <MagneticButton
                                         onClick={handleClick}
-                                        className="px-6 py-2.5 bg-primary text-white font-bold text-sm rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
+                                        className="px-6 py-2.5 bg-primary text-white font-bold text-sm rounded-xl transition-colors transition-transform flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
                                     >
                                         <span className="material-symbols-outlined !text-[18px]">add</span>
                                         {t.quests.newQuest}
@@ -83,7 +83,7 @@ export default function CollaborationsPage() {
                             <button
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key)}
-                                className={`px-5 py-2 text-xs font-bold transition-all rounded-lg ${activeTab === tab.key
+                                className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeTab === tab.key
                                     ? 'bg-primary text-white shadow-md'
                                     : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
                                     }`}
@@ -121,7 +121,7 @@ export default function CollaborationsPage() {
                                     >
                                         <Link
                                             href={`/collaborations/${c.id}`}
-                                            className="group relative flex flex-col h-full bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 block p-1 overflow-hidden"
+                                            className="group relative flex flex-col h-full bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors transition-transform duration-300 hover:translate-x-1 hover:-translate-y-1 block p-1 overflow-hidden"
                                             style={{ clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%)" }}
                                         >
                                             <div className="p-6 flex flex-col h-full bg-white dark:bg-[#0a0f18] relative overflow-hidden" style={{ clipPath: "polygon(0 0, calc(100% - 19px) 0, 100% 19px, 100% 100%, 0 100%)" }}>

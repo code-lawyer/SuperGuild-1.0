@@ -57,7 +57,7 @@ export default function CollaborationDetailPage() {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#6A6A71] space-y-4">
                 <span className="material-symbols-outlined !text-[40px] animate-spin">progress_activity</span>
-                <p className="text-sm font-medium">Loading workspace...</p>
+                <p className="text-sm font-medium">Loading workspace&hellip;</p>
             </div>
         );
     }
@@ -166,7 +166,7 @@ export default function CollaborationDetailPage() {
                                 onChange={(e) => setApplyMessage(e.target.value)}
                                 placeholder={t.quests.applyPitchPlaceholder}
                                 rows={5}
-                                className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:ring-2 focus:ring-primary/8 transition-all resize-none"
+                                className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
                             />
                             <div className="flex gap-3">
                                 <button onClick={() => setShowApplyForm(false)} className="ag-btn-secondary flex-1">{t.common.cancel}</button>
@@ -178,7 +178,7 @@ export default function CollaborationDetailPage() {
                                     disabled={applyToCollab.isPending || !applyMessage.trim()}
                                     className="ag-btn-primary flex-1"
                                 >
-                                    {applyToCollab.isPending ? '...' : t.common.submit}
+                                    {applyToCollab.isPending ? '…' : t.common.submit}
                                 </button>
                             </div>
                         </div>
@@ -288,7 +288,7 @@ export default function CollaborationDetailPage() {
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-2 mb-1">
-                                <span className="text-5xl font-black text-[#121317] tracking-tight">
+                                <span className="text-5xl font-black text-[#121317] tracking-tight tabular-nums">
                                     {collab.total_budget.toLocaleString()}
                                 </span>
                                 <span className="text-xl font-medium text-[#6A6A71]">USDC</span>
@@ -302,7 +302,7 @@ export default function CollaborationDetailPage() {
                                 <span className="text-primary">{releasedPct}%</span>
                             </div>
                             <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden mb-3 relative">
-                                <div className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${releasedPct}%` }} />
+                                <div className="absolute top-0 left-0 h-full bg-primary rounded-full transition-colors transition-transform duration-700" style={{ width: `${releasedPct}%` }} />
                                 {milestones.reduce((acc: number[], ms, i) => {
                                     const pos = (acc[i - 1] || 0) + ms.amount_percentage;
                                     acc.push(pos);
@@ -413,7 +413,7 @@ function ApplicantReviewCard({
     const { data: profile } = useProfileByAddress(application.applicant_id);
 
     return (
-        <div className="ag-card p-6 space-y-4 border-slate-200/60 hover:border-primary/40 transition-all group">
+        <div className="ag-card p-6 space-y-4 border-slate-200/60 hover:border-primary/40 transition-colors transition-transform group">
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[14px]">
@@ -421,7 +421,7 @@ function ApplicantReviewCard({
                     </div>
                     <div>
                         <p className="text-[15px] font-bold text-[#121317]">{displayName(profile, application.applicant_id)}</p>
-                        <p className="text-[11px] text-[#6A6A71] font-mono">{application.applicant_id.slice(0, 6)}...{application.applicant_id.slice(-4)}</p>
+                        <p className="text-[11px] text-[#6A6A71] font-mono">{application.applicant_id.slice(0, 6)}&hellip;{application.applicant_id.slice(-4)}</p>
                     </div>
                 </div>
                 <button
@@ -429,7 +429,7 @@ function ApplicantReviewCard({
                     disabled={isApproving}
                     className="ag-btn-primary !px-4 !py-2 !text-[12px] shadow-none"
                 >
-                    {isApproving ? '...' : '确认承接'}
+                    {isApproving ? '…' : '确认承接'}
                 </button>
             </div>
 
@@ -468,7 +468,7 @@ function ConfirmDialog({
                 <p className="text-[14px] text-[#6A6A71] leading-relaxed">{body}</p>
                 <div className="flex gap-3">
                     <button onClick={onCancel} className="ag-btn-secondary flex-1">取消</button>
-                    <button onClick={onConfirm} disabled={isLoading} className={`flex-1 px-5 py-2.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-all ${confirmClass}`}>
+                    <button onClick={onConfirm} disabled={isLoading} className={`flex-1 px-5 py-2.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-colors transition-transform ${confirmClass}`}>
                         {isLoading && <span className="material-symbols-outlined !text-[16px] animate-spin">progress_activity</span>}
                         {confirmLabel}
                     </button>

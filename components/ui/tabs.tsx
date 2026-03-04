@@ -34,7 +34,7 @@ const TabsTrigger = React.forwardRef<
       "inline-flex items-center justify-center whitespace-nowrap",
       "rounded-xl px-4 py-2 text-sm font-medium",
       "relative overflow-hidden",
-      "transition-all duration-200",
+      "transition-colors transition-transform duration-200",
       // Default state
       "text-purple-200/70 hover:text-purple-100",
       "hover:bg-purple-500/10",
@@ -56,7 +56,7 @@ const TabsTrigger = React.forwardRef<
       "data-[state=active]:after:blur-md",
       "data-[state=active]:after:-z-10",
       // Animation
-      "motion-safe:transition-all",
+      "motion-safe:transition-colors transition-transform",
       className
     )}
     {...props}

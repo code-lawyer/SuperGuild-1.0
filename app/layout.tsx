@@ -5,6 +5,7 @@ import { Manrope } from 'next/font/google';
 import Providers from '@/providers/Web3Providers';
 import Header from '@/components/layout/Header';
 import { I18nProvider } from '@/lib/i18n';
+import { NoiseOverlay } from '@/components/ui/NoiseOverlay';
 
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-display' });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       </head>
       <body className="bg-white dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col antialiased">
         <I18nProvider>
+          <NoiseOverlay />
           <Providers>
             <div className="relative z-10 flex flex-col min-h-screen">
               <Header />

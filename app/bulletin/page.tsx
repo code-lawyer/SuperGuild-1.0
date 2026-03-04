@@ -53,7 +53,7 @@ export default function BulletinPage() {
                             <button
                                 key={cat.key}
                                 onClick={() => setActiveCategory(cat.key)}
-                                className={`px-5 py-2 text-xs font-bold transition-all rounded-lg ${activeCategory === cat.key
+                                className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeCategory === cat.key
                                     ? 'bg-primary text-white shadow-md'
                                     : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
                                     }`}
@@ -67,7 +67,7 @@ export default function BulletinPage() {
                     {activeCategory === 'pioneer' && isConnected && isPioneer && (
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-colors transition-transform hover:-translate-y-0.5"
                         >
                             <span className="material-symbols-outlined !text-[18px]">campaign</span>
                             {t.bulletin.postButton}
@@ -103,7 +103,7 @@ export default function BulletinPage() {
                                     key={b.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className={`group border transition-all duration-300 relative overflow-hidden ${isExpanded
+                                    className={`group border transition-colors transition-transform duration-300 relative overflow-hidden ${isExpanded
                                         ? 'border-primary/40 bg-white dark:bg-[#0a0f18] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]'
                                         : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 hover:border-primary/30 hover:translate-x-1'
                                         }`}
@@ -141,7 +141,7 @@ export default function BulletinPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-4 h-full">
-                                            <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
+                                            <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors transition-transform ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
                                                 <span className="material-symbols-outlined !text-[20px]">expand_more</span>
                                             </div>
                                         </div>
@@ -175,7 +175,7 @@ export default function BulletinPage() {
                                                                         href={att.file_url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="flex items-center gap-3 px-4 py-3 rounded border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-primary/40 hover:bg-primary/5 transition-all group/att"
+                                                                        className="flex items-center gap-3 px-4 py-3 rounded border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-primary/40 hover:bg-primary/5 transition-colors transition-transform group/att"
                                                                     >
                                                                         <span className="material-symbols-outlined !text-[20px] text-primary opacity-60">description</span>
                                                                         <div className="flex-1 min-w-0">

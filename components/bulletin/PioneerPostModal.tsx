@@ -151,7 +151,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Announcement Title"
-                                    className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-all text-sm font-medium"
+                                    className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors transition-transform text-sm font-medium"
                                 />
                             </div>
 
@@ -168,7 +168,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder={t.bulletin.contentPlaceholder}
                                     rows={8}
-                                    className="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-all text-sm font-medium resize-none leading-relaxed"
+                                    className="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors transition-transform text-sm font-medium resize-none leading-relaxed"
                                 />
                             </div>
 
@@ -178,7 +178,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                 </label>
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="group cursor-pointer flex items-center gap-3 px-5 py-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 hover:border-primary/50 transition-all"
+                                    className="group cursor-pointer flex items-center gap-3 px-5 py-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 hover:border-primary/50 transition-colors transition-transform"
                                 >
                                     <span className="material-symbols-outlined !text-[22px] text-slate-400 group-hover:text-primary transition-colors">
                                         {file ? 'description' : 'upload_file'}
@@ -219,14 +219,14 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="flex-1 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                    className="flex-1 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors transition-transform"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || !title.trim() || !content.trim()}
-                                    className="flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-blue-600 transition-colors transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
                                         <>

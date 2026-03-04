@@ -68,7 +68,7 @@ export default function UploadProofDialog({ milestoneId, isOpen, onClose }: Uplo
                         value={contentUrl}
                         onChange={(e) => setContentUrl(e.target.value)}
                         placeholder="https://github.com/... 或 文件链接"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors transition-transform font-mono"
                     />
                 </div>
 

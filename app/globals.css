@@ -63,6 +63,11 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Accessible focus rings */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-dark;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -123,6 +128,14 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 

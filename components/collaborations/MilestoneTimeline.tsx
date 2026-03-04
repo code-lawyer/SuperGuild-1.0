@@ -124,7 +124,7 @@ export default function MilestoneTimeline({
                                             <label className="block text-xs font-bold text-[#6A6A71] uppercase tracking-wide mb-3">Submit Deliverable</label>
                                             <button
                                                 onClick={() => onSubmitProof(ms.id)}
-                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-all flex items-center gap-2"
+                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-colors transition-transform flex items-center gap-2"
                                             >
                                                 <span>Submit for Review</span>
                                                 <span className="material-symbols-outlined text-[18px]">send</span>
@@ -136,7 +136,7 @@ export default function MilestoneTimeline({
                                         <div className="mt-6 flex gap-3">
                                             <button
                                                 onClick={() => onConfirm(ms.id)}
-                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-all flex items-center gap-2"
+                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-colors transition-transform flex items-center gap-2"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                                                 Approve & Release {amount} USDT

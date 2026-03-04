@@ -12,7 +12,7 @@ const Card = React.forwardRef<
       "rounded-xl border border-purple-500/20 bg-black/40 text-purple-100 shadow-xl",
       "backdrop-blur-md",
       "hover:border-purple-500/30 hover:shadow-purple-500/10",
-      "transition-all duration-300",
+      "transition-colors transition-transform duration-300",
       className
     )}
     {...props}

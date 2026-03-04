@@ -61,7 +61,7 @@ export function WalletGatePage({ children }: WalletGatePageProps) {
                 {/* Connect Button */}
                 <button
                     onClick={() => openConnectModal?.()}
-                    className="px-8 py-3.5 bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all flex items-center gap-2 mx-auto"
+                    className="px-8 py-3.5 bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-colors transition-transform flex items-center gap-2 mx-auto"
                 >
                     <span className="material-symbols-outlined !text-[20px]">link</span>
                     连接钱包

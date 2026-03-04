@@ -86,7 +86,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="简洁描述提案目标..."
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform"
                                     maxLength={120}
                                 />
                                 <p className="text-xs text-slate-400 mt-1 text-right">{title.length}/120</p>
@@ -102,7 +102,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                     onChange={(e) => setBody(e.target.value)}
                                     placeholder="详细说明提案内容、背景、预期影响..."
                                     rows={8}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all resize-none"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform resize-none"
                                 />
                             </div>
 
@@ -118,7 +118,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                         onChange={(e) => setLinkInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())}
                                         placeholder="https://..."
-                                        className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all"
+                                        className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-colors transition-transform"
                                     />
                                     <button
                                         onClick={addLink}
@@ -165,7 +165,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isPending || !title.trim() || !body.trim()}
-                                    className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-orange-500/20 flex items-center gap-2"
+                                    className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-colors transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-orange-500/20 flex items-center gap-2"
                                 >
                                     {isPending ? (
                                         <>

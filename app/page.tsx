@@ -105,7 +105,7 @@ function LandingPage() {
         <FadeInUp delay={2.0} yOffset={20} className="flex gap-4 pt-4">
           <MagneticButton
             onClick={handleAdventure}
-            className="px-10 py-4 bg-primary text-white font-bold text-base rounded-2xl transition-all flex items-center gap-3 shadow-xl hover:shadow-primary/30 hover:-translate-y-1 active:scale-95"
+            className="px-10 py-4 bg-primary text-white font-bold text-base rounded-2xl transition-colors transition-transform flex items-center gap-3 shadow-xl hover:shadow-primary/30 hover:-translate-y-1 active:scale-95"
           >
             <span>{t.landing.connectTerminal || 'Begin Adventure'}</span>
             <span className="material-symbols-outlined !text-[20px]">arrow_forward</span>

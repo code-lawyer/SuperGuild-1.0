@@ -86,6 +86,9 @@ importers:
       cmdk:
         specifier: 1.0.0
         version: 1.0.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      cobe:
+        specifier: ^0.6.3
+        version: 0.6.5
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
@@ -2516,6 +2519,9 @@ packages:
       react: ^18.0.0
       react-dom: ^18.0.0
 
+  cobe@0.6.5:
+    resolution: {integrity: sha512-MA8bu81EFY6JjQpj+FovEuhyJ25khx2Q7Lh+ot/UkCJe5yKyDgzdc6u2lGZIOmsZTXK6Itg1i4lQZIJZbPWnAg==}
+
   code-block-writer@12.0.0:
     resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
 
@@ -4294,6 +4300,9 @@ packages:
   pg-types@4.0.2:
     resolution: {integrity: sha512-cRL3JpS3lKMGsKaWndugWQoLOCoP+Cic8oseVcbr0qhPzYD5DWXK+RZ9LY9wxRf7RQia4SCwQlXk0q6FCPrVng==}
     engines: {node: '>=10'}
+
+  phenomenon@1.6.0:
+    resolution: {integrity: sha512-7h9/fjPD3qNlgggzm88cY58l9sudZ6Ey+UmZsizfhtawO6E3srZQXywaNm2lBwT72TbpHYRPy7ytIHeBUD/G0A==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -7965,6 +7974,10 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
+  cobe@0.6.5:
+    dependencies:
+      phenomenon: 1.6.0
+
   code-block-writer@12.0.0: {}
 
   color-convert@1.9.3:
@@ -9924,6 +9937,8 @@ snapshots:
       postgres-date: 2.1.0
       postgres-interval: 3.0.0
       postgres-range: 1.1.4
+
+  phenomenon@1.6.0: {}
 
   picocolors@1.1.1: {}
 

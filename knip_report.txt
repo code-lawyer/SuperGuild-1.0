@@ -1,0 +1,157 @@
+﻿[93m[4mUnused files[24m[39m (76)
+components/DynamicModal.tsx                                            
+components/ImageUpload.tsx                                             
+components/Navigation.tsx                                              
+constants/attestaion.ts                                                
+graphql/queries.ts                                                     
+hooks/useAddressProfiles.ts                                            
+hooks/useDashboard.ts                                                  
+hooks/useMediaQuery.ts                                                 
+hooks/useTransactionAction.ts                                          
+providers/TelegramAuthContext.tsx                                      
+scripts/fix-rls.js                                                     
+scripts/generate_pioneer_codes.js                                      
+scripts/setup-db.js                                                    
+scripts/setup-storage.js                                               
+scripts/update-tokens.js                                               
+store/userStore.ts                                                     
+types/profile.ts                                                       
+utils/chain.ts                                                         
+utils/encryption.ts                                                    
+.stitch-designs/components/ai-throne-card.tsx                          
+.stitch-designs/components/cookie-consent-card.tsx                     
+.stitch-designs/components/mission-announcement-card.tsx               
+.stitch-designs/components/proposal-card.tsx                           
+.stitch-designs/components/rating-stars.tsx                            
+.stitch-designs/components/success-toast.tsx                           
+.stitch-designs/components/ui-loader.tsx                               
+components/3d/MatteEarth.tsx                                           
+components/collaborations/CollabCard.tsx                               
+components/layout/Sidebar.tsx                                          
+components/services/ServiceCard.tsx                                    
+components/ui/Address.tsx                                              
+components/ui/alert.tsx                                                
+components/ui/badge.tsx                                                
+components/ui/calendar.tsx                                             
+components/ui/card.tsx                                                 
+components/ui/checkbox.tsx                                             
+components/ui/command.tsx                                              
+components/ui/dialog.tsx                                               
+components/ui/dropdown-menu.tsx                                        
+components/ui/input.tsx                                                
+components/ui/label.tsx                                                
+components/ui/loading.tsx                                              
+components/ui/popover.tsx                                              
+components/ui/select.tsx                                               
+components/ui/skeleton.tsx                                             
+components/ui/table.tsx                                                
+components/ui/tabs.tsx                                                 
+components/ui/textarea.tsx                                             
+components/ui/toaster.tsx                                              
+components/ui/tooltip.tsx                                              
+eliza-add/agent/src/index.ts                                           
+eliza-add/packages/plugin-bountyboard-evm/tsup.config.ts               
+supabase/functions/vcp-indexer/index.ts                                
+eliza-add/packages/client-direct/src/index.ts                          
+eliza-add/packages/client-discord/src/attachments.ts                   
+eliza-add/packages/client-discord/src/enviroment.ts                    
+eliza-add/packages/client-discord/src/index.ts                         
+eliza-add/packages/client-discord/src/messages.ts                      
+eliza-add/packages/client-discord/src/templates.ts                     
+eliza-add/packages/client-discord/src/utils.ts                         
+eliza-add/packages/client-discord/src/voice.ts                         
+eliza-add/packages/plugin-bountyboard-evm/src/index.ts                 
+eliza-add/packages/client-discord/src/actions/announcement.ts          
+eliza-add/packages/client-discord/src/actions/chat_with_attachments.ts 
+eliza-add/packages/client-discord/src/actions/download_media.ts        
+eliza-add/packages/client-discord/src/actions/joinvoice.ts             
+eliza-add/packages/client-discord/src/actions/leavevoice.ts            
+eliza-add/packages/client-discord/src/actions/summarize_conversation.ts
+eliza-add/packages/client-discord/src/actions/transcribe_media.ts      
+eliza-add/packages/client-discord/src/providers/channelState.ts        
+eliza-add/packages/client-discord/src/providers/voiceState.ts          
+eliza-add/packages/plugin-bountyboard-evm/src/actions/query.ts         
+eliza-add/packages/plugin-bountyboard-evm/src/actions/review.ts        
+eliza-add/packages/plugin-bountyboard-evm/src/providers/wallet.ts      
+eliza-add/packages/plugin-bountyboard-evm/src/templates/index.ts       
+eliza-add/packages/plugin-bountyboard-evm/src/types/index.ts           
+[93m[4mUnused dependencies[24m[39m (20)
+@icons-pack/react-simple-icons         package.json:14:6
+@radix-ui/react-checkbox               package.json:16:6
+@radix-ui/react-dialog                 package.json:17:6
+@radix-ui/react-dropdown-menu          package.json:18:6
+@radix-ui/react-label                  package.json:19:6
+@radix-ui/react-popover                package.json:20:6
+@radix-ui/react-select                 package.json:21:6
+@radix-ui/react-tabs                   package.json:23:6
+@radix-ui/react-tooltip                package.json:25:6
+@twa-dev/sdk                           package.json:32:6
+@verax-attestation-registry/verax-sdk  package.json:33:6
+@walletconnect/web3-provider           package.json:34:6
+autoprefixer                           package.json:35:6
+cmdk                                   package.json:39:6
+encoding                               package.json:41:6
+graphql-request                        package.json:43:6
+react-day-picker                       package.json:49:6
+shadcn-ui                              package.json:51:6
+tailwindcss-animate                    package.json:54:6
+zustand                                package.json:60:6
+[93m[4mUnused devDependencies[24m[39m (3)
+@types/pg           package.json:64:6
+eslint              package.json:68:6
+eslint-config-next  package.json:69:6
+[93m[4mUnlisted dependencies[24m[39m (1)
+postcss-load-config  postcss.config.mjs:1:2
+[93m[4mUnused exports[24m[39m (23)
+useOpenCollaborations    function  hooks/useCollaborations.ts:71:17 
+useApplyToAccept         function  hooks/useCollaborations.ts:185:17
+useApproveProvider       function  hooks/useCollaborations.ts:240:17
+useRejectProvider        function  hooks/useCollaborations.ts:294:17
+useAcceptCollaboration             hooks/useCollaborations.ts:621:14
+useProfilesByAddresses   function  hooks/useProfile.ts:84:17        
+useUserMedals            function  hooks/useProfile.ts:104:17       
+useProfileStats          function  hooks/useProfile.ts:164:17       
+useProposalCosigners     function  hooks/useProposals.ts:207:17     
+buttonVariants                     components/ui/button.tsx:56:18   
+parsePoWUrl              function  lib/oracle/parsePoW.ts:26:23     
+MEDAL_NFT                          constants/nft-config.ts:30:14    
+useUnreadCount           function  hooks/useNotifications.ts:41:17  
+useMarkNotificationRead  function  hooks/useNotifications.ts:62:17  
+reducer                            components/ui/use-toast.ts:77:14 
+useToast                           components/ui/use-toast.ts:194:10
+ToastProvider                      components/ui/toast.tsx:176:3    
+ToastViewport                      components/ui/toast.tsx:177:3    
+Toast                              components/ui/toast.tsx:178:3    
+ToastTitle                         components/ui/toast.tsx:179:3    
+ToastDescription                   components/ui/toast.tsx:180:3    
+ToastClose                         components/ui/toast.tsx:181:3    
+ToastAction                        components/ui/toast.tsx:182:3    
+[93m[4mUnused exported types[24m[39m (25)
+Locale                  type       lib/i18n/index.tsx:7:13          
+CreateCollabInput       interface  hooks/useCollaborations.ts:120:18
+Profile                 interface  hooks/useProfile.ts:7:18         
+Medal                   interface  hooks/useProfile.ts:19:18        
+SBT                     interface  hooks/useSBTs.ts:7:18            
+ProofType               type       services/aiReview.ts:16:13       
+Submission              interface  types/types.ts:1:18              
+Member                  interface  types/types.ts:10:18             
+BoardView               interface  types/types.ts:15:18             
+TaskView                interface  types/types.ts:33:18             
+SubmissionView          interface  types/types.ts:51:18             
+BoardDetailView         interface  types/types.ts:60:18             
+CreateBoardParams       interface  types/types.ts:78:18             
+CreateTaskParams        interface  types/types.ts:100:18            
+UpdateTaskParams        interface  types/types.ts:112:18            
+SelfCheckParams         interface  types/types.ts:135:18            
+SubmitProofParams       interface  types/types.ts:143:18            
+ReviewSubmissionParams  interface  types/types.ts:150:18            
+AddReviewerParams       interface  types/types.ts:159:18            
+PledgeTokensParams      interface  types/types.ts:166:18            
+UpdateBoardParams       interface  types/types.ts:172:18            
+UserTaskStatus          interface  types/types.ts:197:18            
+CosignerData            interface  hooks/useProposals.ts:67:18      
+ButtonProps             interface  components/ui/button.tsx:36:18   
+OracleEvaluation        interface  lib/oracle/prompt.ts:11:18       
+[93m[4mDuplicate exports[24m[39m (1)
+useApplyToAccept|useAcceptCollaboration  hooks/useCollaborations.ts
+[33m[4mConfiguration hints[24m (1)[39m

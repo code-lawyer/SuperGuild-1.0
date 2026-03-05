@@ -467,15 +467,6 @@ export function useConfirmMilestone() {
                     .from('collaborations')
                     .update({ status: 'SETTLED' })
                     .eq('id', collabId);
-
-                // ── Trigger AI Oracle evaluation (async, non-blocking) ──
-                fetch('/api/oracle/evaluate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ collabId }),
-                }).catch((err) => {
-                    console.warn('[Oracle] Evaluation trigger failed (non-critical):', err);
-                });
             }
         },
         onSuccess: () => {

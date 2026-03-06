@@ -1,6 +1,8 @@
 'use client';
 
-import { Milestone, Proof } from '@/hooks/useCollaborations';
+import { Milestone, Proof, CollabStatus } from '@/hooks/useCollaborations';
+import { EscrowStep } from '@/hooks/useGuildEscrow';
+import { useT } from '@/lib/i18n';
 
 interface MilestoneTimelineProps {
     milestones: Milestone[];
@@ -8,8 +10,11 @@ interface MilestoneTimelineProps {
     totalBudget: number;
     isInitiator: boolean;
     isProvider: boolean;
-    onSubmitProof: (milestoneId: string) => void;
-    onConfirm: (milestoneId: string) => void;
+    collabStatus: CollabStatus;
+    escrowStep: EscrowStep;
+    onSubmitProof: (milestoneId: string, sortOrder: number) => void;
+    onConfirm: (milestoneId: string, sortOrder: number) => void;
+    onDispute: (milestoneId: string, sortOrder: number) => void;
 }
 
 const statusConfig: Record<string, { label: string; badgeClass: string }> = {
@@ -24,9 +29,13 @@ export default function MilestoneTimeline({
     totalBudget,
     isInitiator,
     isProvider,
+    collabStatus,
+    escrowStep,
     onSubmitProof,
     onConfirm,
+    onDispute,
 }: MilestoneTimelineProps) {
+    const t = useT();
     // Determine which milestone is "active" (first non-CONFIRMED)
     const activeIndex = milestones.findIndex(m => m.status !== 'CONFIRMED');
 
@@ -61,13 +70,13 @@ export default function MilestoneTimeline({
                                 <div className="flex items-center gap-3 text-sm text-[#6A6A71]">
                                     <span className="flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[16px]">payments</span>
-                                        {amount} USDT ({ms.amount_percentage}%)
+                                        {amount} USDC ({ms.amount_percentage}%)
                                     </span>
                                     {msProofs.length > 0 && (
                                         <>
                                             <span className="w-1 h-1 rounded-full bg-slate-300" />
                                             <a className="text-primary hover:underline flex items-center gap-1 cursor-pointer" href={msProofs[0].content_url} target="_blank" rel="noopener">
-                                                View Deliverable
+                                                {t.quests.viewDeliverable}
                                                 <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                                             </a>
                                         </>
@@ -98,7 +107,7 @@ export default function MilestoneTimeline({
                                         </span>
                                     </div>
                                     <p className="text-sm text-[#6A6A71] mb-1">
-                                        <span className="font-mono">{amount} USDT</span> · {ms.amount_percentage}% of total budget
+                                        <span className="font-mono">{amount} USDC</span> · {ms.amount_percentage}% of total budget
                                     </p>
 
                                     {/* Submitted proofs */}
@@ -118,28 +127,38 @@ export default function MilestoneTimeline({
                                         </div>
                                     )}
 
-                                    {/* Action Area */}
+                                    {/* Action Area: Provider submits proof */}
                                     {isProvider && ms.status === 'INCOMPLETE' && (
                                         <div className="mt-6 bg-[#F0F1F5]/50 rounded-lg p-5 border border-dashed border-slate-300">
-                                            <label className="block text-xs font-bold text-[#6A6A71] uppercase tracking-wide mb-3">Submit Deliverable</label>
+                                            <label className="block text-xs font-bold text-[#6A6A71] uppercase tracking-wide mb-3">{t.quests.submitDeliverable}</label>
                                             <button
-                                                onClick={() => onSubmitProof(ms.id)}
+                                                onClick={() => onSubmitProof(ms.id, ms.sort_order)}
                                                 className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-colors transition-transform flex items-center gap-2"
                                             >
-                                                <span>Submit for Review</span>
+                                                <span>{t.quests.submitForReview}</span>
                                                 <span className="material-symbols-outlined text-[18px]">send</span>
                                             </button>
                                         </div>
                                     )}
 
+                                    {/* Action Area: Initiator confirms or disputes */}
                                     {isInitiator && ms.status === 'SUBMITTED' && (
                                         <div className="mt-6 flex gap-3">
                                             <button
-                                                onClick={() => onConfirm(ms.id)}
-                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-colors transition-transform flex items-center gap-2"
+                                                onClick={() => onConfirm(ms.id, ms.sort_order)}
+                                                disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
+                                                className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-primary/20 transition-colors transition-transform flex items-center gap-2 disabled:opacity-50"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                                                Approve & Release {amount} USDT
+                                                {t.quests.confirmAndRelease} {amount} USDC
+                                            </button>
+                                            <button
+                                                onClick={() => onDispute(ms.id, ms.sort_order)}
+                                                disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
+                                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-lg transition-colors transition-transform flex items-center gap-2 disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">gavel</span>
+                                                {t.quests.disputeMilestone}
                                             </button>
                                         </div>
                                     )}
@@ -166,7 +185,7 @@ export default function MilestoneTimeline({
                                     LOCKED
                                 </span>
                             </div>
-                            <p className="text-sm text-[#6A6A71]">{amount} USDT · {ms.amount_percentage}%</p>
+                            <p className="text-sm text-[#6A6A71]">{amount} USDC · {ms.amount_percentage}%</p>
                         </div>
                     </div>
                 );

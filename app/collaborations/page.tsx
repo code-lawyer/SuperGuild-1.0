@@ -143,7 +143,7 @@ export default function CollaborationsPage() {
                                                 </div>
 
                                                 <p className="text-sm text-slate-500 font-medium line-clamp-2 mb-8 flex-grow leading-relaxed">
-                                                    {c.description || 'No descriptive payload initiated.'}
+                                                    {c.description || t.quests.noDescription}
                                                 </p>
 
                                                 <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">

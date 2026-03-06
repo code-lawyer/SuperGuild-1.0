@@ -12,29 +12,36 @@ import {
     useAbandonCollaboration,
     useCancelCollaboration,
     useConfirmMilestone,
+    useDisputeCollaboration,
     CollabStatus,
     CollabApplication,
 } from '@/hooks/useCollaborations';
+import { useGuildEscrow, EscrowStep } from '@/hooks/useGuildEscrow';
 import { useT } from '@/lib/i18n';
 import Markdown from '@/components/ui/Markdown';
 import { useProfileByAddress, displayName } from '@/hooks/useProfile';
 import MilestoneTimeline from '@/components/collaborations/MilestoneTimeline';
 import UploadProofDialog from '@/components/collaborations/UploadProofDialog';
+import MintTestUSDC from '@/components/collaborations/MintTestUSDC';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 
-const statusConfig: Record<CollabStatus, { label: string; badgeClass: string }> = {
-    OPEN: { label: '开放', badgeClass: 'bg-blue-50 text-blue-700 ring-blue-700/10' },
-    PENDING_APPROVAL: { label: '待审批', badgeClass: 'bg-amber-50 text-amber-700 ring-amber-700/10' },
-    LOCKED: { label: '已锁定', badgeClass: 'bg-indigo-50 text-indigo-700 ring-indigo-700/10' },
-    ACTIVE: { label: '进行中', badgeClass: 'bg-emerald-50 text-emerald-700 ring-emerald-700/10' },
-    PENDING: { label: '待审核', badgeClass: 'bg-purple-50 text-purple-700 ring-purple-700/10' },
-    SETTLED: { label: '已结算', badgeClass: 'bg-green-50 text-green-700 ring-green-700/10' },
-    DISPUTED: { label: '争议中', badgeClass: 'bg-red-50 text-red-700 ring-red-700/10' },
-    CANCELLED: { label: '已撤销', badgeClass: 'bg-gray-50 text-gray-700 ring-gray-700/10' },
-};
+function useStatusConfig() {
+    const t = useT();
+    return {
+        OPEN: { label: t.common.open, badgeClass: 'bg-blue-50 text-blue-700 ring-blue-700/10' },
+        PENDING_APPROVAL: { label: t.common.pendingApproval, badgeClass: 'bg-amber-50 text-amber-700 ring-amber-700/10' },
+        LOCKED: { label: t.common.locked, badgeClass: 'bg-indigo-50 text-indigo-700 ring-indigo-700/10' },
+        ACTIVE: { label: t.common.inProgress, badgeClass: 'bg-emerald-50 text-emerald-700 ring-emerald-700/10' },
+        PENDING: { label: t.common.pending, badgeClass: 'bg-purple-50 text-purple-700 ring-purple-700/10' },
+        SETTLED: { label: t.common.settled, badgeClass: 'bg-green-50 text-green-700 ring-green-700/10' },
+        DISPUTED: { label: t.common.disputed, badgeClass: 'bg-red-50 text-red-700 ring-red-700/10' },
+        CANCELLED: { label: t.common.cancelled, badgeClass: 'bg-gray-50 text-gray-700 ring-gray-700/10' },
+    } as Record<CollabStatus, { label: string; badgeClass: string }>;
+}
 
 export default function CollaborationDetailPage() {
     const t = useT();
+    const statusConfig = useStatusConfig();
     const params = useParams();
     const id = params.id as string;
     const { address } = useAccount();
@@ -46,10 +53,13 @@ export default function CollaborationDetailPage() {
     const abandonCollab = useAbandonCollaboration();
     const cancelCollab = useCancelCollaboration();
     const confirmMs = useConfirmMilestone();
+    const disputeCollab = useDisputeCollaboration();
+    const escrow = useGuildEscrow();
 
     const [applyMessage, setApplyMessage] = useState('');
     const [showApplyForm, setShowApplyForm] = useState(false);
     const [proofMilestoneId, setProofMilestoneId] = useState<string | null>(null);
+    const [proofMilestoneSortOrder, setProofMilestoneSortOrder] = useState<number>(0);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
 
@@ -57,7 +67,7 @@ export default function CollaborationDetailPage() {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#6A6A71] space-y-4">
                 <span className="material-symbols-outlined !text-[40px] animate-spin">progress_activity</span>
-                <p className="text-sm font-medium">Loading workspace&hellip;</p>
+                <p className="text-sm font-medium">{t.common.loading}</p>
             </div>
         );
     }
@@ -66,8 +76,8 @@ export default function CollaborationDetailPage() {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#6A6A71] space-y-4">
                 <span className="material-symbols-outlined !text-[40px]">error</span>
-                <p className="text-sm font-medium">Unable to load quest workspace</p>
-                <Link href="/collaborations" className="ag-btn-secondary text-xs">Back to list</Link>
+                <p className="text-sm font-medium">{t.common.noData}</p>
+                <Link href="/collaborations" className="ag-btn-secondary text-xs">{t.quests.backToList}</Link>
             </div>
         );
     }
@@ -87,7 +97,7 @@ export default function CollaborationDetailPage() {
             <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8 flex flex-col gap-8 pb-24">
                 {/* Breadcrumb */}
                 <div className="flex items-center text-sm text-[#6A6A71]">
-                    <Link href="/collaborations" className="hover:text-primary transition-colors">任务列表</Link>
+                    <Link href="/collaborations" className="hover:text-primary transition-colors">{t.quests.questList}</Link>
                     <span className="material-symbols-outlined text-[16px] mx-2">chevron_right</span>
                     <span className="text-[#121317] font-medium">{collab.title}</span>
                 </div>
@@ -102,17 +112,17 @@ export default function CollaborationDetailPage() {
                             {collab.deadline && (
                                 <span className="text-[12px] text-[#6A6A71] font-medium flex items-center gap-1">
                                     <span className="material-symbols-outlined !text-[14px]">schedule</span>
-                                    截止 {new Date(collab.deadline).toLocaleDateString('zh-CN')}
+                                    {t.quests.deadlinePrefix} {new Date(collab.deadline).toLocaleDateString()}
                                 </span>
                             )}
                         </div>
                         <h1 className="text-3xl md:text-4xl font-black text-[#121317] tracking-tight mb-3">{collab.title}</h1>
                         <div className="flex items-center gap-4 text-sm text-[#6A6A71]">
-                            <UserBadge label="发布人" address={collab.initiator_id!} isSelf={isInitiator} />
+                            <UserBadge role="initiator" address={collab.initiator_id!} isSelf={isInitiator} />
                             {collab.provider_id && (
                                 <>
                                     <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                                    <UserBadge label="承接人" address={collab.provider_id} isSelf={isProvider} />
+                                    <UserBadge role="provider" address={collab.provider_id} isSelf={isProvider} />
                                 </>
                             )}
                         </div>
@@ -120,42 +130,28 @@ export default function CollaborationDetailPage() {
 
                     {/* Action buttons */}
                     <div className="flex gap-3 shrink-0 flex-wrap justify-end">
-                        {/* Apply to accept */}
                         {collab.status === 'OPEN' && !isInitiator && address && (
-                            <button
-                                onClick={() => setShowApplyForm(true)}
-                                className="ag-btn-primary"
-                            >
+                            <button onClick={() => setShowApplyForm(true)} className="ag-btn-primary">
                                 <span className="material-symbols-outlined !text-[18px]">handshake</span>
                                 {t.quests.pendingQuests}
                             </button>
                         )}
-
-                        {/* Initiator: Cancel */}
                         {isInitiator && !['SETTLED', 'CANCELLED'].includes(collab.status) && (
-                            <button
-                                onClick={() => setShowCancelConfirm(true)}
-                                className="ag-btn-secondary text-red-500 hover:bg-red-50 hover:border-red-200"
-                            >
+                            <button onClick={() => setShowCancelConfirm(true)} className="ag-btn-secondary text-red-500 hover:bg-red-50 hover:border-red-200">
                                 <span className="material-symbols-outlined !text-[18px]">cancel</span>
-                                撤销任务
+                                {t.quests.cancelQuest}
                             </button>
                         )}
-
-                        {/* Provider: Abandon */}
                         {isProvider && ['LOCKED', 'ACTIVE'].includes(collab.status) && (
-                            <button
-                                onClick={() => setShowAbandonConfirm(true)}
-                                className="ag-btn-secondary text-amber-500 hover:bg-amber-50 hover:border-amber-200"
-                            >
+                            <button onClick={() => setShowAbandonConfirm(true)} className="ag-btn-secondary text-amber-500 hover:bg-amber-50 hover:border-amber-200">
                                 <span className="material-symbols-outlined !text-[18px]">flag</span>
-                                放弃任务
+                                {t.quests.abandonQuest}
                             </button>
                         )}
                     </div>
                 </div>
 
-                {/* Apply Form Modal (Adventurer side) */}
+                {/* Apply Form Modal */}
                 {showApplyForm && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                         <div className="absolute inset-0 bg-[#121317]/30 backdrop-blur-sm" onClick={() => setShowApplyForm(false)} />
@@ -185,7 +181,7 @@ export default function CollaborationDetailPage() {
                     </div>
                 )}
 
-                {/* Applicant Screening (Initiator side) */}
+                {/* Applicant Screening */}
                 {isInitiator && collab.status === 'OPEN' && applications && applications.length > 0 && (
                     <div className="space-y-4">
                         <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.viewApplicants}</h3>
@@ -194,22 +190,32 @@ export default function CollaborationDetailPage() {
                                 <ApplicantReviewCard
                                     key={app.id}
                                     application={app}
-                                    onApprove={() => approveApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id })}
-                                    isApproving={approveApp.isPending}
+                                    onApprove={async () => {
+                                        await escrow.approveAndDeposit(
+                                            collab.id,
+                                            app.applicant_id as `0x${string}`,
+                                            milestones,
+                                            collab.total_budget,
+                                        );
+                                        await approveApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id });
+                                        escrow.reset();
+                                    }}
+                                    isApproving={approveApp.isPending || escrow.isPending}
+                                    escrowStep={escrow.step}
                                 />
                             ))}
                         </div>
                     </div>
                 )}
 
-                {/* Application status for current user (if applicant) */}
+                {/* Application status for current user */}
                 {!isInitiator && applications?.find(a => a.applicant_id.toLowerCase() === address?.toLowerCase()) && collab.status === 'OPEN' && (
                     <div className="ag-card p-6 bg-amber-50/50 border-amber-200/40 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-outlined text-amber-500">schedule</span>
-                            <span className="text-sm font-medium text-amber-800">你的承接申请正在等待发布人审核</span>
+                            <span className="text-sm font-medium text-amber-800">{t.quests.applicationPending}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">Pending</span>
+                        <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">{t.common.pending}</span>
                     </div>
                 )}
 
@@ -218,19 +224,19 @@ export default function CollaborationDetailPage() {
                     <div className="ag-card p-8 space-y-6">
                         <h3 className="text-[16px] font-bold text-[#121317] flex items-center gap-2">
                             <span className="material-symbols-outlined !text-[20px] text-primary">description</span>
-                            任务详情
+                            {t.quests.questDetails}
                         </h3>
 
                         {collab.description && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">任务描述</p>
+                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.questDescription}</p>
                                 <p className="text-[14px] text-[#45474D] leading-relaxed whitespace-pre-wrap">{collab.description}</p>
                             </div>
                         )}
 
                         {collab.delivery_standard && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">交付标准</p>
+                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.deliveryStandard}</p>
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[13px] font-semibold border border-emerald-100/60">
                                     <span className="material-symbols-outlined !text-[16px]">verified</span>
                                     {collab.delivery_standard}
@@ -240,16 +246,11 @@ export default function CollaborationDetailPage() {
 
                         {collab.reference_links && collab.reference_links.length > 0 && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">参考资料</p>
+                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.referenceLinks}</p>
                                 <div className="space-y-2">
                                     {collab.reference_links.map((ref: any, i: number) => (
-                                        <a
-                                            key={i}
-                                            href={ref.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-2 text-[14px] text-primary hover:underline font-medium"
-                                        >
+                                        <a key={i} href={ref.url} target="_blank" rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-[14px] text-primary hover:underline font-medium">
                                             <span className="material-symbols-outlined !text-[16px]">link</span>
                                             {ref.label || ref.url}
                                             <span className="material-symbols-outlined !text-[12px]">open_in_new</span>
@@ -259,7 +260,6 @@ export default function CollaborationDetailPage() {
                             </div>
                         )}
 
-                        {/* Secret Details (Unlocked) */}
                         {(isInitiator || isProvider) && (collab.status === 'LOCKED' || collab.status === 'ACTIVE' || collab.status === 'SETTLED') && collab.secret_content && (
                             <div className="mt-6 pt-6 border-t border-slate-100">
                                 <div className="flex items-center gap-2 mb-3">
@@ -284,7 +284,7 @@ export default function CollaborationDetailPage() {
                                     <div className="bg-blue-100 p-1.5 rounded-lg text-primary">
                                         <span className="material-symbols-outlined text-[20px]">lock</span>
                                     </div>
-                                    <span className="text-sm font-bold text-[#6A6A71] uppercase tracking-wider">Escrow Monitor</span>
+                                    <span className="text-sm font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.escrowMonitor}</span>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-2 mb-1">
@@ -293,12 +293,13 @@ export default function CollaborationDetailPage() {
                                 </span>
                                 <span className="text-xl font-medium text-[#6A6A71]">USDC</span>
                             </div>
-                            <p className="text-sm text-[#6A6A71]">Total Value Locked</p>
+                            <p className="text-sm text-[#6A6A71]">{t.quests.totalValueLocked}</p>
+                            {isInitiator && <MintTestUSDC />}
                         </div>
 
                         <div className="flex-1 w-full bg-[#F0F1F5]/50 rounded-xl p-6 border border-[#E8EAF0]/60">
                             <div className="flex justify-between text-sm font-medium mb-3">
-                                <span className="text-[#121317]">Funds Released</span>
+                                <span className="text-[#121317]">{t.quests.fundsReleased}</span>
                                 <span className="text-primary">{releasedPct}%</span>
                             </div>
                             <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden mb-3 relative">
@@ -312,8 +313,8 @@ export default function CollaborationDetailPage() {
                                 ))}
                             </div>
                             <div className="flex justify-between text-xs text-[#6A6A71]">
-                                <span>{releasedAmount} USDC 已支付</span>
-                                <span>{remainingAmount} USDC 剩余</span>
+                                <span>{releasedAmount} USDC {t.quests.paid}</span>
+                                <span>{remainingAmount} USDC {t.quests.remaining}</span>
                             </div>
                         </div>
                     </div>
@@ -321,11 +322,11 @@ export default function CollaborationDetailPage() {
 
                 {/* Milestone Console */}
                 <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-[#121317] px-2">里程碑控制台</h3>
+                    <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.milestoneConsole}</h3>
                     {milestones.length === 0 ? (
                         <div className="bg-white rounded-xl border border-[#E8EAF0]/60 p-12 text-center text-[#6A6A71] text-sm">
                             <span className="material-symbols-outlined !text-[48px] block mb-4 opacity-20">flag</span>
-                            暂无里程碑
+                            {t.quests.noMilestones}
                         </div>
                     ) : (
                         <MilestoneTimeline
@@ -334,8 +335,22 @@ export default function CollaborationDetailPage() {
                             totalBudget={collab.total_budget}
                             isInitiator={isInitiator}
                             isProvider={isProvider}
-                            onSubmitProof={(msId: string) => setProofMilestoneId(msId)}
-                            onConfirm={(msId: string) => confirmMs.mutateAsync({ milestoneId: msId, collabId: collab.id })}
+                            collabStatus={collab.status}
+                            escrowStep={escrow.step}
+                            onSubmitProof={(msId: string, sortOrder: number) => {
+                                setProofMilestoneId(msId);
+                                setProofMilestoneSortOrder(sortOrder);
+                            }}
+                            onConfirm={async (msId: string, sortOrder: number) => {
+                                await escrow.confirmMilestoneOnChain(collab.id, sortOrder - 1);
+                                await confirmMs.mutateAsync({ milestoneId: msId, collabId: collab.id });
+                                escrow.reset();
+                            }}
+                            onDispute={async (msId: string, sortOrder: number) => {
+                                await escrow.disputeMilestoneOnChain(collab.id, sortOrder - 1);
+                                await disputeCollab.mutateAsync(collab.id);
+                                escrow.reset();
+                            }}
                         />
                     )}
                 </div>
@@ -343,16 +358,20 @@ export default function CollaborationDetailPage() {
                 {/* Cancel Confirm Dialog */}
                 {showCancelConfirm && (
                     <ConfirmDialog
-                        title="确认撤销任务？"
+                        title={t.quests.confirmCancelTitle}
                         body={releasedPct > 0
-                            ? `已支付的 ${releasedAmount} USDC（${releasedPct}%）不予退回。确定要撤销吗？`
-                            : '任务撤销后将对所有人不可见。确定要撤销吗？'
+                            ? t.quests.confirmCancelBodyPaid.replace('{amount}', releasedAmount).replace('{pct}', String(releasedPct))
+                            : t.quests.confirmCancelBodyEmpty
                         }
-                        confirmLabel="确认撤销"
+                        confirmLabel={t.quests.confirmCancel}
                         confirmClass="bg-red-500 hover:bg-red-600 text-white"
-                        isLoading={cancelCollab.isPending}
+                        isLoading={cancelCollab.isPending || escrow.isPending}
                         onConfirm={async () => {
+                            if (['LOCKED', 'ACTIVE'].includes(collab.status)) {
+                                await escrow.cancelEscrow(collab.id);
+                            }
                             await cancelCollab.mutateAsync(collab.id);
+                            escrow.reset();
                             setShowCancelConfirm(false);
                         }}
                         onCancel={() => setShowCancelConfirm(false)}
@@ -362,9 +381,9 @@ export default function CollaborationDetailPage() {
                 {/* Abandon Confirm Dialog */}
                 {showAbandonConfirm && (
                     <ConfirmDialog
-                        title="确认放弃任务？"
-                        body="放弃后任务将重新开放，其他人可以承接。"
-                        confirmLabel="确认放弃"
+                        title={t.quests.confirmAbandonTitle}
+                        body={t.quests.confirmAbandonBody}
+                        confirmLabel={t.quests.confirmAbandon}
                         confirmClass="bg-amber-500 hover:bg-amber-600 text-white"
                         isLoading={abandonCollab.isPending}
                         onConfirm={async () => {
@@ -375,9 +394,34 @@ export default function CollaborationDetailPage() {
                     />
                 )}
 
+                {/* Escrow Status Banner */}
+                {escrow.isPending && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-[#121317] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                        <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
+                        <span className="text-sm font-medium">
+                            {escrow.step === 'approving' && t.quests.escrowApproving}
+                            {escrow.step === 'depositing' && t.quests.escrowDepositing}
+                            {escrow.step === 'submitting' && t.quests.escrowSubmitting}
+                            {escrow.step === 'confirming' && t.quests.escrowConfirming}
+                            {escrow.step === 'disputing' && t.quests.escrowDisputing}
+                            {escrow.step === 'cancelling' && t.quests.escrowCancelling}
+                        </span>
+                    </div>
+                )}
+
+                {escrow.error && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+                        <span className="material-symbols-outlined !text-[18px]">error</span>
+                        <span className="text-sm font-medium">{escrow.error}</span>
+                        <button onClick={escrow.reset} className="text-xs underline ml-2">{t.common.cancel}</button>
+                    </div>
+                )}
+
                 {/* Upload Proof Dialog */}
                 <UploadProofDialog
                     milestoneId={proofMilestoneId ?? ''}
+                    collabId={collab.id}
+                    milestoneSortOrder={proofMilestoneSortOrder}
                     isOpen={!!proofMilestoneId}
                     onClose={() => setProofMilestoneId(null)}
                 />
@@ -388,15 +432,16 @@ export default function CollaborationDetailPage() {
 
 // ── Sub-components ──
 
-function UserBadge({ label, address, isSelf }: { label: string; address: string; isSelf: boolean }) {
+function UserBadge({ role, address, isSelf }: { role: 'initiator' | 'provider'; address: string; isSelf: boolean }) {
+    const t = useT();
     const { data: profile } = useProfileByAddress(address);
     return (
         <span className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[16px] text-primary">
-                {label === '发布人' ? 'person' : 'engineering'}
+                {role === 'initiator' ? 'person' : 'engineering'}
             </span>
             <span className="font-medium text-[#121317]">{displayName(profile, address)}</span>
-            {isSelf && <span className="text-primary text-[10px] ml-0.5">(你)</span>}
+            {isSelf && <span className="text-primary text-[10px] ml-0.5">{t.quests.you}</span>}
         </span>
     );
 }
@@ -405,11 +450,14 @@ function ApplicantReviewCard({
     application,
     onApprove,
     isApproving,
+    escrowStep,
 }: {
     application: CollabApplication;
     onApprove: () => void;
     isApproving: boolean;
+    escrowStep?: EscrowStep;
 }) {
+    const t = useT();
     const { data: profile } = useProfileByAddress(application.applicant_id);
 
     return (
@@ -429,20 +477,22 @@ function ApplicantReviewCard({
                     disabled={isApproving}
                     className="ag-btn-primary !px-4 !py-2 !text-[12px] shadow-none"
                 >
-                    {isApproving ? '…' : '确认承接'}
+                    {isApproving
+                        ? (escrowStep === 'approving' ? 'USDC...' : escrowStep === 'depositing' ? 'Escrow...' : '…')
+                        : t.quests.approveProvider}
                 </button>
             </div>
 
             <div className="bg-[#F8F9FC] rounded-xl p-4">
                 <p className="text-[13px] text-[#45474D] leading-relaxed italic">
-                    “{application.message || '该申请人未提供具体方案说明。'}”
+                    &ldquo;{application.message || t.quests.noApplicationMessage}&rdquo;
                 </p>
             </div>
 
             {profile?.portfolio && (
                 <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-primary font-semibold hover:underline">
                     <span className="material-symbols-outlined !text-[14px]">work</span>
-                    作品集资料
+                    {t.quests.portfolio}
                 </a>
             )}
         </div>
@@ -460,6 +510,7 @@ function ConfirmDialog({
     onConfirm: () => void;
     onCancel: () => void;
 }) {
+    const t = useT();
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center">
             <div className="absolute inset-0 bg-[#121317]/30 backdrop-blur-sm" onClick={onCancel} />
@@ -467,7 +518,7 @@ function ConfirmDialog({
                 <h3 className="text-[18px] font-bold text-[#121317]">{title}</h3>
                 <p className="text-[14px] text-[#6A6A71] leading-relaxed">{body}</p>
                 <div className="flex gap-3">
-                    <button onClick={onCancel} className="ag-btn-secondary flex-1">取消</button>
+                    <button onClick={onCancel} className="ag-btn-secondary flex-1">{t.common.cancel}</button>
                     <button onClick={onConfirm} disabled={isLoading} className={`flex-1 px-5 py-2.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-colors transition-transform ${confirmClass}`}>
                         {isLoading && <span className="material-symbols-outlined !text-[16px] animate-spin">progress_activity</span>}
                         {confirmLabel}

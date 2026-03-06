@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n';
 import { useCreateCollaboration } from '@/hooks/useCollaborations';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 
 interface MilestoneInput {
@@ -18,18 +17,22 @@ interface ReferenceLink {
     url: string;
 }
 
-const DELIVERY_PRESETS = [
-    { label: '设计稿', value: '设计稿（Figma / PSD / AI）' },
-    { label: '代码仓库', value: '代码仓库（GitHub / GitLab）' },
-    { label: '文档', value: '文档（在线文档链接）' },
-    { label: '演示视频', value: '演示视频（录屏或 Demo）' },
-    { label: '线上部署', value: '线上部署（可访问 URL）' },
-];
+function useDeliveryPresets() {
+    const t = useT();
+    return [
+        { label: t.quests.deliveryDesign, value: t.quests.deliveryDesignFull },
+        { label: t.quests.deliveryCode, value: t.quests.deliveryCodeFull },
+        { label: t.quests.deliveryDoc, value: t.quests.deliveryDocFull },
+        { label: t.quests.deliveryVideo, value: t.quests.deliveryVideoFull },
+        { label: t.quests.deliveryDeploy, value: t.quests.deliveryDeployFull },
+    ];
+}
 
 export default function CreateCollaborationPage() {
     const t = useT();
     const router = useRouter();
     const createCollab = useCreateCollaboration();
+    const DELIVERY_PRESETS = useDeliveryPresets();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -92,7 +95,7 @@ export default function CreateCollaborationPage() {
             });
             router.push(`/collaborations/${result.id}`);
         } catch (e: any) {
-            console.error('创建协作失败:', e);
+            console.error('Failed to create collaboration:', e);
         }
     };
 
@@ -101,16 +104,16 @@ export default function CreateCollaborationPage() {
             <div className="max-w-[640px] mx-auto px-6 py-16">
                 <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-[#6A6A71] hover:text-[#121317] transition-colors duration-200 mb-10 font-medium">
                     <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
-                    返回列表
+                    {t.quests.backToList}
                 </Link>
 
                 <div className="space-y-10">
                     {/* Header */}
                     <div className="fade-up">
                         <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-[#121317] tracking-[-0.02em] mb-2">
-                            发起新协作
+                            {t.quests.createNewQuest}
                         </h1>
-                        <p className="text-[#6A6A71] text-[15px] font-medium">详细描述任务内容，让潜在承接人充分了解需求。</p>
+                        <p className="text-[#6A6A71] text-[15px] font-medium">{t.quests.createNewQuestDesc}</p>
                     </div>
 
                     <div className="fade-up">
@@ -141,13 +144,13 @@ export default function CreateCollaborationPage() {
                     {/* Title */}
                     <div className="fade-up fade-up-delay-1">
                         <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                            任务标题 <span className="text-red-500">*</span>
+                            {t.quests.questTitleLabel} <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="例如：品牌视觉设计 / DApp 前端开发…"
+                            placeholder={t.quests.questTitlePlaceholder}
                             className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                         />
                     </div>
@@ -155,12 +158,12 @@ export default function CreateCollaborationPage() {
                     {/* Description */}
                     <div className="fade-up fade-up-delay-2">
                         <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                            任务详情 <span className="text-red-500">*</span>
+                            {t.quests.questDescLabel} <span className="text-red-500">*</span>
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="详细描述任务背景、目标、范围、技能要求等…"
+                            placeholder={t.quests.questDescPlaceholder}
                             rows={5}
                             className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
@@ -169,14 +172,14 @@ export default function CreateCollaborationPage() {
                     {/* Reference Links */}
                     <div className="fade-up">
                         <div className="flex items-center justify-between mb-2.5">
-                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">参考资料</label>
+                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.referenceLinks}</label>
                             <button onClick={addRef} className="text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                                 <span className="material-symbols-outlined !text-[14px]">add</span>
-                                添加链接
+                                {t.quests.addLink}
                             </button>
                         </div>
                         {referenceLinks.length === 0 && (
-                            <p className="text-[13px] text-[#B8BACA] italic">暂无参考资料，点击上方添加</p>
+                            <p className="text-[13px] text-[#B8BACA] italic">{t.quests.noReferences}</p>
                         )}
                         <div className="space-y-2">
                             {referenceLinks.map((ref: ReferenceLink, i: number) => (
@@ -185,7 +188,7 @@ export default function CreateCollaborationPage() {
                                         type="text"
                                         value={ref.label}
                                         onChange={(e) => updateRef(i, 'label', e.target.value)}
-                                        placeholder="标题（选填）"
+                                        placeholder={t.quests.linkLabel}
                                         className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-colors transition-transform"
                                     />
                                     <input
@@ -206,7 +209,7 @@ export default function CreateCollaborationPage() {
                     {/* Deadline */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                            截止日期 <span className="text-red-500">*</span>
+                            {t.quests.deadlineLabel} <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="date"
@@ -219,7 +222,7 @@ export default function CreateCollaborationPage() {
                     {/* Delivery Standard */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                            交付标准 <span className="text-red-500">*</span>
+                            {t.quests.deliveryStandardLabel} <span className="text-red-500">*</span>
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3">
                             {DELIVERY_PRESETS.map((p) => (
@@ -241,7 +244,7 @@ export default function CreateCollaborationPage() {
                                     : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
                                     }`}
                             >
-                                自定义
+                                {t.quests.customLabel}
                             </button>
                         </div>
                         {deliveryStandard === 'custom' && (
@@ -249,7 +252,7 @@ export default function CreateCollaborationPage() {
                                 type="text"
                                 value={customDelivery}
                                 onChange={(e) => setCustomDelivery(e.target.value)}
-                                placeholder="请描述你的交付标准…"
+                                placeholder={t.quests.customDeliveryPlaceholder}
                                 className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                             />
                         )}
@@ -287,7 +290,7 @@ export default function CreateCollaborationPage() {
                         <textarea
                             value={secretContent}
                             onChange={(e) => setSecretContent(e.target.value)}
-                            placeholder="在此输入只有承接人可见的私密信息、联系方式、特定 API KEY 或详细附件说明..."
+                            placeholder={t.quests.secretPlaceholder}
                             rows={4}
                             className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
@@ -296,9 +299,9 @@ export default function CreateCollaborationPage() {
                     {/* Milestones */}
                     <div className="fade-up">
                         <div className="flex items-center justify-between mb-4">
-                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">里程碑拆解</label>
+                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.milestoneBreakdown}</label>
                             <span className={`text-[13px] font-bold tabular-nums ${totalPercentage === 100 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                合计: {totalPercentage}%
+                                {t.quests.totalLabel}: {totalPercentage}%
                             </span>
                         </div>
 
@@ -311,7 +314,7 @@ export default function CreateCollaborationPage() {
                                             type="text"
                                             value={ms.title}
                                             onChange={(e) => updateMilestone(i, 'title', e.target.value)}
-                                            placeholder="里程碑标题…"
+                                            placeholder={t.quests.milestoneTitlePlaceholder}
                                             className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors transition-transform duration-200"
                                         />
                                         <div className="flex items-center gap-2">
@@ -342,7 +345,7 @@ export default function CreateCollaborationPage() {
 
                         <button onClick={addMilestone} className="ag-btn-secondary w-full mt-4 py-3 text-[13px]">
                             <span className="material-symbols-outlined !text-[16px]">add_circle</span>
-                            添加里程碑
+                            {t.quests.addMilestone}
                         </button>
                     </div>
 
@@ -355,14 +358,14 @@ export default function CreateCollaborationPage() {
                         {createCollab.isPending ? (
                             <>
                                 <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
-                                创建中…
+                                {t.quests.creating}
                             </>
-                        ) : '发布协作任务'}
+                        ) : t.quests.publishQuest}
                     </button>
 
                     {totalPercentage !== 100 && milestones.length > 0 && (
                         <p className="text-[13px] text-red-500 font-medium text-center">
-                            ⚠ 里程碑占比之和必须等于 100%（当前: {totalPercentage}%）
+                            ⚠ {t.quests.percentageMustBe100} ({t.quests.currentPct}: {totalPercentage}%)
                         </p>
                     )}
                 </div>

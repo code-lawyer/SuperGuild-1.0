@@ -437,9 +437,24 @@ export function useSubmitProofMutation() {
                 .update({ status: 'SUBMITTED' })
                 .eq('id', milestoneId);
             if (msErr) throw msErr;
+
+            // Transition collab to ACTIVE on first proof submission
+            const { data: ms } = await supabase
+                .from('milestones')
+                .select('collab_id')
+                .eq('id', milestoneId)
+                .single();
+            if (ms) {
+                await supabase
+                    .from('collaborations')
+                    .update({ status: 'ACTIVE' })
+                    .eq('id', ms.collab_id)
+                    .eq('status', 'LOCKED');
+            }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
         },
     });
 }
@@ -468,6 +483,25 @@ export function useConfirmMilestone() {
                     .update({ status: 'SETTLED' })
                     .eq('id', collabId);
             }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+        },
+    });
+}
+
+// ── Dispute a collaboration (sets status to DISPUTED) ──
+export function useDisputeCollaboration() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (collabId: string) => {
+            const { error } = await supabase
+                .from('collaborations')
+                .update({ status: 'DISPUTED' })
+                .eq('id', collabId);
+            if (error) throw error;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collaboration'] });

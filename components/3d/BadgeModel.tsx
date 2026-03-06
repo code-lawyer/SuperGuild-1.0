@@ -1,16 +1,17 @@
 'use client';
 
-import { Suspense, useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { useGraph, useFrame } from '@react-three/fiber';
-import { useGLTF, Float, Clone } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { useGLTF, Float } from '@react-three/drei';
+import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
 interface BadgeModelProps {
-    type: 'pioneer' | 'flame' | 'lantern';
+    glbPath: string;
+    glowColor: string;
     isThumbnail?: boolean;
 }
 
-// 提取着色器逻辑
 const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
     shader.uniforms.glowColor = { value: glowColor };
     shader.uniforms.time = { value: 0 };
@@ -56,42 +57,29 @@ const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
     return shader;
 };
 
-export default function BadgeModel({ type, isThumbnail = false }: BadgeModelProps) {
-    const gltfPath = type === 'pioneer' ? '/models/pioneer.glb' : type === 'flame' ? '/models/flame.glb' : '/models/lantern.glb';
-    const { scene } = useGLTF(gltfPath);
-
-    // 必须克隆场景！否则多个 Canvas 重复使用相同 GLTF 实例会导致材质和节点冲突
+export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: BadgeModelProps) {
+    const { scene } = useGLTF(glbPath);
     const clonedScene = useMemo(() => scene.clone(true), [scene]);
-
     const materialsRef = useRef<THREE.Material[]>([]);
-
-    const colors = {
-        pioneer: new THREE.Color('#3b82f6'),
-        flame: new THREE.Color('#ef4444'),
-        lantern: new THREE.Color('#eab308'),
-    };
+    const color = useMemo(() => new THREE.Color(glowColor), [glowColor]);
 
     useEffect(() => {
         materialsRef.current = [];
         clonedScene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
                 const mesh = child as THREE.Mesh;
-                // 如果是缩略图，我们尽量保留原有的 PBR 材质即可，橱窗里才加动态 Shader 避免性能问题
-                if (!isThumbnail) {
-                    // 克隆材质，防止污染原材质
-                    if (mesh.material) {
-                        const mat = (mesh.material as THREE.Material).clone();
-                        mat.onBeforeCompile = (shader: any) => {
-                            injectGlowShader(shader, colors[type]);
-                            mat.userData.shader = shader;
-                        };
-                        mesh.material = mat;
-                        materialsRef.current.push(mat);
-                    }
+                if (!isThumbnail && mesh.material) {
+                    const mat = (mesh.material as THREE.Material).clone();
+                    mat.onBeforeCompile = (shader: any) => {
+                        injectGlowShader(shader, color);
+                        mat.userData.shader = shader;
+                    };
+                    mesh.material = mat;
+                    materialsRef.current.push(mat);
                 }
             }
         });
-    }, [clonedScene, isThumbnail, type]);
+    }, [clonedScene, isThumbnail, color]);
 
     useFrame((state) => {
         if (!isThumbnail) {
@@ -114,7 +102,7 @@ export default function BadgeModel({ type, isThumbnail = false }: BadgeModelProp
     );
 }
 
-// 预加载模型，提升 UX
-useGLTF.preload('/models/pioneer.glb');
-useGLTF.preload('/models/flame.glb');
-useGLTF.preload('/models/lantern.glb');
+// 预加载所有特权 NFT 模型
+Object.values(PRIVILEGE_NFT.tokens).forEach(token => {
+    useGLTF.preload(token.glbPath);
+});

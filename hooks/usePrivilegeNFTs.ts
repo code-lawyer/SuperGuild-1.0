@@ -3,7 +3,6 @@ import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
 const { address: CONTRACT, chainId, tokens } = PRIVILEGE_NFT;
 
-// ERC-1155 balanceOfBatch ABI
 const erc1155Abi = [
     {
         type: 'function',
@@ -17,9 +16,15 @@ const erc1155Abi = [
     },
 ] as const;
 
+// Token 列表按 ID 排序，顺序与 balanceOfBatch 返回值对应
+const TOKEN_LIST = Object.values(tokens).sort((a, b) =>
+    Number(a.id) - Number(b.id)
+);
+
 /**
- * 批量查询所有 5 个特权 NFT 的持有状态。
- * Token 顺序: [Pioneer Memorial, Lantern Keeper, First Flame, Hand of Justice, Beacon]
+ * 批量查询所有特权 NFT 的持有状态。
+ * 顺序与 nft-config.ts 中 tokens 的 ID 顺序一致（#1 → #5）。
+ * 新增 NFT 只需在 nft-config.ts 中添加配置，此 hook 自动扩展。
  */
 export function usePrivilegeNFTs() {
     const { address } = useAccount();
@@ -32,41 +37,33 @@ export function usePrivilegeNFTs() {
                 functionName: 'balanceOfBatch',
                 chainId,
                 args: [
-                    [address, address, address, address, address],
-                    [
-                        tokens.PIONEER_MEMORIAL.id,
-                        tokens.LANTERN_KEEPER.id,
-                        tokens.FIRST_FLAME.id,
-                        tokens.HAND_OF_JUSTICE.id,
-                        tokens.BEACON.id,
-                    ],
+                    TOKEN_LIST.map(() => address),
+                    TOKEN_LIST.map(t => t.id),
                 ],
             }
         ] : [],
     });
 
-    if (process.env.NODE_ENV === 'development') {
-        console.debug('[BadgeNFT] balances:', data?.[0]?.result);
-    }
-
-    // 解析返回结果
     const balances = data?.[0]?.result as readonly bigint[] | undefined;
+    const balanceNums = balances
+        ? TOKEN_LIST.map((_, i) => Number(balances[i] ?? BigInt(0)))
+        : TOKEN_LIST.map(() => 0);
 
-    const hasPioneer = balances ? balances[0] > BigInt(0) : false;
-    const hasLantern = balances ? balances[1] > BigInt(0) : false;
-    const hasFlame = balances ? balances[2] > BigInt(0) : false;
-    const hasJustice = balances ? balances[3] > BigInt(0) : false;
-    const hasBeacon = balances ? balances[4] > BigInt(0) : false;
+    // 按 Token ID 顺序解构（#1 #2 #3 #4 #5）
+    const [hasPioneer, hasLantern, hasFlame, hasJustice, hasBeacon] =
+        balanceNums.map(b => b > 0);
 
     return {
+        // 具名布尔值（向后兼容现有门控 hook）
         hasPioneer,
         hasLantern,
         hasFlame,
         hasJustice,
         hasBeacon,
-        balances: balances ? balances.map(b => Number(b)) : [0, 0, 0, 0, 0],
+        // 原始数值数组，顺序与 TOKEN_LIST 一致
+        balances: balanceNums,
         isLoading,
         isError,
-        refetch
+        refetch,
     };
 }

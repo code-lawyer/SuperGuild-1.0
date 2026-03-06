@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense } from 'react';
-import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Center } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,14 +10,23 @@ import BadgeModel from '@/components/3d/BadgeModel';
 interface BadgeShowcaseModalProps {
     isOpen: boolean;
     onClose: () => void;
-    badgeType: 'pioneer' | 'flame' | 'lantern' | null;
+    glbPath: string | null;
+    glowColor: string | null;
     badgeName: string;
+    privilege?: string;
 }
 
-export default function BadgeShowcaseModal({ isOpen, onClose, badgeType, badgeName }: BadgeShowcaseModalProps) {
+export default function BadgeShowcaseModal({
+    isOpen,
+    onClose,
+    glbPath,
+    glowColor,
+    badgeName,
+    privilege,
+}: BadgeShowcaseModalProps) {
     return (
         <AnimatePresence>
-            {isOpen && badgeType && (
+            {isOpen && glbPath && glowColor && (
                 <motion.div
                     initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
                     animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
@@ -28,9 +36,8 @@ export default function BadgeShowcaseModal({ isOpen, onClose, badgeType, badgeNa
                 >
                     <div
                         className="relative w-full max-w-5xl aspect-square md:aspect-video flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()} // 防止点击模型内部关掉弹窗
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {/* 关闭按钮 */}
                         <button
                             onClick={onClose}
                             className="absolute top-6 right-6 z-10 p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
@@ -38,33 +45,29 @@ export default function BadgeShowcaseModal({ isOpen, onClose, badgeType, badgeNa
                             <X className="w-6 h-6 text-white" />
                         </button>
 
-                        {/* 顶层标题 */}
                         <div className="absolute top-10 left-0 w-full text-center z-10 pointer-events-none">
                             <h2 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 tracking-wider">
                                 {badgeName}
                             </h2>
-                            <p className="text-white/40 mt-2 uppercase tracking-widest text-sm">
-                                Super Guild Privilege Badge
-                            </p>
+                            {privilege && (
+                                <p className="text-white/40 mt-2 uppercase tracking-widest text-sm">
+                                    {privilege}
+                                </p>
+                            )}
                         </div>
 
-                        {/* R3F 画布 */}
                         <Canvas
                             shadows
                             camera={{ position: [0, 0, 6], fov: 45 }}
                             gl={{ antialias: true, alpha: true }}
                         >
                             <Suspense fallback={null}>
-                                {/* 场景环境光 */}
                                 <ambientLight intensity={0.5} />
                                 <spotLight position={[10, 10, 10]} intensity={2} angle={0.2} penumbra={1} castShadow />
                                 <Environment preset="city" />
-
                                 <Center>
-                                    <BadgeModel type={badgeType} />
+                                    <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>
-
-                                {/* 允许用户拖拽旋转的控制器 */}
                                 <OrbitControls
                                     enablePan={false}
                                     enableZoom={true}

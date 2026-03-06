@@ -12,11 +12,52 @@ export const PRIVILEGE_NFT = {
   chainId: 11155111, // Sepolia ETH
 
   tokens: {
-    PIONEER_MEMORIAL: { id: BigInt(1), name: 'Pioneer Memorial', zh: '拓世者纪念章' },
-    LANTERN_KEEPER: { id: BigInt(2), name: "Lantern Keeper's Withered Lamp", zh: '提灯人枯盏' },
-    FIRST_FLAME: { id: BigInt(3), name: 'The First Flame', zh: '初火' },
-    HAND_OF_JUSTICE: { id: BigInt(4), name: 'Hand of Justice', zh: '公义之手' },
-    BEACON: { id: BigInt(5), name: 'Beacon of the Forerunner', zh: '先驱者灯塔' },
+    PIONEER_MEMORIAL: {
+      id: BigInt(1),
+      name: 'Pioneer Memorial',
+      zh: '拓世者纪念章',
+      glbPath: '/models/pioneer.glb',
+      glowColor: '#3b82f6',
+      privilege: 'VCP 获取速度 ×1.05',
+      privilegeEn: 'VCP Accumulation Speed ×1.05',
+    },
+    LANTERN_KEEPER: {
+      id: BigInt(2),
+      name: "Lantern Keeper's Withered Lamp",
+      zh: '提灯人枯盏',
+      glbPath: '/models/lantern.glb',
+      glowColor: '#eab308',
+      privilege: 'DAO 投票权重 ×1.1',
+      privilegeEn: 'DAO Vote Weight ×1.1',
+    },
+    FIRST_FLAME: {
+      id: BigInt(3),
+      name: 'The First Flame',
+      zh: '初火',
+      glbPath: '/models/flame.glb',
+      glowColor: '#ef4444',
+      privilege: 'Admin 准入 + 无限制提案权',
+      privilegeEn: 'Admin Access + Unlimited Proposal Rights',
+    },
+    HAND_OF_JUSTICE: {
+      id: BigInt(4),
+      name: 'Hand of Justice',
+      zh: '公义之手',
+      glbPath: '/models/justice.glb',
+      glowColor: '#8b5cf6',
+      privilege: '仲裁庭准入',
+      privilegeEn: 'Arbitration Court Access',
+    },
+    BEACON: {
+      id: BigInt(5),
+      name: 'Beacon of the Forerunner',
+      zh: '先驱者灯塔',
+      glbPath: '/models/beacon.glb',
+      glowColor: '#06b6d4',
+      privilege: '公告板自由发帖权',
+      privilegeEn: 'Bulletin Board Posting Rights',
+    },
+    // 未来新增 NFT 只需在此追加，BadgeWall 自动渲染
   },
 } as const;
 
@@ -40,9 +81,16 @@ export const SPARK_GOVERNOR = {
 } as const;
 
 // ── MockUSDC 测试币 (Arbitrum Sepolia) ──
-// TODO: 部署合约后填入地址
 export const MOCK_USDC = {
-  address: (process.env.NEXT_PUBLIC_MOCK_USDC || '') as `0x${string}`,
+  address: (process.env.NEXT_PUBLIC_MOCK_USDC ||
+    '0xdd0a2bf984d690c9cdd613603094d7455fc63e06') as `0x${string}`,
   chainId: 421614, // Arbitrum Sepolia
   decimals: 6,
+} as const;
+
+// ── GuildEscrow 协作托管合约 (Arbitrum Sepolia) ──
+export const GUILD_ESCROW = {
+  address: (process.env.NEXT_PUBLIC_GUILD_ESCROW ||
+    '0x8828c3fe2f579a70057714e4034d8c8f91232a60') as `0x${string}`,
+  chainId: 421614, // Arbitrum Sepolia
 } as const;

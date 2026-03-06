@@ -1,48 +1,51 @@
 'use client';
 
-import { useAccount } from 'wagmi';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useT } from '@/lib/i18n';
+import { useNFTGate } from '@/hooks/useNFTGate';
+import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 
-// We get the string of admin wallets from the environment variable. It should be a comma-separated list of addresses.
-const adminWalletsEnv = process.env.NEXT_PUBLIC_ADMIN_WALLETS || '';
-const ADMIN_WALLETS = adminWalletsEnv.split(',').map(addr => addr.trim().toLowerCase());
-
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { isConnected, address } = useAccount();
-    const router = useRouter();
+    const t = useT();
+    const { hasNFT, isLoading, isConnected } = useNFTGate({
+        contractAddress: PRIVILEGE_NFT.address,
+        tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
+    });
     const { openConnectModal } = useConnectModal();
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    if (!isConnected) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+                <p className="text-slate-500">{t.admin.connectWalletDesc}</p>
+                <button
+                    onClick={() => openConnectModal?.()}
+                    className="px-6 py-2.5 rounded-xl text-sm font-bold bg-zinc-800 text-white border border-zinc-700 hover:bg-zinc-700 transition-colors"
+                >
+                    {t.common.connectWallet}
+                </button>
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        if (!mounted) return;
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center text-slate-500">
+                {t.common.loading}
+            </div>
+        );
+    }
 
-        if (!isConnected && openConnectModal) {
-            openConnectModal();
-            return;
-        }
-
-        if (isConnected && address) {
-            const isAuthorized = ADMIN_WALLETS.includes(address.toLowerCase());
-            if (!isAuthorized) {
-                // Redirect to home if not an admin
-                router.push('/');
-            }
-        }
-    }, [mounted, isConnected, address, router, openConnectModal]);
-
-    // Prevent flash of unauthorized content
-    if (!mounted) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-
-    if (!isConnected) return <div className="min-h-screen flex flex-col items-center justify-center text-slate-500">Please connect wallet to access Admin Panel</div>;
-
-    const isAuthorized = address && ADMIN_WALLETS.includes(address.toLowerCase());
-    if (!isAuthorized) return <div className="min-h-screen flex flex-col items-center justify-center text-red-500">Access Denied. You are not an administrator.</div>;
+    if (!hasNFT) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-6">
+                <div className="w-16 h-16 rounded-2xl border border-red-500/30 bg-red-500/10 flex items-center justify-center mb-2">
+                    <span className="material-symbols-outlined !text-[32px] text-red-400">lock</span>
+                </div>
+                <p className="text-sm font-bold text-red-400 tracking-widest uppercase">{t.admin.nftRequired}</p>
+                <p className="text-sm text-slate-500 max-w-sm">{t.admin.accessDeniedDesc}</p>
+            </div>
+        );
+    }
 
     return <>{children}</>;
 }

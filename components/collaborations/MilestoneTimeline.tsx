@@ -47,7 +47,7 @@ export default function MilestoneTimeline({
                 const isLocked = index > activeIndex && activeIndex >= 0;
                 const msProofs = proofs.filter(p => p.milestone_id === ms.id);
                 const amount = ((ms.amount_percentage / 100) * totalBudget).toFixed(0);
-                const config = statusConfig[ms.status] || statusConfig.PENDING;
+                const config = statusConfig[ms.status] || statusConfig.INCOMPLETE;
 
                 // Completed milestone
                 if (isCompleted) {

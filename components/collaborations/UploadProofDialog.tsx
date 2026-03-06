@@ -52,7 +52,7 @@ export default function UploadProofDialog({ milestoneId, collabId, milestoneSort
             setContentUrl('');
             setContentHash('');
         } catch (e) {
-            console.error('提交凭证失败:', e);
+            console.error('[UploadProofDialog] submit failed:', e);
         }
     };
 

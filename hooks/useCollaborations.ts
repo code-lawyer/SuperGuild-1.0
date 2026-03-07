@@ -152,7 +152,7 @@ export function useCreateCollaboration() {
                     delivery_standard: input.delivery_standard || null,
                     total_budget: input.total_budget,
                     reward_token: input.reward_token || 'USDC',
-                    difficulty: input.difficulty || 'MEDIUM',
+                    difficulty: input.grade || 'E',
                     grade: input.grade || 'E',
                     secret_content: input.secret_content || null,
                     secret_attachments: input.secret_attachments || [],

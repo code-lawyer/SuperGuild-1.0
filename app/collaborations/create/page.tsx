@@ -99,7 +99,6 @@ export default function CreateCollaborationPage() {
             const result = await createCollab.mutateAsync({
                 title: title.trim(),
                 description: description.trim(),
-                difficulty: grade,
                 grade: grade,
                 reward_token: rewardToken,
                 total_budget: Number(totalBudget),
@@ -170,7 +169,7 @@ export default function CreateCollaborationPage() {
                         {Number(totalBudget) > 0 && !budgetMeetsGrade && (
                             <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeBudgetTooLow}</p>
                         )}
-                        {!milestonesMeetGrade && (
+                        {gradeConf.minMilestones > 1 && milestones.length > 1 && !milestonesMeetGrade && (
                             <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeMilestoneTooFew}</p>
                         )}
                     </div>

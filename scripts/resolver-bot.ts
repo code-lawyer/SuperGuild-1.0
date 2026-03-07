@@ -332,15 +332,26 @@ async function checkFastConfirmFreeze(address: string): Promise<string | null> {
         .limit(1);
 
     if (frozen && frozen.length > 0) {
-        // Check for unfreeze: any collab confirmed in > 24h during freeze period
-        const { data: slowConfirm } = await supabase
+        // Unfreeze only if there's a settlement AFTER the freeze record that passed anti-cheat
+        const { data: freezeRecord } = await supabase
             .from('vcp_settlements')
-            .select('id')
+            .select('evaluated_at')
+            .eq('skip_reason', 'fast_confirm_freeze')
             .or(`publisher_address.eq.${address.toLowerCase()},worker_address.eq.${address.toLowerCase()}`)
-            .eq('anti_cheat_passed', true)
-            .gte('evaluated_at', freezeSince)
+            .order('evaluated_at', { ascending: false })
             .limit(1);
-        if (slowConfirm && slowConfirm.length > 0) return null; // unfrozen
+
+        if (freezeRecord && freezeRecord.length > 0) {
+            const freezeTime = freezeRecord[0].evaluated_at;
+            const { data: slowConfirm } = await supabase
+                .from('vcp_settlements')
+                .select('id')
+                .or(`publisher_address.eq.${address.toLowerCase()},worker_address.eq.${address.toLowerCase()}`)
+                .eq('anti_cheat_passed', true)
+                .gt('evaluated_at', freezeTime)
+                .limit(1);
+            if (slowConfirm && slowConfirm.length > 0) return null; // unfrozen by a legitimate settlement after freeze
+        }
         return 'fast_confirm_freeze';
     }
 
@@ -408,22 +419,35 @@ async function runVCPMintWatcher() {
             }
 
             // Find the collaboration in Supabase to get grade + publisher
-            const { data: collabs } = await supabase
-                .from('collaborations')
-                .select('id, grade, initiator_id')
-                .limit(100);
-
-            // Match by hashing UUIDs
+            // We must hash each UUID client-side (keccak256 not available in Supabase),
+            // so paginate through all collaborations
             let collabUUID = '';
             let collabGrade = 'E';
             let publisher = '';
-            for (const c of (collabs || [])) {
-                if (toCollabId(c.id) === collabId) {
-                    collabUUID = c.id;
-                    collabGrade = c.grade || 'E';
-                    publisher = c.initiator_id || '';
-                    break;
+            let page = 0;
+            const PAGE_SIZE = 500;
+            while (!collabUUID) {
+                const { data: collabs } = await supabase
+                    .from('collaborations')
+                    .select('id, grade, initiator_id')
+                    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+                if (!collabs || collabs.length === 0) break;
+
+                for (const c of collabs) {
+                    if (toCollabId(c.id) === collabId) {
+                        collabUUID = c.id;
+                        collabGrade = c.grade || 'E';
+                        publisher = c.initiator_id || '';
+                        break;
+                    }
                 }
+                if (collabs.length < PAGE_SIZE) break;
+                page++;
+            }
+
+            if (!collabUUID) {
+                console.warn(`[vcpMint] Could not find collaboration for on-chain collabId ${collabId}, defaulting to grade E`);
             }
 
             const vcpForGrade = GRADE_VCP[collabGrade] || GRADE_VCP.E;
@@ -454,7 +478,7 @@ async function runVCPMintWatcher() {
             const settlementRecord: Record<string, any> = {
                 settlement_key: settlementKey,
                 worker_address: worker.toLowerCase(),
-                publisher_address: publisher.toLowerCase() || null,
+                publisher_address: publisher ? publisher.toLowerCase() : null,
                 grade: collabGrade,
                 vcp_amount: skipReason ? 0 : vcpForGrade,
                 anti_cheat_passed: !skipReason,

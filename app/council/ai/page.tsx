@@ -2,127 +2,193 @@
 
 import { useT } from '@/lib/i18n';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { Html, OrbitControls } from '@react-three/drei';
 import { useRef, useState, Suspense } from 'react';
 import * as THREE from 'three';
+import { motion, AnimatePresence } from 'framer-motion';
 
-function CentralMonolith() {
+// ── Types & Data ─────────────────────────────────────────────────────────────
+
+interface GuildElder {
+    id: string;
+    codename: string;
+    vcp: number;
+}
+
+const MOCK_ELDERS: GuildElder[] = [
+    { id: '1',  codename: 'ARBITER-∆1',  vcp: 12480 },
+    { id: '2',  codename: 'CIPHER-∆2',   vcp: 8320  },
+    { id: '3',  codename: 'WARDEN-∆3',   vcp: 7150  },
+    { id: '4',  codename: 'ORACLE-∆4',   vcp: 6800  },
+    { id: '5',  codename: 'HERALD-∆5',   vcp: 5940  },
+    { id: '6',  codename: 'VOIDEX-∆6',   vcp: 5120  },
+    { id: '7',  codename: 'NEXUS-∆7',    vcp: 4380  },
+    { id: '8',  codename: 'PRAXIS-∆8',   vcp: 3760  },
+    { id: '9',  codename: 'ETHOS-∆9',    vcp: 3200  },
+    { id: '10', codename: 'AXIOM-∆10',   vcp: 2840  },
+    { id: '11', codename: 'SIGIL-∆11',   vcp: 2310  },
+    { id: '12', codename: 'RELIC-∆12',   vcp: 1980  },
+    { id: '13', codename: 'EMBER-∆13',   vcp: 1540  },
+];
+
+// TODO: Replace with real query
+// Query: profiles WHERE vcp_cache >= (totalVCPSupply * 0.01)
+// OR: user_medals WHERE token_id IN [specific privileged NFT IDs]
+async function fetchGuildElders(): Promise<GuildElder[]> {
+    return MOCK_ELDERS;
+}
+
+// ── Central Icosahedron ───────────────────────────────────────────────────────
+
+function CentralIcosahedron() {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const wireRef = useRef<THREE.Mesh>(null);
+    const [hovered, setHovered] = useState(false);
+
+    useFrame((_, delta) => {
+        if (meshRef.current) {
+            meshRef.current.rotation.y += delta * 0.4;
+            meshRef.current.rotation.x += delta * 0.1;
+        }
+        if (wireRef.current) {
+            wireRef.current.rotation.y += delta * 0.4;
+            wireRef.current.rotation.x += delta * 0.1;
+        }
+    });
+
     return (
         <group>
-            {/* The core monolith Rhythm */}
-            <mesh position={[0, 0, 0]}>
-                <boxGeometry args={[2, 12, 2]} />
-                <meshStandardMaterial color="#1a1f2e" roughness={0.15} metalness={0.7} />
+            <mesh
+                ref={meshRef}
+                onPointerOver={() => { document.body.style.cursor = 'pointer'; setHovered(true); }}
+                onPointerOut={() => { document.body.style.cursor = 'auto'; setHovered(false); }}
+            >
+                <icosahedronGeometry args={[1.8, 0]} />
+                <meshStandardMaterial color="#111111" roughness={0.3} metalness={0.6} />
             </mesh>
-            {/* Glowing inner core wires */}
-            <mesh position={[0, 0, 0]}>
-                <boxGeometry args={[2.05, 12.05, 2.05]} />
-                <meshBasicMaterial color="#0ea5e9" wireframe transparent opacity={0.35} />
+            <mesh ref={wireRef}>
+                <icosahedronGeometry args={[1.85, 0]} />
+                <meshBasicMaterial color="#333333" wireframe transparent opacity={0.4} />
             </mesh>
-
-            <Html position={[0, 6.5, 0]} center zIndexRange={[100, 0]}>
-                <div className="bg-black/80 text-sky-400 font-mono text-xs px-4 py-1 rounded border border-sky-500/50 flex flex-col items-center">
-                    <span className="font-bold tracking-widest uppercase">Rhythm</span>
-                    <span className="text-[8px] opacity-70">Guild Core AI</span>
-                </div>
-            </Html>
+            {hovered && (
+                <Html position={[0, 2.8, 0]} center zIndexRange={[100, 0]}>
+                    <div className="text-[10px] font-mono font-bold tracking-widest text-slate-400 pointer-events-none whitespace-nowrap">
+                        RHYTHM · CORE
+                        {/* TODO: connect to Rhythm chat interface */}
+                    </div>
+                </Html>
+            )}
         </group>
     );
 }
 
-function AgentSlab({ angle, radius, name, status, index }: { angle: number, radius: number, name: string, status: string, index: number }) {
-    const meshRef = useRef<THREE.Mesh>(null);
-    const [hovered, setHovered] = useState(false);
+// ── Elder Slab ────────────────────────────────────────────────────────────────
 
-    useFrame((state) => {
-        if (meshRef.current) {
-            // Slabs float up and down slightly
-            meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 1.5 + index) * 0.3;
-            // Face outwards continuously
-            meshRef.current.rotation.y = -angle;
-        }
+function ElderSlab({
+    elder,
+    angle,
+    index,
+    isHovered,
+    onHover,
+    onUnhover,
+    onConnect,
+}: {
+    elder: GuildElder;
+    angle: number;
+    index: number;
+    isHovered: boolean;
+    onHover: () => void;
+    onUnhover: () => void;
+    onConnect: () => void;
+}) {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const groupRef = useRef<THREE.Group>(null);
+
+    const ORBIT_RADIUS = 6;
+    const x = Math.cos(angle) * ORBIT_RADIUS;
+    const z = Math.sin(angle) * ORBIT_RADIUS;
+
+    const targetRotY = isHovered ? angle + Math.PI : angle + Math.PI / 2;
+
+    useFrame((state, delta) => {
+        if (!groupRef.current || !meshRef.current) return;
+        groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 1.2 + index * 0.8) * 0.25;
+        meshRef.current.rotation.y = THREE.MathUtils.lerp(
+            meshRef.current.rotation.y,
+            targetRotY,
+            delta * 8
+        );
     });
 
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-
-    // Determine status color
-    const isOnline = status === 'Online';
-    const accentColor = isOnline ? "#10b981" : "#64748b"; // Emerald vs Slate
-
     return (
-        <mesh
-            ref={meshRef}
-            position={[x, 0, z]}
-            onPointerOver={() => {
-                document.body.style.cursor = 'pointer';
-                setHovered(true);
-            }}
-            onPointerOut={() => {
-                document.body.style.cursor = 'auto';
-                setHovered(false);
-            }}
-            scale={hovered ? 1.05 : 1}
-        >
-            <boxGeometry args={[1.5, 4, 0.3]} />
-            <meshStandardMaterial
-                color={hovered ? "#2a3148" : "#1e2536"}
-                roughness={0.2}
-                metalness={0.85}
-                emissive={hovered ? accentColor : "#1a2030"}
-                emissiveIntensity={hovered ? 0.5 : 0.1}
-            />
-
-            <Html position={[0, 2.8, 0]} center zIndexRange={[100, 0]} style={{ transition: 'all 0.2s', opacity: hovered ? 1 : 0, pointerEvents: 'none' }}>
-                <div className="bg-slate-900/90 text-white font-mono text-xs px-4 py-2 rounded border border-slate-700 whitespace-nowrap shadow-xl backdrop-blur-md flex flex-col items-center gap-1">
-                    <span className="font-bold tracking-widest text-[#e2e8f0]">{name}</span>
-                    <div className="flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_5px_#10b981]' : 'bg-slate-500'}`} />
-                        <span className={`text-[9px] uppercase tracking-wider ${isOnline ? 'text-emerald-400' : 'text-slate-400'}`}>{status}</span>
-                    </div>
-                </div>
-            </Html>
-
-            {/* Wireframe accent container */}
-            <mesh>
-                <boxGeometry args={[1.52, 4.02, 0.32]} />
-                <meshBasicMaterial color={hovered ? accentColor : "#556"} wireframe transparent opacity={hovered ? 0.5 : 0.3} />
+        <group ref={groupRef} position={[x, 0, z]}>
+            <mesh
+                ref={meshRef}
+                rotation-y={angle + Math.PI / 2}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; onHover(); }}
+                onPointerOut={() => { document.body.style.cursor = 'auto'; onUnhover(); }}
+            >
+                <boxGeometry args={[1.2, 3.5, 0.08]} />
+                <meshStandardMaterial color="#0a0a0a" roughness={0.5} metalness={0.3} />
             </mesh>
-        </mesh>
+
+            {isHovered && (
+                <Html
+                    position={[0, 0, 0.2]}
+                    center
+                    zIndexRange={[100, 0]}
+                    style={{ pointerEvents: 'auto' }}
+                >
+                    <div className="bg-black/90 px-4 py-3 flex flex-col items-center gap-2 min-w-[140px]">
+                        <span className="text-white font-mono font-bold tracking-widest text-[11px] uppercase">
+                            {elder.codename}
+                        </span>
+                        <div className="w-full h-px bg-white/20" />
+                        <span className="text-white/60 font-mono text-[10px]">
+                            {elder.vcp.toLocaleString()} VCP
+                        </span>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onConnect(); }}
+                            className="mt-1 px-3 py-1 text-[10px] font-mono font-bold text-black bg-white hover:bg-white/80 transition-colors tracking-widest"
+                        >
+                            与 TA 交流
+                        </button>
+                    </div>
+                </Html>
+            )}
+        </group>
     );
 }
 
-function AICluster() {
-    const groupRef = useRef<THREE.Group>(null);
+// ── AI Cluster ────────────────────────────────────────────────────────────────
 
-    useFrame((state, delta) => {
-        if (groupRef.current) {
-            // Rotate the entire cluster slowly
+function AICluster({ onConnect }: { onConnect: (elder: GuildElder) => void }) {
+    const groupRef = useRef<THREE.Group>(null);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const isPaused = hoveredIndex !== null;
+
+    useFrame((_, delta) => {
+        if (groupRef.current && !isPaused) {
             groupRef.current.rotation.y += delta * 0.05;
         }
     });
 
-    const agents = Array.from({ length: 16 }, (_, i) => ({
-        id: `AG-${i.toString(16).padStart(3, '0').toUpperCase()}`,
-        name: `Proxy Intelligence 0x${Math.floor(Math.random() * 9000 + 1000)}`,
-        status: Math.random() > 0.3 ? 'Online' : 'Dormant'
-    }));
-
     return (
         <group ref={groupRef}>
-            <CentralMonolith />
-            {agents.map((agent, i) => {
-                const angle = (i / agents.length) * Math.PI * 2;
+            <CentralIcosahedron />
+            {MOCK_ELDERS.map((elder, i) => {
+                const angle = (i / MOCK_ELDERS.length) * Math.PI * 2;
                 return (
-                    <AgentSlab
-                        key={agent.id}
+                    <ElderSlab
+                        key={elder.id}
+                        elder={elder}
                         angle={angle}
-                        radius={7}
-                        name={agent.name}
-                        status={agent.status}
                         index={i}
+                        isHovered={hoveredIndex === i}
+                        onHover={() => setHoveredIndex(i)}
+                        onUnhover={() => setHoveredIndex(null)}
+                        onConnect={() => onConnect(elder)}
                     />
                 );
             })}
@@ -130,54 +196,74 @@ function AICluster() {
     );
 }
 
+// ── Connecting Dialog ─────────────────────────────────────────────────────────
+
+function ConnectingDialog({ elder, onClose }: { elder: GuildElder | null; onClose: () => void }) {
+    return (
+        <AnimatePresence>
+            {elder && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white border border-slate-200 p-8 flex flex-col items-center gap-4 min-w-[280px]"
+                    >
+                        <span className="text-[11px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+                            {elder.codename}
+                        </span>
+                        <div className="w-8 h-8 border-2 border-slate-200 border-t-black rounded-full animate-spin" />
+                        <p className="text-sm font-mono text-slate-600">
+                            {/* TODO: connect to elder persona agent */}
+                            连接中...
+                        </p>
+                        <button
+                            onClick={onClose}
+                            className="mt-2 text-[11px] font-mono text-slate-400 hover:text-black transition-colors tracking-widest"
+                        >
+                            × 关闭
+                        </button>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function ThroneOfKindlingPage() {
     const t = useT();
+    const [connectingElder, setConnectingElder] = useState<GuildElder | null>(null);
 
     return (
         <div className="relative selection:bg-primary/20">
-
-            <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col w-full h-full min-h-[calc(100vh-80px)]">
+            <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col w-full">
                 <PageHeader
                     title={t.council.throneOfKindling}
                     description={t.council.throneOfKindlingDesc}
                 />
 
-                <div className="mt-8 flex-1 w-full bg-[#030712] rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl flex flex-col max-h-[800px] min-h-[600px]">
-                    {/* UI Overlay */}
-                    <div className="absolute top-6 left-6 z-10 pointer-events-none">
-                        <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700 px-4 py-3 rounded-xl flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-                                <span className="text-white font-bold text-sm tracking-wider uppercase font-mono">System Online</span>
-                            </div>
-                            <div className="w-px h-4 bg-slate-700" />
-                            <div className="flex flex-col">
-                                <span className="text-slate-400 text-[9px] uppercase tracking-widest">Active Personas</span>
-                                <span className="text-emerald-400 font-mono text-sm font-bold">11 / 16</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="absolute bottom-6 left-0 right-0 z-10 flex justify-center pointer-events-none">
-                        <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700 px-6 py-2 rounded-full flex items-center gap-2 text-slate-300 text-xs font-medium tracking-wide">
-                            <span className="material-symbols-outlined !text-[14px]">mouse</span>
-                            Drag to rotate view (Horizontal only)
-                        </div>
-                    </div>
-
-                    {/* 3D Canvas */}
-                    <Canvas camera={{ position: [0, 2, 18], fov: 45 }}>
-                        <color attach="background" args={['#0a101c']} />
-                        <ambientLight intensity={1.5} />
-                        <directionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" />
-                        <pointLight position={[-10, 0, -10]} intensity={1.5} color="#0ea5e9" />
-                        <pointLight position={[10, -5, 10]} intensity={0.8} color="#f59e0b" />
+                <div className="mt-8 w-full" style={{ height: '70vh' }}>
+                    <Canvas
+                        camera={{ position: [0, 6, 20], fov: 50 }}
+                        style={{ background: '#ffffff' }}
+                    >
+                        <ambientLight intensity={2.5} />
+                        <directionalLight position={[5, 10, 5]} intensity={1.5} color="#ffffff" />
+                        <directionalLight position={[-5, -5, -5]} intensity={0.5} color="#dddddd" />
 
                         <Suspense fallback={null}>
-                            <AICluster />
+                            <AICluster onConnect={setConnectingElder} />
                         </Suspense>
 
-                        {/* Lock vertical rotation to strictly focus on the front view as requested */}
                         <OrbitControls
                             enableZoom={false}
                             enablePan={false}
@@ -188,6 +274,11 @@ export default function ThroneOfKindlingPage() {
                     </Canvas>
                 </div>
             </div>
+
+            <ConnectingDialog
+                elder={connectingElder}
+                onClose={() => setConnectingElder(null)}
+            />
         </div>
     );
 }

@@ -31,7 +31,7 @@ export default function AdminBulletinsPage() {
     const fetchAnnouncements = async () => {
         setLoading(true);
         const { data, error } = await supabase
-            .from('announcements')
+            .from('bulletins')
             .select('*')
             .order('created_at', { ascending: false });
 
@@ -74,13 +74,13 @@ export default function AdminBulletinsPage() {
         if (currentEditId) {
             // Update
             await supabase
-                .from('announcements')
+                .from('bulletins')
                 .update({ title, content, category, is_pinned: isPinned })
                 .eq('id', currentEditId);
         } else {
             // Insert
             await supabase
-                .from('announcements')
+                .from('bulletins')
                 .insert([{ title, content, category, is_pinned: isPinned }]);
         }
 
@@ -91,7 +91,7 @@ export default function AdminBulletinsPage() {
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to delete this announcement?')) return;
 
-        await supabase.from('announcements').delete().eq('id', id);
+        await supabase.from('bulletins').delete().eq('id', id);
         fetchAnnouncements();
     };
 

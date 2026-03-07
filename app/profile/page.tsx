@@ -61,7 +61,7 @@ export default function ProfilePage() {
             <div className="max-w-[960px] mx-auto px-6 py-8">
                 {/* Breadcrumb */}
                 <nav className="flex items-center text-sm text-slate-500 mb-6">
-                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/" className="hover:text-primary transition-colors">{t.common.home || 'Home'}</Link>
                     <span className="material-symbols-outlined !text-[16px] mx-2">chevron_right</span>
                     <span className="text-slate-900 dark:text-white font-medium">{t.profile.title}</span>
                 </nav>

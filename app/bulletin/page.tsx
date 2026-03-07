@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useT } from '@/lib/i18n';
 import { useBulletins, type Bulletin } from '@/hooks/useBulletins';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -16,7 +16,18 @@ export default function BulletinPage() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { isPioneer, isConnected, address } = usePioneerGate();
+    const { isPioneer, isConnected, isLoading: nftLoading, isError: nftError, address, refetch } = usePioneerGate();
+
+    // Cooldown state
+    const [cooldown, setCooldown] = useState<{ canPost: boolean; daysRemaining: number } | null>(null);
+
+    useEffect(() => {
+        if (!address || !isPioneer) return;
+        fetch(`/api/bulletin/pioneer/status?address=${address}`)
+            .then(res => res.json())
+            .then(data => setCooldown(data))
+            .catch(() => setCooldown(null));
+    }, [address, isPioneer]);
 
     const categories = [
         { key: 'all', label: t.common.all },
@@ -32,6 +43,22 @@ export default function BulletinPage() {
         update: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
         event: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
     };
+
+    // Determine button state
+    const getPostButtonState = () => {
+        if (!isConnected) return { disabled: true, label: t.bulletin.connectWalletToPost, icon: 'wallet' };
+        if (nftLoading) return { disabled: true, label: t.bulletin.nftChecking, icon: 'progress_activity', spin: true };
+        if (nftError) return { disabled: true, label: t.bulletin.nftCheckFailed, icon: 'error', retry: true };
+        if (!isPioneer) return { disabled: true, label: t.bulletin.nftRequired, icon: 'lock' };
+        if (cooldown && !cooldown.canPost) return {
+            disabled: true,
+            label: t.bulletin.cooldownRemaining.replace('{days}', String(cooldown.daysRemaining)),
+            icon: 'schedule'
+        };
+        return { disabled: false, label: t.bulletin.postButton, icon: 'campaign' };
+    };
+
+    const btnState = getPostButtonState();
 
     return (
         <div className="relative min-h-screen selection:bg-primary/20">
@@ -63,21 +90,42 @@ export default function BulletinPage() {
                         ))}
                     </div>
 
-                    {/* Pioneer Post Button */}
-                    {activeCategory === 'pioneer' && isConnected && isPioneer && (
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-colors transition-transform hover:-translate-y-0.5"
-                        >
-                            <span className="material-symbols-outlined !text-[18px]">campaign</span>
-                            {t.bulletin.postButton}
-                        </button>
-                    )}
+                    {/* Pioneer Post Button — always visible */}
+                    <button
+                        onClick={() => {
+                            if ('retry' in btnState && btnState.retry) {
+                                refetch();
+                            } else if (!btnState.disabled) {
+                                setIsModalOpen(true);
+                            }
+                        }}
+                        disabled={btnState.disabled && !('retry' in btnState && btnState.retry)}
+                        title={btnState.label}
+                        className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold shadow-lg transition-colors transition-transform ${
+                            btnState.disabled
+                                ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
+                                : 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600 hover:-translate-y-0.5'
+                        }`}
+                    >
+                        <span className={`material-symbols-outlined !text-[18px] ${'spin' in btnState && btnState.spin ? 'animate-spin' : ''}`}>
+                            {btnState.icon}
+                        </span>
+                        {btnState.label}
+                    </button>
                 </div>
 
                 <PioneerPostModal
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        // Refresh cooldown after posting
+                        if (address && isPioneer) {
+                            fetch(`/api/bulletin/pioneer/status?address=${address}`)
+                                .then(res => res.json())
+                                .then(data => setCooldown(data))
+                                .catch(() => {});
+                        }
+                    }}
                     authorAddress={address || ''}
                 />
 
@@ -85,7 +133,7 @@ export default function BulletinPage() {
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-32 text-slate-400 gap-4">
                         <span className="material-symbols-outlined animate-spin shadow-glow !text-[40px] text-primary">progress_activity</span>
-                        <span className="text-xs font-semibold uppercase tracking-wider animate-pulse">Loading Announcements...</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider animate-pulse">{t.common.loading}</span>
                     </div>
                 ) : bulletins.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-32 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
@@ -97,6 +145,7 @@ export default function BulletinPage() {
                         {bulletins.map((b: Bulletin) => {
                             const isExpanded = expandedId === b.id;
                             const hasAttachments = b.bulletin_attachments && b.bulletin_attachments.length > 0;
+                            const isPioneerPost = b.category === 'pioneer';
                             return (
                                 <motion.div
                                     layout
@@ -134,6 +183,12 @@ export default function BulletinPage() {
                                                     <span className="material-symbols-outlined !text-[14px]">face</span>
                                                     {b.author}
                                                 </span>
+                                                {isPioneerPost && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-black">
+                                                        <span className="material-symbols-outlined !text-[12px]">stars</span>
+                                                        {t.bulletin.pioneerBadge}
+                                                    </span>
+                                                )}
                                                 <span className="flex items-center gap-1">
                                                     <span className="material-symbols-outlined !text-[14px]">schedule</span>
                                                     {new Date(b.created_at).toLocaleDateString()}

@@ -86,6 +86,9 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
 
             const data = await res.json();
             if (!res.ok) {
+                if (res.status === 503) {
+                    throw new Error(t.bulletin.serviceUnavailable);
+                }
                 throw new Error(data.error || 'Failed to post announcement');
             }
 
@@ -150,7 +153,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                     required
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Announcement Title"
+                                    placeholder={t.bulletin.titleLabel}
                                     className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors transition-transform text-sm font-medium"
                                 />
                             </div>
@@ -185,10 +188,10 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                     </span>
                                     <div className="flex-1">
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            {file ? file.name : 'Select a file'}
+                                            {file ? file.name : t.bulletin.attachmentLabel}
                                         </p>
                                         <p className="text-[11px] text-slate-500">
-                                            {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'PDF, Image, Doc up to 10MB'}
+                                            {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'PDF, Image, Doc ≤ 10MB'}
                                         </p>
                                     </div>
                                     {file && (
@@ -221,7 +224,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                                     onClick={onClose}
                                     className="flex-1 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors transition-transform"
                                 >
-                                    Cancel
+                                    {t.common.cancel}
                                 </button>
                                 <button
                                     type="submit"

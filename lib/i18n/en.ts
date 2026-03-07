@@ -341,6 +341,14 @@ const en = {
         success: 'Announcement published successfully',
         errorNoNft: 'Pioneer Medal (Sepolia ID: 5) required to broadcast.',
         errorTooLarge: 'File size exceeds 10MB limit.',
+        connectWalletToPost: 'Connect wallet first',
+        nftRequired: 'Pioneer Beacon NFT required',
+        nftChecking: 'Verifying NFT ownership...',
+        nftCheckFailed: 'NFT check failed, please retry',
+        cooldownRemaining: 'Post again in {days} day(s)',
+        cooldownReady: 'Ready to post',
+        pioneerBadge: 'Pioneer',
+        serviceUnavailable: 'Verification service temporarily unavailable, please try again later',
     },
 
     // ── Privilege Badges ──

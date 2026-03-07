@@ -333,6 +333,14 @@ const zh: TranslationKeys = {
         success: '公告发布成功',
         errorNoNft: '需要持有先行者勋章 (Sepolia ID: 5) 才能发布。',
         errorTooLarge: '文件大小超过 10MB 限制。',
+        connectWalletToPost: '请先连接钱包',
+        nftRequired: '需持有先驱者灯塔 NFT',
+        nftChecking: '正在验证 NFT 持有状态...',
+        nftCheckFailed: 'NFT 验证失败，请重试',
+        cooldownRemaining: '{days} 天后可再次发布',
+        cooldownReady: '可以发布新公告',
+        pioneerBadge: '先驱者',
+        serviceUnavailable: '验证服务暂时不可用，请稍后重试',
     },
 
     badges: {

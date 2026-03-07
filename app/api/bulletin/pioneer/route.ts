@@ -2,14 +2,13 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { createPublicClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
+import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
-// Pioneer NFT Contract
-const PIONEER_NFT_ADDRESS = '0x46486Aa0aCC327Ac55b6402AdF4A31598987C400';
-const PIONEER_TOKEN_ID = 5n;
+const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL;
 
 const publicClient = createPublicClient({
     chain: sepolia,
-    transport: http()
+    transport: http(SEPOLIA_RPC)
 });
 
 const ERC1155_ABI = [
@@ -35,12 +34,18 @@ export async function POST(req: Request) {
         }
 
         // 1. Verify NFT Holding
-        const balance = await publicClient.readContract({
-            address: PIONEER_NFT_ADDRESS as `0x${string}`,
-            abi: ERC1155_ABI,
-            functionName: 'balanceOf',
-            args: [authorAddress as `0x${string}`, PIONEER_TOKEN_ID]
-        });
+        let balance: bigint;
+        try {
+            balance = await publicClient.readContract({
+                address: PRIVILEGE_NFT.address,
+                abi: ERC1155_ABI,
+                functionName: 'balanceOf',
+                args: [authorAddress as `0x${string}`, PRIVILEGE_NFT.tokens.BEACON.id]
+            });
+        } catch (rpcError) {
+            console.error('RPC error verifying Pioneer NFT:', rpcError);
+            return NextResponse.json({ error: 'NFT verification service temporarily unavailable', code: 'RPC_ERROR' }, { status: 503 });
+        }
 
         if (balance === 0n) {
             return NextResponse.json({ error: 'Forbidden: You do not own the Pioneer Beacon NFT.' }, { status: 403 });

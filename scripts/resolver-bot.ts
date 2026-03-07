@@ -9,8 +9,11 @@
  * Environment variables required:
  *   RESOLVER_PRIVATE_KEY — Private key of the resolver/minter hot wallet
  *   SUPABASE_URL — Supabase project URL
- *   SUPABASE_ANON_KEY — Supabase anon key
- *   ARBITRUM_SEPOLIA_RPC — (optional) RPC URL, defaults to public endpoint
+ *   SUPABASE_SERVICE_ROLE_KEY — Supabase service role key (bypasses RLS)
+ *   CHAIN_ID — (optional) 421614 for testnet (default), 42161 for mainnet
+ *   RPC_URL — (optional) Custom RPC URL
+ *   GUILD_ESCROW_ADDRESS — (optional) Override GuildEscrow contract address
+ *   VCP_TOKEN_ADDRESS — (optional) Override VCPTokenV2 contract address
  *
  * Usage:
  *   npx tsx scripts/resolver-bot.ts
@@ -18,13 +21,24 @@
 
 import { createPublicClient, createWalletClient, http, keccak256, toHex, parseAbi, formatUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { arbitrumSepolia } from 'viem/chains';
+import { arbitrumSepolia, arbitrum } from 'viem/chains';
 import { createClient } from '@supabase/supabase-js';
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
-const GUILD_ESCROW_ADDRESS = '0x8828c3fe2f579a70057714e4034d8c8f91232a60' as const;
-const VCP_TOKEN_ADDRESS = '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C' as const;
+const CHAIN_ID = Number(process.env.CHAIN_ID || '421614');
+const chain = CHAIN_ID === 42161 ? arbitrum : arbitrumSepolia;
+
+const GUILD_ESCROW_ADDRESS = (process.env.GUILD_ESCROW_ADDRESS ||
+    '0x8828c3fe2f579a70057714e4034d8c8f91232a60') as `0x${string}`;
+
+const VCP_TOKEN_ADDRESS = (process.env.VCP_TOKEN_ADDRESS ||
+    '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C') as `0x${string}`;
+
+const DEFAULT_RPC: Record<number, string> = {
+    421614: 'https://sepolia-rollup.arbitrum.io/rpc',
+    42161: 'https://arb1.arbitrum.io/rpc',
+};
 
 // On-chain milestone status enum: 0=Funded, 1=Submitted, 2=Settled, 3=Disputed
 const MS_STATUS = { Funded: 0, Submitted: 1, Settled: 2, Disputed: 3 } as const;
@@ -63,11 +77,10 @@ function getEnv(...keys: string[]): string {
     process.exit(1);
 }
 
-// Supports both dedicated bot vars and the existing .env.local Next.js vars
 const RESOLVER_PRIVATE_KEY = getEnv('RESOLVER_PRIVATE_KEY', 'HOT_WALLET_PRIVATE_KEY') as `0x${string}`;
 const SUPABASE_URL = getEnv('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
-const SUPABASE_ANON_KEY = getEnv('SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY');
-const RPC_URL = process.env.ARBITRUM_SEPOLIA_RPC || 'https://sepolia-rollup.arbitrum.io/rpc';
+const SUPABASE_SERVICE_KEY = getEnv('SUPABASE_SERVICE_ROLE_KEY');
+const RPC_URL = process.env.RPC_URL || DEFAULT_RPC[CHAIN_ID] || DEFAULT_RPC[421614];
 
 // ── Clients ─────────────────────────────────────────────────────────────────
 
@@ -75,17 +88,17 @@ const account = privateKeyToAccount(RESOLVER_PRIVATE_KEY);
 console.log(`[resolver-bot] Wallet: ${account.address}`);
 
 const publicClient = createPublicClient({
-    chain: arbitrumSepolia,
+    chain,
     transport: http(RPC_URL),
 });
 
 const walletClient = createWalletClient({
     account,
-    chain: arbitrumSepolia,
+    chain,
     transport: http(RPC_URL),
 });
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // ── Utilities ───────────────────────────────────────────────────────────────
 
@@ -405,11 +418,12 @@ async function verifyMinterRole() {
 
 async function main() {
     console.log('╔══════════════════════════════════════╗');
-    console.log('║   SuperGuild Resolver Bot v1.0       ║');
+    console.log('║   SuperGuild Resolver Bot v1.1       ║');
     console.log('╚══════════════════════════════════════╝');
-    console.log(`Chain: Arbitrum Sepolia (421614)`);
+    console.log(`Chain: ${chain.name} (${chain.id})`);
     console.log(`Escrow: ${GUILD_ESCROW_ADDRESS}`);
     console.log(`VCP: ${VCP_TOKEN_ADDRESS}`);
+    console.log(`RPC: ${RPC_URL}`);
     console.log(`Poll interval: ${POLL_INTERVAL / 1000}s`);
     console.log(`Dispute vote threshold: ${DISPUTE_VOTE_THRESHOLD}`);
     console.log('');

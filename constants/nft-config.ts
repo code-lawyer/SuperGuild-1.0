@@ -1,15 +1,17 @@
 /**
- * ═══ Super Guild NFT / Token 合约配置 ═══
+ * Super Guild NFT / Token contract configuration — single source of truth.
  *
- * 所有链上合约地址和 Token ID 的唯一真相来源。
- * 请勿在其他文件中硬编码合约地址或 Token ID。
+ * All addresses have process.env overrides for mainnet migration.
+ * Chain IDs are driven by constants/chain-config.ts.
  */
 
-// ── 特权 NFT (Manifold ERC-1155, Sepolia ETH) ──
+import { PRIMARY_CHAIN_ID, PRIVILEGE_CHAIN_ID } from './chain-config';
+
+// ── Privilege NFT (Manifold ERC-1155) ──
 export const PRIVILEGE_NFT = {
   address: (process.env.NEXT_PUBLIC_PRIVILEGE_NFT_CONTRACT ||
     '0x46486Aa0aCC327Ac55b6402AdF4A31598987C400') as `0x${string}`,
-  chainId: 11155111, // Sepolia ETH
+  chainId: PRIVILEGE_CHAIN_ID,
 
   tokens: {
     PIONEER_MEMORIAL: {
@@ -57,40 +59,40 @@ export const PRIVILEGE_NFT = {
       privilege: '公告板自由发帖权',
       privilegeEn: 'Bulletin Board Posting Rights',
     },
-    // 未来新增 NFT 只需在此追加，BadgeWall 自动渲染
   },
 } as const;
 
-// ── VCP 信誉积分 (改良 ERC-20, Arbitrum Sepolia) ──
+// ── VCP Reputation Token (UUPS ERC-20) ──
 export const VCP_TOKEN = {
-  address: '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C' as `0x${string}`,
-  chainId: 421614, // Arbitrum Sepolia
+  address: (process.env.NEXT_PUBLIC_VCP_TOKEN_ADDRESS ||
+    '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C') as `0x${string}`,
+  chainId: PRIMARY_CHAIN_ID,
 } as const;
 
-// ── 勋章 NFT (ERC-721 + ERC-7496 Dynamic Traits, Arbitrum Sepolia) ──
+// ── Medal NFT (ERC-721 + ERC-7496 Dynamic Traits) ──
 export const MEDAL_NFT = {
-  address: '0xef96bE9fFf59B5653085C11583beaC0D16450F1a' as `0x${string}`,
-  chainId: 421614, // Arbitrum Sepolia
+  address: (process.env.NEXT_PUBLIC_MEDAL_NFT_ADDRESS ||
+    '0xef96bE9fFf59B5653085C11583beaC0D16450F1a') as `0x${string}`,
+  chainId: PRIMARY_CHAIN_ID,
 } as const;
 
-// ── SparkGovernor 治理合约 (Arbitrum Sepolia) ──
-// TODO: 部署合约后填入地址
+// ── SparkGovernor ──
 export const SPARK_GOVERNOR = {
   address: (process.env.NEXT_PUBLIC_SPARK_GOVERNOR || '') as `0x${string}`,
-  chainId: 421614, // Arbitrum Sepolia
+  chainId: PRIMARY_CHAIN_ID,
 } as const;
 
-// ── MockUSDC 测试币 (Arbitrum Sepolia) ──
+// ── USDC (MockUSDC on testnet, Circle USDC on mainnet) ──
 export const MOCK_USDC = {
-  address: (process.env.NEXT_PUBLIC_MOCK_USDC ||
+  address: (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
     '0xdd0a2bf984d690c9cdd613603094d7455fc63e06') as `0x${string}`,
-  chainId: 421614, // Arbitrum Sepolia
+  chainId: PRIMARY_CHAIN_ID,
   decimals: 6,
 } as const;
 
-// ── GuildEscrow 协作托管合约 (Arbitrum Sepolia) ──
+// ── GuildEscrow ──
 export const GUILD_ESCROW = {
   address: (process.env.NEXT_PUBLIC_GUILD_ESCROW ||
     '0x8828c3fe2f579a70057714e4034d8c8f91232a60') as `0x${string}`,
-  chainId: 421614, // Arbitrum Sepolia
+  chainId: PRIMARY_CHAIN_ID,
 } as const;

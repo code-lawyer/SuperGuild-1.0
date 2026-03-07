@@ -17,6 +17,15 @@ interface ReferenceLink {
     url: string;
 }
 
+const GRADE_CONFIG: Record<string, { minBudget: number; vcp: number; minMilestones: number; color: string; bg: string; border: string }> = {
+    S: { minBudget: 5000, vcp: 500, minMilestones: 3, color: 'text-red-500', bg: 'bg-red-500/5', border: 'border-red-500/20' },
+    A: { minBudget: 2000, vcp: 300, minMilestones: 3, color: 'text-orange-500', bg: 'bg-orange-500/5', border: 'border-orange-500/20' },
+    B: { minBudget: 800, vcp: 150, minMilestones: 1, color: 'text-amber-500', bg: 'bg-amber-500/5', border: 'border-amber-500/20' },
+    C: { minBudget: 300, vcp: 80, minMilestones: 1, color: 'text-blue-500', bg: 'bg-blue-500/5', border: 'border-blue-500/20' },
+    D: { minBudget: 100, vcp: 40, minMilestones: 1, color: 'text-cyan-500', bg: 'bg-cyan-500/5', border: 'border-cyan-500/20' },
+    E: { minBudget: 0, vcp: 10, minMilestones: 1, color: 'text-slate-400', bg: 'bg-slate-400/5', border: 'border-slate-400/20' },
+};
+
 function useDeliveryPresets() {
     const t = useT();
     return [
@@ -36,7 +45,7 @@ export default function CreateCollaborationPage() {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [difficulty, setDifficulty] = useState('MEDIUM');
+    const [grade, setGrade] = useState('E');
     const [rewardToken, setRewardToken] = useState('USDC');
     const [totalBudget, setTotalBudget] = useState('');
     const [secretContent, setSecretContent] = useState('');
@@ -48,12 +57,18 @@ export default function CreateCollaborationPage() {
         { title: '', amount_percentage: 100 },
     ]);
 
+    const gradeConf = GRADE_CONFIG[grade];
+    const budgetMeetsGrade = Number(totalBudget) >= gradeConf.minBudget;
+    const milestonesMeetGrade = milestones.length >= gradeConf.minMilestones;
+
     const totalPercentage = milestones.reduce((sum: number, m: MilestoneInput) => sum + m.amount_percentage, 0);
     const finalDelivery = deliveryStandard === 'custom' ? customDelivery : deliveryStandard;
     const isValid =
         title.trim() &&
         description.trim() &&
         Number(totalBudget) > 0 &&
+        budgetMeetsGrade &&
+        milestonesMeetGrade &&
         totalPercentage === 100 &&
         milestones.every((m: MilestoneInput) => m.title.trim()) &&
         finalDelivery.trim();
@@ -84,7 +99,8 @@ export default function CreateCollaborationPage() {
             const result = await createCollab.mutateAsync({
                 title: title.trim(),
                 description: description.trim(),
-                difficulty: difficulty,
+                difficulty: grade,
+                grade: grade,
                 reward_token: rewardToken,
                 total_budget: Number(totalBudget),
                 secret_content: secretContent.trim(),
@@ -118,27 +134,45 @@ export default function CreateCollaborationPage() {
 
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
-                            {t.quests.difficulty} <span className="text-red-500">*</span>
+                            {t.quests.grade} <span className="text-red-500">*</span>
                         </label>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                             {[
-                                { key: 'EASY', label: t.quests.difficultyEasy, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/20' },
-                                { key: 'MEDIUM', label: t.quests.difficultyMedium, color: 'text-blue-500', bg: 'bg-blue-500/5', border: 'border-blue-500/20' },
-                                { key: 'HARD', label: t.quests.difficultyHard, color: 'text-orange-500', bg: 'bg-orange-500/5', border: 'border-orange-500/20' },
-                                { key: 'EPIC', label: t.quests.difficultyEpic, color: 'text-purple-500', bg: 'bg-purple-500/5', border: 'border-purple-500/20' },
-                            ].map((d) => (
-                                <button
-                                    key={d.key}
-                                    onClick={() => setDifficulty(d.key)}
-                                    className={`p-4 rounded-2xl border transition-colors transition-transform duration-300 flex flex-col items-center gap-1 ${difficulty === d.key
-                                        ? `ring-2 ring-primary border-primary ${d.bg}`
-                                        : 'bg-white border-[#E8EAF0] hover:border-primary/40'
-                                        }`}
-                                >
-                                    <span className={`text-[13px] font-black tracking-tight ${d.color}`}>{d.label}</span>
-                                </button>
-                            ))}
+                                { key: 'S', label: t.quests.gradeS },
+                                { key: 'A', label: t.quests.gradeA },
+                                { key: 'B', label: t.quests.gradeB },
+                                { key: 'C', label: t.quests.gradeC },
+                                { key: 'D', label: t.quests.gradeD },
+                                { key: 'E', label: t.quests.gradeE },
+                            ].map((g) => {
+                                const conf = GRADE_CONFIG[g.key];
+                                return (
+                                    <button
+                                        key={g.key}
+                                        onClick={() => setGrade(g.key)}
+                                        className={`p-3 rounded-2xl border transition-all duration-200 flex flex-col items-center gap-0.5 ${grade === g.key
+                                            ? `ring-2 ring-primary border-primary ${conf.bg}`
+                                            : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                            }`}
+                                    >
+                                        <span className={`text-[16px] font-black ${conf.color}`}>{g.label}</span>
+                                        <span className="text-[10px] text-[#B8BACA] font-bold">{conf.vcp} {t.quests.gradeVcp}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
+                        {gradeConf.minBudget > 0 && (
+                            <p className="text-[12px] text-[#6A6A71] mt-2">
+                                {t.quests.gradeMinBudget}: {gradeConf.minBudget} USDC
+                                {gradeConf.minMilestones > 1 && <> · {t.quests.gradeMinMilestones}: {gradeConf.minMilestones}</>}
+                            </p>
+                        )}
+                        {Number(totalBudget) > 0 && !budgetMeetsGrade && (
+                            <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeBudgetTooLow}</p>
+                        )}
+                        {!milestonesMeetGrade && (
+                            <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeMilestoneTooFew}</p>
+                        )}
                     </div>
 
                     {/* Title */}

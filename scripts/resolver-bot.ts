@@ -278,6 +278,94 @@ async function runResolveDispute() {
     }
 }
 
+// ── Grade → VCP lookup ──────────────────────────────────────────────────────
+
+const GRADE_VCP: Record<string, number> = {
+    S: 500, A: 300, B: 150, C: 80, D: 40, E: 10,
+};
+
+const MONTHLY_VCP_CAP = 1000;
+const COOLDOWN_DAYS = 7;
+const FAST_CONFIRM_THRESHOLD_SEC = 120; // 2 minutes
+const FAST_CONFIRM_WINDOW = 10; // last N collabs to check
+const FAST_CONFIRM_TRIGGER = 5;  // how many fast confirms to trigger freeze
+const FREEZE_DAYS = 30;
+
+// ── Anti-cheat helpers ──────────────────────────────────────────────────────
+
+async function checkCooldown(publisher: string, worker: string): Promise<string | null> {
+    const since = new Date(Date.now() - COOLDOWN_DAYS * 86400_000).toISOString();
+    const { data } = await supabase
+        .from('vcp_settlements')
+        .select('id')
+        .eq('publisher_address', publisher.toLowerCase())
+        .eq('worker_address', worker.toLowerCase())
+        .eq('anti_cheat_passed', true)
+        .gte('evaluated_at', since)
+        .limit(1);
+    return data && data.length > 0 ? 'cooldown_7d' : null;
+}
+
+async function checkMonthlyCapReached(worker: string): Promise<string | null> {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const { data } = await supabase
+        .from('vcp_settlements')
+        .select('vcp_amount')
+        .eq('worker_address', worker.toLowerCase())
+        .eq('anti_cheat_passed', true)
+        .gte('evaluated_at', monthStart.toISOString());
+    const total = (data || []).reduce((sum, r) => sum + (r.vcp_amount || 0), 0);
+    return total >= MONTHLY_VCP_CAP ? 'monthly_cap' : null;
+}
+
+async function checkFastConfirmFreeze(address: string): Promise<string | null> {
+    // Check if address is frozen (has been flagged within last FREEZE_DAYS)
+    const freezeSince = new Date(Date.now() - FREEZE_DAYS * 86400_000).toISOString();
+    const { data: frozen } = await supabase
+        .from('vcp_settlements')
+        .select('id')
+        .eq('skip_reason', 'fast_confirm_freeze')
+        .or(`publisher_address.eq.${address.toLowerCase()},worker_address.eq.${address.toLowerCase()}`)
+        .gte('evaluated_at', freezeSince)
+        .limit(1);
+
+    if (frozen && frozen.length > 0) {
+        // Check for unfreeze: any collab confirmed in > 24h during freeze period
+        const { data: slowConfirm } = await supabase
+            .from('vcp_settlements')
+            .select('id')
+            .or(`publisher_address.eq.${address.toLowerCase()},worker_address.eq.${address.toLowerCase()}`)
+            .eq('anti_cheat_passed', true)
+            .gte('evaluated_at', freezeSince)
+            .limit(1);
+        if (slowConfirm && slowConfirm.length > 0) return null; // unfrozen
+        return 'fast_confirm_freeze';
+    }
+
+    // Check if we should newly freeze: look at last N settled collabs involving this address
+    const { data: recent } = await supabase
+        .from('vcp_settlements')
+        .select('submitted_at, confirmed_at')
+        .or(`publisher_address.eq.${address.toLowerCase()},worker_address.eq.${address.toLowerCase()}`)
+        .not('submitted_at', 'is', null)
+        .not('confirmed_at', 'is', null)
+        .order('evaluated_at', { ascending: false })
+        .limit(FAST_CONFIRM_WINDOW);
+
+    if (!recent || recent.length < FAST_CONFIRM_TRIGGER) return null;
+
+    let fastCount = 0;
+    for (const r of recent) {
+        if (!r.submitted_at || !r.confirmed_at) continue;
+        const diff = (new Date(r.confirmed_at).getTime() - new Date(r.submitted_at).getTime()) / 1000;
+        if (diff >= 0 && diff < FAST_CONFIRM_THRESHOLD_SEC) fastCount++;
+    }
+
+    return fastCount >= FAST_CONFIRM_TRIGGER ? 'fast_confirm_freeze' : null;
+}
+
 // ── 3. VCP Mint on MilestoneSettled events ──────────────────────────────────
 
 let lastProcessedBlock = 0n;
@@ -286,7 +374,6 @@ async function runVCPMintWatcher() {
     console.log('[vcpMint] Checking for new MilestoneSettled events...');
 
     const currentBlock = await publicClient.getBlockNumber();
-    // On first run, look back 1000 blocks (~15 min on Arbitrum Sepolia)
     const fromBlock = lastProcessedBlock > 0n ? lastProcessedBlock + 1n : currentBlock - 1000n;
 
     if (fromBlock > currentBlock) return;
@@ -307,7 +394,7 @@ async function runVCPMintWatcher() {
             const amountFormatted = formatUnits(amount, 6);
             console.log(`[vcpMint] MilestoneSettled: worker=${worker} amount=${amountFormatted} USDC`);
 
-            // Check vcp_settlements for idempotency
+            // Idempotency check
             const settlementKey = `${collabId}-${milestoneIdx}`;
             const { data: existing } = await supabase
                 .from('vcp_settlements')
@@ -320,10 +407,69 @@ async function runVCPMintWatcher() {
                 continue;
             }
 
-            // Calculate VCP amount: base 100 per milestone (simple formula for now)
-            // In production, the AI Oracle will compute a more nuanced score
-            const vcpAmount = 100n * 10n ** 18n; // 100 VCP (18 decimals)
-            const reason = `Milestone settled: ${collabId.slice(0, 10)}...[${milestoneIdx}]`;
+            // Find the collaboration in Supabase to get grade + publisher
+            const { data: collabs } = await supabase
+                .from('collaborations')
+                .select('id, grade, initiator_id')
+                .limit(100);
+
+            // Match by hashing UUIDs
+            let collabUUID = '';
+            let collabGrade = 'E';
+            let publisher = '';
+            for (const c of (collabs || [])) {
+                if (toCollabId(c.id) === collabId) {
+                    collabUUID = c.id;
+                    collabGrade = c.grade || 'E';
+                    publisher = c.initiator_id || '';
+                    break;
+                }
+            }
+
+            const vcpForGrade = GRADE_VCP[collabGrade] || GRADE_VCP.E;
+
+            // ── Anti-cheat checks ──
+            let skipReason: string | null = null;
+
+            if (!skipReason && publisher) {
+                skipReason = await checkCooldown(publisher, worker);
+                if (skipReason) console.log(`[vcpMint] SKIP (${skipReason}): publisher=${publisher.slice(0, 8)}... worker=${worker.slice(0, 8)}...`);
+            }
+
+            if (!skipReason) {
+                skipReason = await checkFastConfirmFreeze(worker);
+                if (skipReason) console.log(`[vcpMint] SKIP (${skipReason}): worker=${worker.slice(0, 8)}... is frozen`);
+            }
+            if (!skipReason && publisher) {
+                skipReason = await checkFastConfirmFreeze(publisher);
+                if (skipReason) console.log(`[vcpMint] SKIP (${skipReason}): publisher=${publisher.slice(0, 8)}... is frozen`);
+            }
+
+            if (!skipReason) {
+                skipReason = await checkMonthlyCapReached(worker);
+                if (skipReason) console.log(`[vcpMint] SKIP (${skipReason}): worker=${worker.slice(0, 8)}... hit monthly cap`);
+            }
+
+            // Record settlement (with or without mint)
+            const settlementRecord: Record<string, any> = {
+                settlement_key: settlementKey,
+                worker_address: worker.toLowerCase(),
+                publisher_address: publisher.toLowerCase() || null,
+                grade: collabGrade,
+                vcp_amount: skipReason ? 0 : vcpForGrade,
+                anti_cheat_passed: !skipReason,
+                skip_reason: skipReason || null,
+            };
+
+            if (skipReason) {
+                // Record but don't mint
+                await supabase.from('vcp_settlements').insert(settlementRecord);
+                continue;
+            }
+
+            // Mint VCP
+            const vcpAmount = BigInt(vcpForGrade) * 10n ** 18n;
+            const reason = `Grade ${collabGrade} settled: ${(collabId as string).slice(0, 10)}...[${milestoneIdx}]`;
 
             try {
                 const hash = await walletClient.writeContract({
@@ -333,20 +479,14 @@ async function runVCPMintWatcher() {
                     args: [worker, vcpAmount, reason],
                 });
                 const receipt = await publicClient.waitForTransactionReceipt({ hash });
-                console.log(`[vcpMint] Minted 100 VCP to ${worker}: ${receipt.transactionHash}`);
+                console.log(`[vcpMint] Minted ${vcpForGrade} VCP (grade ${collabGrade}) to ${worker}: ${receipt.transactionHash}`);
 
-                // Record in vcp_settlements for idempotency
-                await supabase
-                    .from('vcp_settlements')
-                    .insert({
-                        settlement_key: settlementKey,
-                        worker_address: worker,
-                        vcp_amount: 100,
-                        tx_hash: receipt.transactionHash,
-                    });
+                await supabase.from('vcp_settlements').insert({
+                    ...settlementRecord,
+                    tx_hash: receipt.transactionHash,
+                });
             } catch (mintErr: any) {
                 console.error(`[vcpMint] Mint failed for ${worker}:`, mintErr.shortMessage || mintErr.message);
-                // If MINTER_ROLE not granted, log clear message
                 if (mintErr.message?.includes('AccessControl')) {
                     console.error('[vcpMint] CRITICAL: Resolver wallet does not have MINTER_ROLE on VCPTokenV2. Grant it first.');
                 }

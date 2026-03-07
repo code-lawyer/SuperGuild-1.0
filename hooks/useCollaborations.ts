@@ -21,6 +21,7 @@ export interface Collaboration {
     total_budget: number;
     reward_token: string;
     difficulty: string | null;
+    grade: string;
     secret_content: string | null;
     status: CollabStatus;
     escrow_address: string | null;
@@ -126,6 +127,7 @@ export interface CreateCollabInput {
     total_budget: number;
     reward_token?: string;
     difficulty?: string;
+    grade?: string;
     secret_content?: string;
     secret_attachments?: any[];
     milestones: { title: string; amount_percentage: number }[];
@@ -151,6 +153,7 @@ export function useCreateCollaboration() {
                     total_budget: input.total_budget,
                     reward_token: input.reward_token || 'USDC',
                     difficulty: input.difficulty || 'MEDIUM',
+                    grade: input.grade || 'E',
                     secret_content: input.secret_content || null,
                     secret_attachments: input.secret_attachments || [],
                     status: 'OPEN',

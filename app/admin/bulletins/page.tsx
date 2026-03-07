@@ -27,8 +27,6 @@ export default function AdminBulletinsPage() {
     const [category, setCategory] = useState('公告');
     const [isPinned, setIsPinned] = useState(false);
 
-    const supabase = createClient();
-
     // Fetch announcements
     const fetchAnnouncements = async () => {
         setLoading(true);
@@ -45,7 +43,7 @@ export default function AdminBulletinsPage() {
 
     useEffect(() => {
         fetchAnnouncements();
-    }, [supabase]);
+    }, []);
 
     const handleEdit = (announcement: Announcement) => {
         setCurrentEditId(announcement.id);

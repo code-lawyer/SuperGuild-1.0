@@ -4,7 +4,7 @@ import { useT } from '@/lib/i18n';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
-import { useRef, useState, Suspense } from 'react';
+import { useRef, useState, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,49 +32,42 @@ const MOCK_ELDERS: GuildElder[] = [
     { id: '13', codename: 'EMBER-∆13',   vcp: 1540  },
 ];
 
-// TODO: Replace with real query
+// TODO: Replace MOCK_ELDERS with real query
 // Query: profiles WHERE vcp_cache >= (totalVCPSupply * 0.01)
 // OR: user_medals WHERE token_id IN [specific privileged NFT IDs]
-async function fetchGuildElders(): Promise<GuildElder[]> {
-    return MOCK_ELDERS;
-}
 
 // ── Central Icosahedron ───────────────────────────────────────────────────────
 
-function CentralIcosahedron() {
-    const meshRef = useRef<THREE.Mesh>(null);
-    const wireRef = useRef<THREE.Mesh>(null);
+function CentralIcosahedron({ label }: { label: string }) {
+    const groupRef = useRef<THREE.Group>(null);
     const [hovered, setHovered] = useState(false);
 
     useFrame((_, delta) => {
-        if (meshRef.current) {
-            meshRef.current.rotation.y += delta * 0.4;
-            meshRef.current.rotation.x += delta * 0.1;
-        }
-        if (wireRef.current) {
-            wireRef.current.rotation.y += delta * 0.4;
-            wireRef.current.rotation.x += delta * 0.1;
+        if (groupRef.current) {
+            groupRef.current.rotation.y += delta * 0.4;
+            groupRef.current.rotation.x += delta * 0.1;
         }
     });
 
     return (
         <group>
-            <mesh
-                ref={meshRef}
-                onPointerOver={() => { document.body.style.cursor = 'pointer'; setHovered(true); }}
-                onPointerOut={() => { document.body.style.cursor = 'auto'; setHovered(false); }}
-            >
-                <icosahedronGeometry args={[1.8, 0]} />
-                <meshStandardMaterial color="#111111" roughness={0.3} metalness={0.6} />
-            </mesh>
-            <mesh ref={wireRef}>
-                <icosahedronGeometry args={[1.85, 0]} />
-                <meshBasicMaterial color="#333333" wireframe transparent opacity={0.4} />
-            </mesh>
+            <group ref={groupRef}>
+                <mesh
+                    onPointerOver={() => { document.body.style.cursor = 'pointer'; setHovered(true); }}
+                    onPointerOut={() => { document.body.style.cursor = 'auto'; setHovered(false); }}
+                >
+                    <icosahedronGeometry args={[1.8, 0]} />
+                    <meshStandardMaterial color="#111111" roughness={0.3} metalness={0.6} />
+                </mesh>
+                <mesh>
+                    <icosahedronGeometry args={[1.85, 0]} />
+                    <meshBasicMaterial color="#333333" wireframe transparent opacity={0.4} />
+                </mesh>
+            </group>
             {hovered && (
                 <Html position={[0, 2.8, 0]} center zIndexRange={[100, 0]}>
                     <div className="text-[10px] font-mono font-bold tracking-widest text-slate-400 pointer-events-none whitespace-nowrap">
-                        RHYTHM · CORE
+                        {label}
                         {/* TODO: connect to Rhythm chat interface */}
                     </div>
                 </Html>
@@ -93,6 +86,7 @@ function ElderSlab({
     onHover,
     onUnhover,
     onConnect,
+    connectLabel,
 }: {
     elder: GuildElder;
     angle: number;
@@ -101,6 +95,7 @@ function ElderSlab({
     onHover: () => void;
     onUnhover: () => void;
     onConnect: () => void;
+    connectLabel: string;
 }) {
     const meshRef = useRef<THREE.Mesh>(null);
     const groupRef = useRef<THREE.Group>(null);
@@ -152,7 +147,7 @@ function ElderSlab({
                             onClick={(e) => { e.stopPropagation(); onConnect(); }}
                             className="mt-1 px-3 py-1 text-[10px] font-mono font-bold text-black bg-white hover:bg-white/80 transition-colors tracking-widest"
                         >
-                            与 TA 交流
+                            {connectLabel}
                         </button>
                     </div>
                 </Html>
@@ -163,7 +158,7 @@ function ElderSlab({
 
 // ── AI Cluster ────────────────────────────────────────────────────────────────
 
-function AICluster({ onConnect }: { onConnect: (elder: GuildElder) => void }) {
+function AICluster({ onConnect, rhythmLabel, connectLabel }: { onConnect: (elder: GuildElder) => void; rhythmLabel: string; connectLabel: string }) {
     const groupRef = useRef<THREE.Group>(null);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const isPaused = hoveredIndex !== null;
@@ -176,7 +171,7 @@ function AICluster({ onConnect }: { onConnect: (elder: GuildElder) => void }) {
 
     return (
         <group ref={groupRef}>
-            <CentralIcosahedron />
+            <CentralIcosahedron label={rhythmLabel} />
             {MOCK_ELDERS.map((elder, i) => {
                 const angle = (i / MOCK_ELDERS.length) * Math.PI * 2;
                 return (
@@ -189,6 +184,7 @@ function AICluster({ onConnect }: { onConnect: (elder: GuildElder) => void }) {
                         onHover={() => setHoveredIndex(i)}
                         onUnhover={() => setHoveredIndex(null)}
                         onConnect={() => onConnect(elder)}
+                        connectLabel={connectLabel}
                     />
                 );
             })}
@@ -198,7 +194,7 @@ function AICluster({ onConnect }: { onConnect: (elder: GuildElder) => void }) {
 
 // ── Connecting Dialog ─────────────────────────────────────────────────────────
 
-function ConnectingDialog({ elder, onClose }: { elder: GuildElder | null; onClose: () => void }) {
+function ConnectingDialog({ elder, onClose, connectingText, closeText }: { elder: GuildElder | null; onClose: () => void; connectingText: string; closeText: string }) {
     return (
         <AnimatePresence>
             {elder && (
@@ -222,13 +218,13 @@ function ConnectingDialog({ elder, onClose }: { elder: GuildElder | null; onClos
                         <div className="w-8 h-8 border-2 border-slate-200 border-t-black rounded-full animate-spin" />
                         <p className="text-sm font-mono text-slate-600">
                             {/* TODO: connect to elder persona agent */}
-                            连接中...
+                            {connectingText}
                         </p>
                         <button
                             onClick={onClose}
                             className="mt-2 text-[11px] font-mono text-slate-400 hover:text-black transition-colors tracking-widest"
                         >
-                            × 关闭
+                            {closeText}
                         </button>
                     </motion.div>
                 </motion.div>
@@ -242,6 +238,10 @@ function ConnectingDialog({ elder, onClose }: { elder: GuildElder | null; onClos
 export default function ThroneOfKindlingPage() {
     const t = useT();
     const [connectingElder, setConnectingElder] = useState<GuildElder | null>(null);
+
+    useEffect(() => {
+        return () => { document.body.style.cursor = 'auto'; };
+    }, []);
 
     return (
         <div className="relative selection:bg-primary/20">
@@ -261,7 +261,11 @@ export default function ThroneOfKindlingPage() {
                         <directionalLight position={[-5, -5, -5]} intensity={0.5} color="#dddddd" />
 
                         <Suspense fallback={null}>
-                            <AICluster onConnect={setConnectingElder} />
+                            <AICluster
+                                onConnect={setConnectingElder}
+                                rhythmLabel={t.council.rhythmCore}
+                                connectLabel={t.council.talkToElder}
+                            />
                         </Suspense>
 
                         <OrbitControls
@@ -278,6 +282,8 @@ export default function ThroneOfKindlingPage() {
             <ConnectingDialog
                 elder={connectingElder}
                 onClose={() => setConnectingElder(null)}
+                connectingText={t.council.connecting}
+                closeText={t.council.closeDialog}
             />
         </div>
     );

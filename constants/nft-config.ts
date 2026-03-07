@@ -7,6 +7,9 @@
 
 import { PRIMARY_CHAIN_ID, PRIVILEGE_CHAIN_ID } from './chain-config';
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zrwyfcdnbfqkbsatwodc.supabase.co';
+const MODEL_BASE = `${SUPABASE_URL}/storage/v1/object/public/models`;
+
 // ── Privilege NFT (Manifold ERC-1155) ──
 export const PRIVILEGE_NFT = {
   address: (process.env.NEXT_PUBLIC_PRIVILEGE_NFT_CONTRACT ||
@@ -18,7 +21,7 @@ export const PRIVILEGE_NFT = {
       id: BigInt(1),
       name: 'Pioneer Memorial',
       zh: '拓世者纪念章',
-      glbPath: '/models/pioneer.glb',
+      glbPath: `${MODEL_BASE}/pioneer.glb`,
       glowColor: '#3b82f6',
       privilege: 'VCP 获取速度 ×1.05',
       privilegeEn: 'VCP Accumulation Speed ×1.05',
@@ -27,7 +30,7 @@ export const PRIVILEGE_NFT = {
       id: BigInt(2),
       name: "Lantern Keeper's Withered Lamp",
       zh: '提灯人枯盏',
-      glbPath: '/models/lantern.glb',
+      glbPath: `${MODEL_BASE}/lantern.glb`,
       glowColor: '#eab308',
       privilege: 'DAO 投票权重 ×1.1',
       privilegeEn: 'DAO Vote Weight ×1.1',
@@ -36,7 +39,7 @@ export const PRIVILEGE_NFT = {
       id: BigInt(3),
       name: 'The First Flame',
       zh: '初火',
-      glbPath: '/models/flame.glb',
+      glbPath: `${MODEL_BASE}/flame.glb`,
       glowColor: '#ef4444',
       privilege: 'Admin 准入 + 无限制提案权',
       privilegeEn: 'Admin Access + Unlimited Proposal Rights',
@@ -45,7 +48,7 @@ export const PRIVILEGE_NFT = {
       id: BigInt(4),
       name: 'Hand of Justice',
       zh: '公义之手',
-      glbPath: '/models/justice.glb',
+      glbPath: `${MODEL_BASE}/justice.glb`,
       glowColor: '#8b5cf6',
       privilege: '仲裁庭准入',
       privilegeEn: 'Arbitration Court Access',
@@ -54,7 +57,7 @@ export const PRIVILEGE_NFT = {
       id: BigInt(5),
       name: 'Beacon of the Forerunner',
       zh: '先驱者灯塔',
-      glbPath: '/models/beacon.glb',
+      glbPath: `${MODEL_BASE}/beacon.glb`,
       glowColor: '#06b6d4',
       privilege: '公告板自由发帖权',
       privilegeEn: 'Bulletin Board Posting Rights',

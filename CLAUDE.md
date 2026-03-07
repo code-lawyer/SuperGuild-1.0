@@ -205,11 +205,12 @@ if (!address) throw new Error('请先连接钱包');
 
 | 问题 | 影响 | 优先级 |
 |------|------|--------|
-| Supabase 多张表无 RLS（`pioneer_codes`, `service_access`, `user_medals`, `vcp_settlements`） | 任何持有 anon key 的人可读写 | 上主网前修 |
-| Admin 权限仍为 hardcoded 钱包地址 | 不够去中心化 | Phase 10 后修 |
+| ~~Supabase 多张表无 RLS~~ | ✅ 已修复：敏感表写入策略已收紧，仅 service_role 可写 | ~~已完成~~ |
+| ~~Admin 权限仍为 hardcoded 钱包地址~~ | ✅ 已改为 Token #3 NFT 门控（AdminGuard） | ~~已完成~~ |
+| ~~GLB 模型从 `/public/models/` 本地加载~~ | ✅ 已迁移至 Supabase Storage CDN | ~~已完成~~ |
 | MedalNFT Dynamic Traits 未接入前端 | 3D 渲染参数硬编码 | Phase 12 |
-| GLB 模型从 `/public/models/` 本地加载 | 非去信任存储 | Phase 12 |
 | 直接 RPC 轮询（无 Ponder 索引层） | 用户量大后性能瓶颈 | Phase 12 |
+| Supabase 无 Auth 层（anon key 直连） | collaborations/profiles 等表仍然公开可写 | 上主网前需加 Auth |
 
 ---
 

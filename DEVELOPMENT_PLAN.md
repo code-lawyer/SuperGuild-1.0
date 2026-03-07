@@ -94,9 +94,15 @@ Super Guild 是一个 **去中心化的超级个体协作与主权系统**。彻
 
 ### Phase 11.5: 上线前清理（主网预备）
 
-- [ ] **Admin 权限改为 Token #3 (The First Flame) 门控**: 替换 `components/admin/AdminGuard.tsx` 中 hardcoded 钱包地址白名单。
-- [ ] **Supabase RLS 补全**: `pioneer_codes / service_access / user_medals / vcp_settlements` 四张表补充行级安全策略。
-- [ ] **Resolver Bot 生产部署**: 迁移至 Railway/Render 等持久化平台常驻运行，配置崩溃自动重启与日志告警。
+- [x] **Admin 权限改为 Token #3 (The First Flame) 门控**: `AdminGuard.tsx` 已使用 `useNFTGate` + `PRIVILEGE_NFT.tokens.FIRST_FLAME`，早期已完成。
+- [x] **Supabase RLS 补全**: `pioneer_codes / service_access / user_medals / vcp_settlements / milestones` 五张表已启用 RLS 并配置策略。
+- [x] **Resolver Bot 生产部署**: Railway 已部署常驻运行，`MINTER_ROLE` 已验证，60s 轮询正常。
+- [x] **主网迁移 env 化**: 新增 `constants/chain-config.ts`，所有 chainId 和合约地址 env 驱动，主网迁移只需改 `.env`。
+- [ ] **VCP 等级制铸造 + 反作弊机制**: 设计已定稿（见 `docs/plans/2026-03-07-vcp-minting-mechanism-design.md`），待实现：
+  - 等级字段加入 `collaborations` 表（S/A/B/C/D/E）
+  - 前端创建协作时选择等级（含最低报酬校验、最低里程碑校验、S/A 级 PoW 强制）
+  - bot 按等级铸造固定 VCP（500/300/150/80/40/10）
+  - 反作弊：7 天冷却期 + 快速确认检测（2min/10次/5触发/双向冻结30天）+ 月度上限 1000 VCP
 - [ ] **MedalNFT Dynamic Traits 接入**: 将链上 Dynamic Traits 数据接入 3D 渲染参数，替换当前硬编码 GLB 配置。
 
 ### Phase 12: 资产与数据确权的去信任闭环

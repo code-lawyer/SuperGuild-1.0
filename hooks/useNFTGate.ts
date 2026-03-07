@@ -33,7 +33,7 @@ export function useNFTGate({
         setIsMounted(true);
     }, []);
 
-    const { data: balance, isLoading } = useReadContract({
+    const { data: balance, isLoading, isError, refetch } = useReadContract({
         address: contractAddress,
         abi: ERC1155_ABI,
         functionName: 'balanceOf',
@@ -41,18 +41,21 @@ export function useNFTGate({
         chainId: sepolia.id,
         query: {
             enabled: !!address && isConnected,
+            retry: 3,
+            retryDelay: 1500,
         }
     });
 
     const hasNFT = isMounted && (balance !== undefined && balance > BigInt(0));
-    // 跨链查询已通过 chainId: sepolia.id 强制读取，用户不需要切换网络
     const isWrongChain = false;
 
     return {
         hasNFT,
         isLoading: !isMounted || isLoading,
+        isError: isMounted && isError,
         isConnected: isMounted && isConnected,
         isWrongChain,
-        address: isMounted ? address : undefined
+        address: isMounted ? address : undefined,
+        refetch,
     };
 }

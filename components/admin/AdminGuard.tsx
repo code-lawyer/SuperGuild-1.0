@@ -7,7 +7,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const t = useT();
-    const { hasNFT, isLoading, isConnected } = useNFTGate({
+    const { hasNFT, isLoading, isError, isConnected, refetch } = useNFTGate({
         contractAddress: PRIVILEGE_NFT.address,
         tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
     });
@@ -31,6 +31,24 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         return (
             <div className="min-h-screen flex items-center justify-center text-slate-500">
                 {t.common.loading}
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-6">
+                <div className="w-16 h-16 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-center mb-2">
+                    <span className="material-symbols-outlined !text-[32px] text-amber-400">wifi_off</span>
+                </div>
+                <p className="text-sm font-bold text-amber-400 tracking-widest uppercase">{t.admin.rpcError}</p>
+                <p className="text-sm text-slate-500 max-w-sm">{t.admin.rpcErrorDesc}</p>
+                <button
+                    onClick={() => refetch()}
+                    className="px-6 py-2.5 rounded-xl text-sm font-bold bg-zinc-800 text-white border border-zinc-700 hover:bg-zinc-700 transition-colors"
+                >
+                    {t.common.retry}
+                </button>
             </div>
         );
     }

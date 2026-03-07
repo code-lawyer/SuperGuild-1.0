@@ -5,6 +5,7 @@ const zh: TranslationKeys = {
         connectWallet: '连接钱包',
         connected: '已连接',
         loading: '加载中...',
+        retry: '重试',
         noData: '暂无数据',
         submit: '提交',
         cancel: '取消',
@@ -415,6 +416,8 @@ const zh: TranslationKeys = {
         connectWalletDesc: '请先连接钱包以访问管理面板。',
         nftRequired: '需持有初火 NFT (Token #3)',
         accessDeniedDesc: '管理面板需持有初火 NFT（Token #3）方可访问，此为链上验证的特权凭证。',
+        rpcError: '链上查询失败',
+        rpcErrorDesc: 'Sepolia 节点暂时无响应，无法验证 NFT 持有状态。请稍后重试。',
     },
 };
 

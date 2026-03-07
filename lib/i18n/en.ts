@@ -4,6 +4,7 @@ const en = {
         connectWallet: 'Connect Wallet',
         connected: 'Connected',
         loading: 'Loading...',
+        retry: 'Retry',
         noData: 'No data yet',
         submit: 'Submit',
         cancel: 'Cancel',
@@ -425,6 +426,8 @@ const en = {
         connectWalletDesc: 'Connect your wallet to access the Admin Panel.',
         nftRequired: 'THE FIRST FLAME NFT REQUIRED',
         accessDeniedDesc: 'Admin access requires the First Flame NFT (Token #3). This is a verified on-chain privilege.',
+        rpcError: 'ON-CHAIN QUERY FAILED',
+        rpcErrorDesc: 'The Sepolia RPC node is temporarily unresponsive. Your NFT ownership could not be verified. Please retry.',
     },
 };
 

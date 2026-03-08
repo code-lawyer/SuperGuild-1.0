@@ -3,14 +3,19 @@
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useT } from '@/lib/i18n';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const t = useT();
 
     const navItems = [
-        { name: 'Dashboard', href: '/admin', icon: 'dashboard' },
-        { name: 'Bulletin Board', href: '/admin/bulletins', icon: 'campaign' },
-        { name: 'Service Plans', href: '/admin/services', icon: 'build' },
+        { name: t.admin.navDashboard, href: '/admin', icon: 'dashboard' },
+        { name: t.admin.navBulletins, href: '/admin/bulletins', icon: 'campaign' },
+        { name: t.admin.navServices, href: '/admin/services', icon: 'build' },
+        { name: t.admin.navFaucet, href: '/admin/faucet', icon: 'water_drop' },
+        { name: t.admin.navPioneer, href: '/admin/pioneer', icon: 'explore' },
+        { name: t.admin.navLeaderboard, href: '/admin/leaderboard', icon: 'leaderboard' },
     ];
 
     return (

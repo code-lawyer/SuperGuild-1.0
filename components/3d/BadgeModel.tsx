@@ -57,11 +57,31 @@ const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
     return shader;
 };
 
+/**
+ * Compute a uniform scale factor that fits any model into a target size.
+ * This solves the problem of GLB models having wildly different native sizes
+ * (some 10cm, some 5m) — they all get normalized to the same visual size.
+ */
+function computeNormalizedScale(scene: THREE.Object3D, targetSize: number): number {
+    const box = new THREE.Box3().setFromObject(scene);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim === 0) return 1;
+    return targetSize / maxDim;
+}
+
 export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: BadgeModelProps) {
     const { scene } = useGLTF(glbPath);
     const clonedScene = useMemo(() => scene.clone(true), [scene]);
     const materialsRef = useRef<THREE.Material[]>([]);
     const color = useMemo(() => new THREE.Color(glowColor), [glowColor]);
+
+    // Auto-normalize: thumbnail fits in ~1.8 units, modal fits in ~2.8 units
+    const normalizedScale = useMemo(
+        () => computeNormalizedScale(clonedScene, isThumbnail ? 1.8 : 2.8),
+        [clonedScene, isThumbnail],
+    );
 
     useEffect(() => {
         materialsRef.current = [];
@@ -97,7 +117,7 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
             rotationIntensity={isThumbnail ? 0.5 : 1}
             floatIntensity={isThumbnail ? 0.5 : 1.5}
         >
-            <primitive object={clonedScene} scale={isThumbnail ? 1.0 : 1.5} />
+            <primitive object={clonedScene} scale={normalizedScale} />
         </Float>
     );
 }

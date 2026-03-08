@@ -214,6 +214,23 @@ if (!address) throw new Error('请先连接钱包');
 
 ---
 
+## 🚨 主网上线前必须处理（Mainnet Checklist）
+
+> **完整清单见 Claude 记忆文件 `mainnet-checklist.md`，以下为关键摘要：**
+
+| # | 事项 | 文件 | 不处理的后果 |
+|---|------|------|-------------|
+| 1 | 关闭 `NEXT_PUBLIC_DEV_MOCK_NFTS` | `.env` | 所有人绕过 NFT 门控 |
+| 2 | 替换 MockUSDC → Circle USDC | `nft-config.ts` | 支付系统使用假币 |
+| 3 | 移除/隐藏 Faucet 页面 | `app/admin/faucet/` | 主网无 mint 函数，页面报错 |
+| 4 | 更换热钱包私钥 | `.env` | 测试网私钥已暴露，资产被盗 |
+| 5 | 切换链 ID 到主网 | `chain-config.ts` | 合约调用指向测试网 |
+| 6 | 更新所有合约地址 | `contract-address.ts` | 交互的是测试网合约 |
+| 7 | Supabase RLS + Auth | 数据库 | 任何人可篡改数据 |
+| 8 | 智能合约安全审计 | Solidity | 合约漏洞导致资金损失 |
+
+---
+
 ## 当前开发优先级
 
 ### 🔴 Phase 10（当前阶段）— 链上结算闭环

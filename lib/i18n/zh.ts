@@ -378,6 +378,8 @@ const zh: TranslationKeys = {
         notOwned: '未持有',
         rpcError: '勋章查询失败',
         privilegeBadge: 'Super Guild 创世特权',
+        noBadges: '尚未持有任何特权勋章',
+        viewIn3D: '3D 预览',
     },
 
     footer: {

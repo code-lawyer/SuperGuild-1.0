@@ -387,6 +387,8 @@ const en = {
         notOwned: 'Not Owned',
         rpcError: 'Badge query failed',
         privilegeBadge: 'Super Guild Privilege Badge',
+        noBadges: 'No privilege badges yet',
+        viewIn3D: 'View 3D',
     },
 
     // ── Footer ──

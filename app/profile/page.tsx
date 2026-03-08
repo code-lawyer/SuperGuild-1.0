@@ -6,7 +6,6 @@ import { useAccount } from 'wagmi';
 import { useT } from '@/lib/i18n';
 import { useMyProfile, useUpdateMyProfile } from '@/hooks/useProfile';
 import { useMyCollaborations, type Collaboration } from '@/hooks/useCollaborations';
-import { useSBTs } from '@/hooks/useSBTs';
 import { useVCP } from '@/hooks/useVCP';
 import PioneerCard from '@/components/pioneer/PioneerCard';
 import BadgeWall from '@/components/profile/BadgeWall';
@@ -17,7 +16,6 @@ export default function ProfilePage() {
     const { address } = useAccount();
     const { data: profile, isLoading } = useMyProfile();
     const { data: collabs } = useMyCollaborations();
-    const { data: sbts } = useSBTs();
     const { vcp } = useVCP();
     const updateProfile = useUpdateMyProfile();
     const [editing, setEditing] = useState(false);
@@ -27,7 +25,6 @@ export default function ProfilePage() {
     useEffect(() => { setMounted(true); }, []);
 
     const myCollabs = collabs ?? [];
-    const mySBTs = sbts ?? [];
 
     const startEdit = () => {
         setForm({
@@ -92,12 +89,11 @@ export default function ProfilePage() {
                     </button>
                 </section>
 
-                {/* Score + SBTs */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    {/* Reputation Score */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-card flex flex-col items-center">
-                        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t.profile.reputationScore}</p>
-                        <div className="relative w-32 h-32 mb-4">
+                {/* Reputation Score */}
+                <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-card mb-12">
+                    <div className="flex items-center gap-8">
+                        {/* Circular VCP gauge */}
+                        <div className="relative w-28 h-28 flex-shrink-0">
                             <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                                 <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" strokeWidth="10" className="dark:stroke-slate-700" />
                                 <circle
@@ -108,38 +104,34 @@ export default function ProfilePage() {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-3xl font-black text-slate-900 dark:text-white">{Math.round(vcpNum)}</span>
-                                <span className="text-xs text-slate-400 uppercase">{t.profile.vcpPoints}</span>
+                                <span className="text-2xl font-black text-slate-900 dark:text-white">{Math.round(vcpNum)}</span>
+                                <span className="text-[10px] text-slate-400 uppercase">{t.profile.vcpPoints}</span>
                             </div>
                         </div>
-                        <span className="text-primary text-sm font-medium flex items-center gap-1">
-                            <span className="material-symbols-outlined !text-[16px]">trending_up</span>
-                            {t.profile.topContributor}
-                        </span>
-                    </div>
-
-                    {/* SBTs */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-card">
-                        <div className="flex items-center justify-between mb-4">
-                            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{t.profile.soulboundTokens}</p>
+                        {/* Stats */}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.profile.reputationScore}</p>
+                            <div className="flex items-center gap-6">
+                                <div>
+                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{myCollabs.length}</span>
+                                    <p className="text-xs text-slate-400 mt-0.5">{t.dashboard.activeQuests}</p>
+                                </div>
+                                <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                                <div>
+                                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                                        {myCollabs.filter((c: Collaboration) => c.status === 'SETTLED').length}
+                                    </span>
+                                    <p className="text-xs text-slate-400 mt-0.5">{t.common.completed}</p>
+                                </div>
+                                <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                                <div>
+                                    <span className="text-primary text-sm font-medium flex items-center gap-1">
+                                        <span className="material-symbols-outlined !text-[16px]">trending_up</span>
+                                        {t.profile.topContributor}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        {mySBTs.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                                <span className="material-symbols-outlined !text-[36px] mb-2">military_tech</span>
-                                <p className="text-sm">{t.common.noData}</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-4 gap-4">
-                                {mySBTs.map((sbt: any, i: number) => (
-                                    <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer">
-                                        <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                            <span className="material-symbols-outlined !text-[28px]">{sbt.icon || 'military_tech'}</span>
-                                        </div>
-                                        <span className="text-xs text-slate-500 text-center line-clamp-1">{sbt.name}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
 

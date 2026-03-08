@@ -1,7 +1,14 @@
 import { useAccount, useReadContracts } from 'wagmi';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
+import { IS_MAINNET } from '@/constants/chain-config';
 
 const { address: CONTRACT, chainId, tokens } = PRIVILEGE_NFT;
+
+/**
+ * Dev/testnet fallback: when RPC is unreliable, set NEXT_PUBLIC_DEV_MOCK_NFTS=true
+ * in .env.local to force all badges as owned. NEVER enable on mainnet.
+ */
+const DEV_MOCK_NFTS = !IS_MAINNET && process.env.NEXT_PUBLIC_DEV_MOCK_NFTS === 'true';
 
 const erc1155Abi = [
     {
@@ -45,9 +52,11 @@ export function usePrivilegeNFTs() {
     });
 
     const balances = data?.[0]?.result as readonly bigint[] | undefined;
-    const balanceNums = balances
-        ? TOKEN_LIST.map((_, i) => Number(balances[i] ?? BigInt(0)))
-        : TOKEN_LIST.map(() => 0);
+    const balanceNums = DEV_MOCK_NFTS
+        ? TOKEN_LIST.map(() => 1)  // Dev fallback: pretend all badges are owned
+        : balances
+            ? TOKEN_LIST.map((_, i) => Number(balances[i] ?? BigInt(0)))
+            : TOKEN_LIST.map(() => 0);
 
     // 按 Token ID 顺序解构（#1 #2 #3 #4 #5）
     const [hasPioneer, hasLantern, hasFlame, hasJustice, hasBeacon] =
@@ -62,8 +71,8 @@ export function usePrivilegeNFTs() {
         hasBeacon,
         // 原始数值数组，顺序与 TOKEN_LIST 一致
         balances: balanceNums,
-        isLoading,
-        isError,
+        isLoading: DEV_MOCK_NFTS ? false : isLoading,
+        isError: DEV_MOCK_NFTS ? false : isError,
         refetch,
     };
 }

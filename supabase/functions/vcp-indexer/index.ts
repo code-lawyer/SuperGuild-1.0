@@ -6,12 +6,46 @@
 import "@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
+/**
+ * Verify Alchemy Webhook signature (HMAC-SHA256).
+ * Alchemy sends a `x-alchemy-signature` header with HMAC of the raw body.
+ * See: https://docs.alchemy.com/reference/notify-api-quickstart#webhook-signature
+ */
+async function verifyAlchemySignature(body: string, signature: string, signingKey: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(signingKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computed = Array.from(new Uint8Array(mac)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return computed === signature;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
 
   try {
+    // 0. Verify Alchemy Webhook signature
+    const alchemySigningKey = Deno.env.get('ALCHEMY_WEBHOOK_SIGNING_KEY') || '';
+    const alchemySignature = req.headers.get('x-alchemy-signature') || '';
+    const rawBody = await req.text();
+
+    if (!alchemySigningKey) {
+      console.error('ALCHEMY_WEBHOOK_SIGNING_KEY not configured');
+      return new Response(JSON.stringify({ error: 'Server misconfigured' }), { status: 500 });
+    }
+
+    if (!alchemySignature || !(await verifyAlchemySignature(rawBody, alchemySignature, alchemySigningKey))) {
+      console.warn('Invalid or missing webhook signature — rejecting request');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 });
+    }
+
     // 1. Initialize Supabase Client with Service Role (Bypasses RLS)
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -23,7 +57,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // 2. Parse Alchemy Webhook Payload
-    const payload = await req.json();
+    const payload = JSON.parse(rawBody);
     console.log("Received Webhook Payload:", JSON.stringify(payload));
 
     // Alchemy Custom Webhook format contains events in 'activity' array

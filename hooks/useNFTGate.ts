@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAccount, useReadContract, useChainId } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { PRIVILEGE_CHAIN_ID } from '@/constants/chain-config';
 
 // Basic ERC1155 ABI for balanceOf
 const ERC1155_ABI = [
@@ -38,7 +38,7 @@ export function useNFTGate({
         abi: ERC1155_ABI,
         functionName: 'balanceOf',
         args: address ? [address, tokenId] : undefined,
-        chainId: sepolia.id,
+        chainId: PRIVILEGE_CHAIN_ID,
         query: {
             enabled: !!address && isConnected,
             retry: 3,

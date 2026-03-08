@@ -379,13 +379,13 @@ async function checkFastConfirmFreeze(address: string): Promise<string | null> {
 
 // ── 3. VCP Mint on MilestoneSettled events ──────────────────────────────────
 
-let lastProcessedBlock = 0n;
+let lastProcessedBlock = BigInt(0);
 
 async function runVCPMintWatcher() {
     console.log('[vcpMint] Checking for new MilestoneSettled events...');
 
     const currentBlock = await publicClient.getBlockNumber();
-    const fromBlock = lastProcessedBlock > 0n ? lastProcessedBlock + 1n : currentBlock - 1000n;
+    const fromBlock = lastProcessedBlock > BigInt(0) ? lastProcessedBlock + BigInt(1) : currentBlock - BigInt(1000);
 
     if (fromBlock > currentBlock) return;
 
@@ -492,7 +492,7 @@ async function runVCPMintWatcher() {
             }
 
             // Mint VCP
-            const vcpAmount = BigInt(vcpForGrade) * 10n ** 18n;
+            const vcpAmount = BigInt(vcpForGrade) * BigInt(10) ** BigInt(18);
             const reason = `Grade ${collabGrade} settled: ${(collabId as string).slice(0, 10)}...[${milestoneIdx}]`;
 
             try {

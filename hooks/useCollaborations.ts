@@ -55,6 +55,8 @@ export function useMyCollaborations() {
         queryKey: ['collaborations', address],
         queryFn: async () => {
             if (!address) return [];
+            // Validate address format before interpolating into query string
+            if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return [];
             const { data, error } = await supabase
                 .from('collaborations')
                 .select('*')
@@ -241,11 +243,14 @@ export function useApplyToAccept() {
 
 // ── Approve provider (initiator confirms the pending provider) ──
 export function useApproveProvider() {
+    const { address } = useAccount();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            // Get pending provider
+            if (!address) throw new Error('请先连接钱包');
+
+            // Get pending provider and verify caller is initiator
             const { data: collab } = await supabase
                 .from('collaborations')
                 .select('pending_provider_id, title, initiator_id')
@@ -253,6 +258,9 @@ export function useApproveProvider() {
                 .single();
 
             if (!collab?.pending_provider_id) throw new Error('No pending provider');
+            if (collab.initiator_id.toLowerCase() !== address.toLowerCase()) {
+                throw new Error('Only the initiator can approve providers');
+            }
 
             const { error } = await supabase
                 .from('collaborations')

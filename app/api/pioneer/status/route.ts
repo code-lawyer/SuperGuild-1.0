@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     const { data } = await supabase
         .from('pioneer_codes')
-        .select('code, claimed_at, tx_hash')
+        .select('claimed_at, tx_hash')
         .eq('claimed_by', address.toLowerCase())
         .limit(1)
         .single()
@@ -27,7 +27,6 @@ export async function GET(request: Request) {
     if (data) {
         return NextResponse.json({
             isPioneer: true,
-            code: data.code,
             claimedAt: data.claimed_at,
             txHash: data.tx_hash,
         })

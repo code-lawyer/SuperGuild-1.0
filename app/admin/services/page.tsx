@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/lib/i18n';
 
 interface Service {
     id: string;
@@ -20,6 +21,7 @@ interface Service {
 }
 
 export default function AdminServicesPage() {
+    const t = useT();
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -93,8 +95,8 @@ export default function AdminServicesPage() {
             icon,
             is_active: isActive,
             currency: 'USDC',
-            unlock_type: 'ITEM', // default
-            sort_order: 0 // default
+            unlock_type: 'ITEM',
+            sort_order: 0
         };
 
         if (currentEditId) {
@@ -113,7 +115,7 @@ export default function AdminServicesPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this service?')) return;
+        if (!window.confirm(t.admin.serviceDeleteConfirm)) return;
         await supabase.from('services').delete().eq('id', id);
         fetchServices();
     };
@@ -123,15 +125,15 @@ export default function AdminServicesPage() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                        {currentEditId ? 'Edit Service' : 'Create Service'}
+                        {currentEditId ? t.admin.serviceEdit : t.admin.serviceCreate}
                     </h1>
-                    <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                    <Button variant="outline" onClick={handleCancel}>{t.common.cancel}</Button>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Title</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormTitle}</label>
                             <input
                                 type="text"
                                 value={title}
@@ -140,7 +142,7 @@ export default function AdminServicesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Price (USDC)</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormPrice}</label>
                             <input
                                 type="number"
                                 value={price}
@@ -152,7 +154,7 @@ export default function AdminServicesPage() {
 
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Channel (1-3)</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormChannel}</label>
                             <input
                                 type="number"
                                 min={1}
@@ -163,7 +165,7 @@ export default function AdminServicesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Category ID</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormCategory}</label>
                             <input
                                 type="text"
                                 value={category}
@@ -172,7 +174,7 @@ export default function AdminServicesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Material Icon</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormIcon}</label>
                             <input
                                 type="text"
                                 value={icon}
@@ -183,7 +185,7 @@ export default function AdminServicesPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Description</label>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormDescription}</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -200,13 +202,13 @@ export default function AdminServicesPage() {
                             className="w-5 h-5 rounded text-primary focus:ring-primary"
                         />
                         <label htmlFor="isActive" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                            Is Active (Visible to users)
+                            {t.admin.serviceFormActive}
                         </label>
                     </div>
 
                     <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
                         <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white px-8">
-                            Save Service
+                            {t.admin.serviceSave}
                         </Button>
                     </div>
                 </div>
@@ -217,18 +219,18 @@ export default function AdminServicesPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Service Plans</h1>
+                <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{t.admin.serviceTitle}</h1>
                 <Button onClick={handleCreateNew} className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-[20px]">add</span>
-                    Create New
+                    {t.admin.serviceCreate}
                 </Button>
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {loading ? (
-                    <div className="p-8 text-center text-slate-500">Loading services...</div>
+                    <div className="p-8 text-center text-slate-500">{t.admin.serviceLoading}</div>
                 ) : services.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">No services found.</div>
+                    <div className="p-8 text-center text-slate-500">{t.admin.serviceEmpty}</div>
                 ) : (
                     <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                         {services.map((service) => (
@@ -241,11 +243,11 @@ export default function AdminServicesPage() {
                                         <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                             {service.title}
                                             {!service.is_active && (
-                                                <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded-full text-slate-500">Draft</span>
+                                                <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded-full text-slate-500">{t.admin.serviceDraft}</span>
                                             )}
                                         </h3>
                                         <p className="text-sm text-slate-500 mt-1 flex gap-4">
-                                            <span>Channel {service.channel}</span>
+                                            <span>{t.admin.serviceChannel} {service.channel}</span>
                                             <span className="font-mono">{service.price} USDC</span>
                                         </p>
                                     </div>
@@ -253,10 +255,10 @@ export default function AdminServicesPage() {
 
                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
-                                        Edit
+                                        {t.common.edit}
                                     </Button>
                                     <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDelete(service.id)}>
-                                        Delete
+                                        {t.common.delete}
                                     </Button>
                                 </div>
                             </li>

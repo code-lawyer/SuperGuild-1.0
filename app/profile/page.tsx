@@ -10,6 +10,7 @@ import { useVCP } from '@/hooks/useVCP';
 import PioneerCard from '@/components/pioneer/PioneerCard';
 import BadgeWall from '@/components/profile/BadgeWall';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function ProfilePage() {
     const t = useT();
@@ -58,7 +59,7 @@ export default function ProfilePage() {
             <div className="max-w-[960px] mx-auto px-6 py-8">
                 {/* Breadcrumb */}
                 <nav className="flex items-center text-sm text-slate-500 mb-6">
-                    <Link href="/" className="hover:text-primary transition-colors">{t.common.home || 'Home'}</Link>
+                    <Link href="/" className="hover:text-primary transition-colors">{t.common.home}</Link>
                     <span className="material-symbols-outlined !text-[16px] mx-2">chevron_right</span>
                     <span className="text-slate-900 dark:text-white font-medium">{t.profile.title}</span>
                 </nav>
@@ -136,14 +137,16 @@ export default function ProfilePage() {
                 </div>
 
                 {/* 3D Privilege Badges */}
-                <BadgeWall />
+                <ErrorBoundary>
+                    <BadgeWall />
+                </ErrorBoundary>
 
                 {/* Recent Contributions */}
                 <section className="mb-12">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{t.profile.recentContributions}</h3>
                         <div className="flex gap-2">
-                            {['All', 'Development', 'Design'].map(tab => (
+                            {[t.profile.tabAll, t.profile.tabDevelopment, t.profile.tabDesign].map(tab => (
                                 <button key={tab} className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors first:bg-primary first:text-white">
                                     {tab}
                                 </button>

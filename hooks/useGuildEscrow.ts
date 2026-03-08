@@ -72,6 +72,9 @@ export function useGuildEscrow() {
     const chainId = GUILD_ESCROW.chainId;
 
     // ── Approve USDC + Deposit (two sequential txs) ──
+    // NOTE: These are two separate transactions. If approve succeeds but deposit fails,
+    // the USDC allowance remains (harmless — scoped to GuildEscrow contract only).
+    // A future improvement could use Permit2 or multicall for atomicity.
 
     const approveAndDeposit = useCallback(async (
         collabUUID: string,
@@ -95,7 +98,7 @@ export function useGuildEscrow() {
                 args: [GUILD_ESCROW.address, total],
                 chainId,
             });
-            await publicClient!.waitForTransactionReceipt({ hash: approveHash });
+            await publicClient!.waitForTransactionReceipt({ hash: approveHash, timeout: 60_000 });
 
             // Step 2: Deposit into escrow
             setStep('depositing');
@@ -106,7 +109,7 @@ export function useGuildEscrow() {
                 args: [collabId, worker, amounts],
                 chainId,
             });
-            const receipt = await publicClient!.waitForTransactionReceipt({ hash: depositHash });
+            const receipt = await publicClient!.waitForTransactionReceipt({ hash: depositHash, timeout: 60_000 });
 
             setStep('done');
             return receipt;
@@ -135,7 +138,7 @@ export function useGuildEscrow() {
                 args: [toCollabId(collabUUID), BigInt(milestoneIdx), contentHash],
                 chainId,
             });
-            const receipt = await publicClient!.waitForTransactionReceipt({ hash });
+            const receipt = await publicClient!.waitForTransactionReceipt({ hash, timeout: 60_000 });
 
             setStep('done');
             return receipt;
@@ -163,7 +166,7 @@ export function useGuildEscrow() {
                 args: [toCollabId(collabUUID), BigInt(milestoneIdx)],
                 chainId,
             });
-            const receipt = await publicClient!.waitForTransactionReceipt({ hash });
+            const receipt = await publicClient!.waitForTransactionReceipt({ hash, timeout: 60_000 });
 
             setStep('done');
             return receipt;
@@ -191,7 +194,7 @@ export function useGuildEscrow() {
                 args: [toCollabId(collabUUID), BigInt(milestoneIdx)],
                 chainId,
             });
-            const receipt = await publicClient!.waitForTransactionReceipt({ hash });
+            const receipt = await publicClient!.waitForTransactionReceipt({ hash, timeout: 60_000 });
 
             setStep('done');
             return receipt;
@@ -216,7 +219,7 @@ export function useGuildEscrow() {
                 args: [toCollabId(collabUUID)],
                 chainId,
             });
-            const receipt = await publicClient!.waitForTransactionReceipt({ hash });
+            const receipt = await publicClient!.waitForTransactionReceipt({ hash, timeout: 60_000 });
 
             setStep('done');
             return receipt;

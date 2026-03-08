@@ -9,7 +9,7 @@ const AUTH_TAG_LENGTH = 16;
  * Get the encryption key
  */
 const getEncryptionKey = (): Buffer => {
-  const key = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
+  const key = process.env.ENCRYPTION_KEY;
   if (!key) {
     throw new Error('Encryption key is not configured');
   }

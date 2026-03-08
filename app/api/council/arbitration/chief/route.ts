@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
-// Temporary mock of Lantern Keepers (Hand of Justice NFT holders)
+// ⚠️ MOCK DATA — Replace with on-chain query (Alchemy getNFTOwners or Subgraph)
+// TODO: Query Hand of Justice (Token #4) holders from PRIVILEGE_NFT contract
+//       and rotate chief based on on-chain epoch or block timestamp
 const MOCK_HOLDERS = [
     '0x2668b81db197cd1F9d82136C70d473ED2B2B4aE5', // Random mock address
     '0x1234567890123456789012345678901234567890',

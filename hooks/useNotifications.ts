@@ -33,7 +33,7 @@ export function useMyNotifications() {
             return data as Notification[];
         },
         enabled: !!address,
-        refetchInterval: 15000, // poll every 15s
+        refetchInterval: 60_000, // poll every 15s
     });
 }
 
@@ -54,7 +54,7 @@ export function useUnreadCount() {
             return count ?? 0;
         },
         enabled: !!address,
-        refetchInterval: 15000,
+        refetchInterval: 60_000,
     });
 }
 

@@ -67,8 +67,8 @@ export function useVCP() {
         fetchVcp()
 
         // Subscribe to real-time changes
-        const channel = supabase
-            .channel(`vcp_updates_${address}`)
+        const channel = supabase.channel(`vcp_updates_${address}`)
+        channel
             .on(
                 'postgres_changes',
                 {

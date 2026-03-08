@@ -7,29 +7,33 @@ import { supabase } from '@/utils/supabase/client';
 export function useSyncProfile() {
     const { address, isConnected } = useAccount();
     const hasSynced = useRef(false);
+    const retryCount = useRef(0);
 
     useEffect(() => {
-        // Only sync once per connection to prevent infinite loops or spam
         if (isConnected && address && !hasSynced.current) {
+            let cancelled = false;
+
             const syncProfileToSupabase = async () => {
                 try {
-                    console.log(`[useSyncProfile] Syncing connected wallet: ${address}`);
-
-                    // Upsert the wallet address into the profiles table
-                    // According to our DB schema:
-                    // wallet_address (PK), username, bio, vcp_cache, created_at
-                    const { data, error } = await supabase
+                    const { error } = await supabase
                         .from('profiles')
                         .upsert(
                             { wallet_address: address },
                             { onConflict: 'wallet_address' }
                         );
 
+                    if (cancelled) return;
+
                     if (error) {
-                        console.error('[useSyncProfile] Supabase Upsert Error:', error);
+                        console.error('[useSyncProfile] Upsert Error:', error);
+                        // Retry once after 3s on failure
+                        if (retryCount.current < 1) {
+                            retryCount.current++;
+                            setTimeout(() => { if (!cancelled) syncProfileToSupabase(); }, 3000);
+                        }
                     } else {
-                        console.log('[useSyncProfile] Successfully synced profile:', address);
                         hasSynced.current = true;
+                        retryCount.current = 0;
                     }
                 } catch (err) {
                     console.error('[useSyncProfile] Unknown Error:', err);
@@ -37,9 +41,10 @@ export function useSyncProfile() {
             };
 
             syncProfileToSupabase();
+            return () => { cancelled = true; };
         } else if (!isConnected) {
-            // Reset the sync flag if they disconnect
             hasSynced.current = false;
+            retryCount.current = 0;
         }
     }, [isConnected, address]);
 } 

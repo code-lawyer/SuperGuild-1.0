@@ -1,10 +1,15 @@
 import { keccak256, encodeAbiParameters, parseAbiParameters, SignableMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { NextRequest, NextResponse } from 'next/server';
+import { createRateLimiter } from '@/utils/rate-limit';
 
 const SIGNER_PRIVATE_KEY = process.env.SIGNER_ADDRESS_PRIVATE_KEY as `0x${string}`;
+const limiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
 export async function POST(req: NextRequest) {
+  const limited = limiter.check(req);
+  if (limited) return limited;
+
   try {
     const { nickname, avatar, socialAccount, subject } = await req.json();
 
@@ -20,10 +25,13 @@ export async function POST(req: NextRequest) {
       throw new Error('Invalid SIGNER_PRIVATE_KEY format');
     }
 
-    // Construct message
+    // Include timestamp to prevent signature replay (5-min validity window)
+    const timestamp = BigInt(Math.floor(Date.now() / 1000));
+
+    // Construct message with timestamp for replay protection
     const message = encodeAbiParameters(
-      parseAbiParameters('string, string, string, address'),
-      [nickname, avatar, socialAccount, subject as `0x${string}`]
+      parseAbiParameters('string, string, string, address, uint256'),
+      [nickname, avatar, socialAccount, subject as `0x${string}`, timestamp]
     );
 
     // Calculate message hash
@@ -41,7 +49,8 @@ export async function POST(req: NextRequest) {
       signature,
       nickname,
       avatar,
-      socialAccount
+      socialAccount,
+      timestamp: Number(timestamp),
     });
   } catch (error) {
     console.error('Error in profile signing:', error);

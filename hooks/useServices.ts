@@ -75,13 +75,12 @@ export function useServices(channelFilter?: number) {
         enabled: !!address,
     });
 
-    // Mock Purchase Mutation (MVP — real chain payment comes later)
+    // ⚠️ MOCK: Simulated payment — must replace with GuildEscrow USDC flow before mainnet
     const unlockMutation = useMutation({
         mutationFn: async (serviceId: string) => {
             if (!address) throw new Error("请先连接钱包");
 
-            // TODO: 后续替换为链上 USDT transfer + 验证
-            console.log(`[useServices] MVP 模拟支付：解锁服务 ${serviceId}...`);
+            console.warn(`[useServices] MOCK payment — no real USDC transferred for service ${serviceId}`);
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             const { error } = await supabase
@@ -89,7 +88,7 @@ export function useServices(channelFilter?: number) {
                 .insert([{
                     user_address: address,
                     target_id: serviceId,
-                    tx_hash: `mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+                    tx_hash: `MOCK_${Date.now()}`,
                 }]);
 
             if (error) throw error;

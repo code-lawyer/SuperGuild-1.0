@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
 
+// TODO: contact_email and contact_telegram are stored in plaintext.
+// Before mainnet, encrypt at-rest or move to a separate encrypted table.
 export interface Profile {
     wallet_address: string;
     username: string | null;

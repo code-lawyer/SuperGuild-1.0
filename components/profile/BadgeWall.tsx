@@ -145,6 +145,7 @@ export default function BadgeWall() {
                                                 <Canvas
                                                     camera={{ position: [0, 0, 4], fov: 40 }}
                                                     gl={{ antialias: true, alpha: true }}
+                                                    frameloop="demand"
                                                 >
                                                     <Suspense fallback={null}>
                                                         <ambientLight intensity={1.2} />

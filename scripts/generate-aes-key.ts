@@ -10,7 +10,7 @@ function generateEncryptionConfig() {
   const key = cryptoNode.randomBytes(32);
 
   const config = {
-    NEXT_PUBLIC_ENCRYPTION_KEY: key.toString('base64')
+    ENCRYPTION_KEY: key.toString('base64')
   };
 
   // Create environment variable file content
@@ -32,7 +32,7 @@ function generateEncryptionConfig() {
   // Update or add new configuration
   const envLines = existingContent.split('\n');
   const newEnvLines = envLines.filter(line =>
-    !line.startsWith('NEXT_PUBLIC_ENCRYPTION_KEY=')
+    !line.startsWith('ENCRYPTION_KEY=')
   );
   newEnvLines.push(envContent);
 
@@ -42,7 +42,7 @@ function generateEncryptionConfig() {
   console.log('Encryption key generated and saved to .env file');
   console.log('Please ensure to securely store these values elsewhere as a backup');
   console.log('\nGenerated configuration:');
-  console.log('NEXT_PUBLIC_ENCRYPTION_KEY:', config.NEXT_PUBLIC_ENCRYPTION_KEY);
+  console.log('ENCRYPTION_KEY:', config.ENCRYPTION_KEY);
 }
 
 // Run the generator

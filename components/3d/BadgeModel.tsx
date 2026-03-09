@@ -48,8 +48,9 @@ const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
         `
     #include <dithering_fragment>
     float dotProduct = dot(vViewDirection, vWorldNormal);
-    float fresnel = pow(1.0 - max(0.0, dotProduct), 3.0);
-    float pulse = (sin(time * 2.0) * 0.5 + 0.5) * 0.5 + 0.5;
+    float fresnel = pow(clamp(1.0 - abs(dotProduct), 0.0, 1.0), 3.0);
+    fresnel = fresnel * 0.6; // cap glow intensity to preserve original material color
+    float pulse = (sin(time * 2.0) * 0.5 + 0.5) * 0.3 + 0.7;
     gl_FragColor = vec4(mix(gl_FragColor.rgb, glowColor * pulse, fresnel), gl_FragColor.a);
     `
     );

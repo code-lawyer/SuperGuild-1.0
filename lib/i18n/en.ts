@@ -563,6 +563,12 @@ const en = {
         serviceEmpty: 'No services found.',
         serviceDraft: 'Draft',
         serviceChannel: 'Channel',
+        serviceDocuments: 'Attached Documents',
+        serviceDocUpload: 'Upload Document',
+        serviceDocUploading: 'Uploading...',
+        serviceDocEmpty: 'No documents attached',
+        serviceDocDelete: 'Delete',
+        serviceDocDeleteConfirm: 'Are you sure you want to delete this document?',
     },
 
     // ── Payment / Settlement ──

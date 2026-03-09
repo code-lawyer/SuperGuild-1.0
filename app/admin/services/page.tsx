@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/lib/i18n';
+
+interface ServiceDoc {
+    name: string;
+    url: string;
+    size: string;
+}
 
 interface Service {
     id: string;
@@ -18,6 +24,7 @@ interface Service {
     parent_id: string | null;
     unlock_type: string;
     is_active: boolean;
+    documents: ServiceDoc[];
 }
 
 export default function AdminServicesPage() {
@@ -35,6 +42,9 @@ export default function AdminServicesPage() {
     const [category, setCategory] = useState('');
     const [icon, setIcon] = useState('hub');
     const [isActive, setIsActive] = useState(true);
+    const [documents, setDocuments] = useState<ServiceDoc[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchServices = async () => {
         setLoading(true);
@@ -45,14 +55,17 @@ export default function AdminServicesPage() {
             .order('sort_order', { ascending: true });
 
         if (!error && data) {
-            setServices(data as Service[]);
+            setServices(data.map((s: any) => ({
+                ...s,
+                documents: s.documents || [],
+            })) as Service[]);
         }
         setLoading(false);
     };
 
     useEffect(() => {
         fetchServices();
-    }, [supabase]);
+    }, []);
 
     const handleEdit = (service: Service) => {
         setCurrentEditId(service.id);
@@ -63,6 +76,7 @@ export default function AdminServicesPage() {
         setCategory(service.category);
         setIcon(service.icon || 'hub');
         setIsActive(service.is_active);
+        setDocuments(service.documents || []);
         setIsEditing(true);
     };
 
@@ -75,6 +89,7 @@ export default function AdminServicesPage() {
         setCategory('new-category');
         setIcon('hub');
         setIsActive(true);
+        setDocuments([]);
         setIsEditing(true);
     };
 
@@ -96,7 +111,8 @@ export default function AdminServicesPage() {
             is_active: isActive,
             currency: 'USDC',
             unlock_type: 'ITEM',
-            sort_order: 0
+            sort_order: 0,
+            documents,
         };
 
         if (currentEditId) {
@@ -116,9 +132,84 @@ export default function AdminServicesPage() {
 
     const handleDelete = async (id: string) => {
         if (!window.confirm(t.admin.serviceDeleteConfirm)) return;
+        // Also clean up storage files for this service
+        const service = services.find(s => s.id === id);
+        if (service?.documents?.length) {
+            const paths = service.documents.map(d => {
+                const url = new URL(d.url);
+                // Extract path after /service-docs/
+                const match = url.pathname.match(/\/service-docs\/(.+)/);
+                return match ? match[1] : '';
+            }).filter(Boolean);
+            if (paths.length > 0) {
+                await supabase.storage.from('service-docs').remove(paths);
+            }
+        }
         await supabase.from('services').delete().eq('id', id);
         fetchServices();
     };
+
+    // ── Document management ──
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const timestamp = Date.now();
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const filePath = `${currentEditId || 'new'}/${timestamp}_${safeName}`;
+
+            const { error } = await supabase.storage
+                .from('service-docs')
+                .upload(filePath, file, { upsert: false });
+
+            if (error) {
+                console.error('Upload error:', error);
+                setUploading(false);
+                return;
+            }
+
+            const { data: urlData } = supabase.storage
+                .from('service-docs')
+                .getPublicUrl(filePath);
+
+            setDocuments(prev => [...prev, {
+                name: file.name,
+                url: urlData.publicUrl,
+                size: formatFileSize(file.size),
+            }]);
+        } finally {
+            setUploading(false);
+            // Reset file input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDocDelete = async (index: number) => {
+        if (!window.confirm(t.admin.serviceDocDeleteConfirm)) return;
+
+        const doc = documents[index];
+        // Try to delete from storage
+        try {
+            const url = new URL(doc.url);
+            const match = url.pathname.match(/\/service-docs\/(.+)/);
+            if (match) {
+                await supabase.storage.from('service-docs').remove([decodeURIComponent(match[1])]);
+            }
+        } catch { /* ignore storage delete errors */ }
+
+        setDocuments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // ── Render: Editing ──
 
     if (isEditing) {
         return (
@@ -193,6 +284,63 @@ export default function AdminServicesPage() {
                         />
                     </div>
 
+                    {/* Document attachments */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                            {t.admin.serviceDocuments}
+                        </label>
+
+                        {documents.length === 0 ? (
+                            <p className="text-sm text-slate-400 mb-3">{t.admin.serviceDocEmpty}</p>
+                        ) : (
+                            <ul className="space-y-2 mb-3">
+                                {documents.map((doc, idx) => (
+                                    <li key={idx} className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <span className="material-symbols-outlined text-primary !text-[20px]">description</span>
+                                        <div className="flex-1 min-w-0">
+                                            <a
+                                                href={doc.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm font-medium text-slate-800 dark:text-slate-200 hover:text-primary truncate block"
+                                            >
+                                                {doc.name}
+                                            </a>
+                                            <span className="text-xs text-slate-400">{doc.size}</span>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDocDelete(idx)}
+                                            className="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"
+                                        >
+                                            <span className="material-symbols-outlined !text-[16px]">delete</span>
+                                            {t.admin.serviceDocDelete}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            onChange={handleDocUpload}
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.zip,.rar,.md,.txt,.xlsx,.csv,.pptx"
+                        />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="flex items-center gap-2"
+                        >
+                            <span className="material-symbols-outlined !text-[18px]">
+                                {uploading ? 'hourglass_top' : 'upload_file'}
+                            </span>
+                            {uploading ? t.admin.serviceDocUploading : t.admin.serviceDocUpload}
+                        </Button>
+                    </div>
+
                     <div className="flex items-center gap-2 pt-4">
                         <input
                             type="checkbox"
@@ -215,6 +363,8 @@ export default function AdminServicesPage() {
             </div>
         );
     }
+
+    // ── Render: List ──
 
     return (
         <div className="space-y-6">
@@ -249,6 +399,12 @@ export default function AdminServicesPage() {
                                         <p className="text-sm text-slate-500 mt-1 flex gap-4">
                                             <span>{t.admin.serviceChannel} {service.channel}</span>
                                             <span className="font-mono">{service.price} USDC</span>
+                                            {service.documents?.length > 0 && (
+                                                <span className="flex items-center gap-1 text-primary">
+                                                    <span className="material-symbols-outlined !text-[14px]">attach_file</span>
+                                                    {service.documents.length}
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
                                 </div>

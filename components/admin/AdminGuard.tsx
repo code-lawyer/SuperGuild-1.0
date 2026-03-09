@@ -5,13 +5,19 @@ import { useNFTGate } from '@/hooks/useNFTGate';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 
+// Fallback admin wallet — when NFT detection fails on testnet, only this address is allowed
+const ADMIN_FALLBACK_WALLET = '0xE358B67C35810312E7AFDce9ADbE5c14e66BAEc6';
+
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const t = useT();
-    const { hasNFT, isLoading, isError, isConnected, refetch } = useNFTGate({
+    const { hasNFT, isLoading, isError, isConnected, address, refetch } = useNFTGate({
         contractAddress: PRIVILEGE_NFT.address,
         tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
     });
     const { openConnectModal } = useConnectModal();
+
+    // Fallback: if NFT check errors out, allow only the hardcoded admin wallet
+    const isFallbackAdmin = isError && isConnected && address?.toLowerCase() === ADMIN_FALLBACK_WALLET.toLowerCase();
 
     if (!isConnected) {
         return (
@@ -35,7 +41,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    if (isError) {
+    if (isError && !isFallbackAdmin) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-6">
                 <div className="w-16 h-16 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-center mb-2">
@@ -53,7 +59,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    if (!hasNFT) {
+    if (!hasNFT && !isFallbackAdmin) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-6">
                 <div className="w-16 h-16 rounded-2xl border border-red-500/30 bg-red-500/10 flex items-center justify-center mb-2">

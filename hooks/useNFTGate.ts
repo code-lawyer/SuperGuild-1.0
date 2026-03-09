@@ -5,10 +5,11 @@ import { useAccount, useReadContract, useChainId } from 'wagmi';
 import { PRIVILEGE_CHAIN_ID, IS_MAINNET } from '@/constants/chain-config';
 
 /**
- * Dev/testnet fallback: when RPC is unreliable, set NEXT_PUBLIC_DEV_MOCK_NFTS=true
- * in .env.local to force all NFT gates as passed. NEVER enable on mainnet.
+ * Dev/testnet fallback — DISABLED.
+ * Previously allowed NEXT_PUBLIC_DEV_MOCK_NFTS=true to bypass all gates.
+ * Now each guard has its own fallback logic (e.g. AdminGuard checks wallet address).
  */
-const DEV_MOCK_NFTS = !IS_MAINNET && process.env.NEXT_PUBLIC_DEV_MOCK_NFTS === 'true';
+const DEV_MOCK_NFTS = false;
 
 // Basic ERC1155 ABI for balanceOf
 const ERC1155_ABI = [

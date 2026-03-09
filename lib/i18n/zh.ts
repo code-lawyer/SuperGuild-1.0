@@ -553,6 +553,12 @@ const zh: TranslationKeys = {
         serviceEmpty: '暂无服务方案。',
         serviceDraft: '草稿',
         serviceChannel: '频道',
+        serviceDocuments: '附属文档',
+        serviceDocUpload: '上传文档',
+        serviceDocUploading: '上传中...',
+        serviceDocEmpty: '暂无附属文档',
+        serviceDocDelete: '删除',
+        serviceDocDeleteConfirm: '确定要删除此文档吗？',
     },
 
     // ── 支付 / 结算 ──

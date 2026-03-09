@@ -107,3 +107,17 @@
 - **#6 降级**：`ignoreBuildErrors` 是开发便利性设置，不直接构成安全漏洞，从 CRITICAL 降为 HIGH。
 
 **修正后统计**：CRITICAL 3 条 → HIGH 10 条 → MEDIUM 16 条 → LOW 6 条（原 37 条，排除 3 条误伤 = 34 条有效问题）
+
+---
+
+## 修复记录（2026-03-09）
+
+| # | 问题 | 修复方式 |
+|---|------|---------|
+| #1 | 加密密钥 NEXT_PUBLIC_ 前缀 | ✅ 代码已使用 `ENCRYPTION_KEY`（无前缀），且模块为死代码（无引用），不构成风险 |
+| #2 | Webhook 无签名验证 | ✅ 已加 HMAC-SHA256 签名验证（Alchemy x-alchemy-signature） |
+| #5 | pioneer/claim 竞态窗口 | ✅ 已加 `pioneer_codes(claimed_by)` 唯一部分索引，DB 层面阻止双领 |
+| #10 | 所有 API 路由无 rate limiting | ✅ 全部 8 个 API 路由已加 `createRateLimiter`（5-30/min） |
+| #11 | useNFTGate 硬编码 sepolia.id | ✅ 已改为 PRIVILEGE_CHAIN_ID + DEV_MOCK_NFTS 开关 |
+
+**修复后统计**：CRITICAL 0 条 → HIGH 7 条 → MEDIUM 16 条 → LOW 6 条

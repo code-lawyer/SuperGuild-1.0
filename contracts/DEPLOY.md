@@ -107,3 +107,16 @@ function toCollabId(uuid: string): `0x${string}` {
 | 2 | Settled | 已结算，USDC 已释放 |
 | 3 | Disputed | 仲裁中（10% 已划入国库） |
 | 4 | Cancelled | 已取消退款 |
+
+---
+
+## DirectPay 部署记录
+
+> 零托管支付路由合约，用于「自行管理」模式
+
+- **链**: Arbitrum Sepolia (421614)
+- **合约地址**: `0xDc0f7BF5c7C026f8000e00a40d0f93a28c04bf65`
+- **构造参数**: `_usdc = 0xdd0a2bf984d690c9cdd613603094d7455fc63e06` (MockUSDC)
+- **部署 Tx**: `0x2038afe51ac247986d6602099aa0648639a2039e290b497bb453d82ae4fa2dff`
+- **部署者**: `0xE358B67C35810312E7AFDce9ADbE5c14e66BAEc6`
+- **工具**: Foundry forge create

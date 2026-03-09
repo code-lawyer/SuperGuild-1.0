@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { createRateLimiter } from '@/utils/rate-limit';
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 
 export async function GET(req: Request) {
+    const limited = limiter.check(req);
+    if (limited) return limited;
     try {
         const { searchParams } = new URL(req.url);
         const address = searchParams.get('address');

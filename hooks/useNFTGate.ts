@@ -2,7 +2,13 @@
 
 import React from 'react';
 import { useAccount, useReadContract, useChainId } from 'wagmi';
-import { PRIVILEGE_CHAIN_ID } from '@/constants/chain-config';
+import { PRIVILEGE_CHAIN_ID, IS_MAINNET } from '@/constants/chain-config';
+
+/**
+ * Dev/testnet fallback: when RPC is unreliable, set NEXT_PUBLIC_DEV_MOCK_NFTS=true
+ * in .env.local to force all NFT gates as passed. NEVER enable on mainnet.
+ */
+const DEV_MOCK_NFTS = !IS_MAINNET && process.env.NEXT_PUBLIC_DEV_MOCK_NFTS === 'true';
 
 // Basic ERC1155 ABI for balanceOf
 const ERC1155_ABI = [
@@ -40,19 +46,21 @@ export function useNFTGate({
         args: address ? [address, tokenId] : undefined,
         chainId: PRIVILEGE_CHAIN_ID,
         query: {
-            enabled: !!address && isConnected,
+            enabled: !!address && isConnected && !DEV_MOCK_NFTS,
             retry: 3,
             retryDelay: 1500,
         }
     });
 
-    const hasNFT = isMounted && (balance !== undefined && balance > BigInt(0));
+    const hasNFT = DEV_MOCK_NFTS
+        ? (isMounted && isConnected)
+        : (isMounted && balance !== undefined && balance > BigInt(0));
     const isWrongChain = false;
 
     return {
         hasNFT,
-        isLoading: !isMounted || isLoading,
-        isError: isMounted && isError,
+        isLoading: DEV_MOCK_NFTS ? !isMounted : (!isMounted || isLoading),
+        isError: DEV_MOCK_NFTS ? false : (isMounted && isError),
         isConnected: isMounted && isConnected,
         isWrongChain,
         address: isMounted ? address : undefined,

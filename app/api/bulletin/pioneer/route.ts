@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { createPublicClient, http } from 'viem';
+import { createRateLimiter } from '@/utils/rate-limit';
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 import { sepolia } from 'viem/chains';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
@@ -25,6 +28,8 @@ const ERC1155_ABI = [
 ] as const;
 
 export async function POST(req: Request) {
+    const limited = limiter.check(req);
+    if (limited) return limited;
     try {
         const body = await req.json();
         const { title, content, authorAddress, attachment } = body;

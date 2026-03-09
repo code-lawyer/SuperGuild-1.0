@@ -554,6 +554,28 @@ const zh: TranslationKeys = {
         serviceDraft: '草稿',
         serviceChannel: '频道',
     },
+
+    // ── 支付 / 结算 ──
+    payment: {
+        modeTitle: '结算方式',
+        modeSectionDesc: '选择双方之间报酬的结算方式。',
+        selfManaged: '自行管理',
+        selfManagedDesc: '通过智能合约直接向承接人付款。无托管，无仲裁。',
+        selfManagedVcp: '50% VCP 奖励',
+        selfManagedWarning: '自行管理模式下，公会不介入资金流转。发布者拒付时，平台无法强制执行，承接人需自行判断合作风险。',
+        guildManaged: '公会托管',
+        guildManagedDesc: 'USDC 锁入公会合约，按里程碑结算，提供仲裁保障。',
+        guildManagedVcp: '100% VCP 奖励',
+        comingSoon: '尚未开放',
+        comingSoonTooltip: '公会托管功能将在 MVP 验证完成后开放。',
+        payMilestone: '支付里程碑',
+        paying: '处理中...',
+        paySuccess: '链上付款已确认。',
+        payError: '付款失败，请重试。',
+        approveFirst: '请先授权 USDC',
+        approving: '授权 USDC 中...',
+        needsApprove: '付款前需先授权合约使用你的 USDC。',
+    },
 };
 
 export default zh;

@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { createRateLimiter } from '@/utils/rate-limit';
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 
 // ⚠️ MOCK DATA — Replace with on-chain query (Alchemy getNFTOwners or Subgraph)
 // TODO: Query Hand of Justice (Token #4) holders from PRIVILEGE_NFT contract
@@ -10,6 +13,8 @@ const MOCK_HOLDERS = [
 ];
 
 export async function GET(request: Request) {
+    const limited = limiter.check(request);
+    if (limited) return limited;
     const { searchParams } = new URL(request.url);
     const mockAddress = searchParams.get('address');
 

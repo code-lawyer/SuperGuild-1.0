@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createRateLimiter } from '@/utils/rate-limit'
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 30 })
 
 function getSupabase() {
     return createClient(
@@ -9,6 +12,8 @@ function getSupabase() {
 }
 
 export async function GET(request: Request) {
+    const limited = limiter.check(request)
+    if (limited) return limited
     const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
     const address = searchParams.get('address')

@@ -24,6 +24,7 @@ export interface Collaboration {
     grade: string;
     secret_content: string | null;
     status: CollabStatus;
+    payment_mode: 'self_managed' | 'guild_managed';
     escrow_address: string | null;
     created_at: string;
     updated_at: string;
@@ -132,6 +133,7 @@ export interface CreateCollabInput {
     grade?: string;
     secret_content?: string;
     secret_attachments?: any[];
+    payment_mode?: 'self_managed' | 'guild_managed';
     milestones: { title: string; amount_percentage: number }[];
 }
 
@@ -158,6 +160,7 @@ export function useCreateCollaboration() {
                     grade: input.grade || 'E',
                     secret_content: input.secret_content || null,
                     secret_attachments: input.secret_attachments || [],
+                    payment_mode: input.payment_mode || 'self_managed',
                     status: 'OPEN',
                 })
                 .select()
@@ -253,7 +256,7 @@ export function useApproveProvider() {
             // Get pending provider and verify caller is initiator
             const { data: collab } = await supabase
                 .from('collaborations')
-                .select('pending_provider_id, title, initiator_id')
+                .select('pending_provider_id, title, initiator_id, payment_mode')
                 .eq('id', collabId)
                 .single();
 
@@ -262,12 +265,15 @@ export function useApproveProvider() {
                 throw new Error('Only the initiator can approve providers');
             }
 
+            // Self-managed skips LOCKED (no on-chain escrow), goes straight to ACTIVE
+            const nextStatus = collab.payment_mode === 'self_managed' ? 'ACTIVE' : 'LOCKED';
+
             const { error } = await supabase
                 .from('collaborations')
                 .update({
                     provider_id: collab.pending_provider_id,
                     pending_provider_id: null,
-                    status: 'LOCKED',
+                    status: nextStatus,
                 })
                 .eq('id', collabId)
                 .eq('status', 'PENDING_APPROVAL');
@@ -610,12 +616,22 @@ export function useApproveApplication() {
 
     return useMutation({
         mutationFn: async ({ collabId, applicationId, applicantId }: { collabId: string; applicationId: string; applicantId: string }) => {
+            // Check payment_mode to determine next status
+            const { data: collabInfo } = await supabase
+                .from('collaborations')
+                .select('payment_mode')
+                .eq('id', collabId)
+                .single();
+
+            // Self-managed skips LOCKED (no on-chain escrow), goes straight to ACTIVE
+            const nextStatus = collabInfo?.payment_mode === 'self_managed' ? 'ACTIVE' : 'LOCKED';
+
             // 1. Update collaboration state
             const { error: collabErr } = await supabase
                 .from('collaborations')
                 .update({
                     provider_id: applicantId,
-                    status: 'LOCKED',
+                    status: nextStatus,
                 })
                 .eq('id', collabId);
 

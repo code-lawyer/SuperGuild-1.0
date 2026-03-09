@@ -564,6 +564,28 @@ const en = {
         serviceDraft: 'Draft',
         serviceChannel: 'Channel',
     },
+
+    // ── Payment / Settlement ──
+    payment: {
+        modeTitle: 'Settlement Method',
+        modeSectionDesc: 'Choose how rewards are settled between parties.',
+        selfManaged: 'Self-Managed',
+        selfManagedDesc: 'You pay the worker directly via smart contract. No escrow, no arbitration.',
+        selfManagedVcp: '50% VCP Reward',
+        selfManagedWarning: 'In self-managed mode, the Guild does not intervene in fund transfers. If the publisher refuses to pay, the platform cannot enforce payment. Collaborators assume their own risk.',
+        guildManaged: 'Guild Escrow',
+        guildManagedDesc: 'USDC is locked in the Guild contract and released per milestone. Arbitration available.',
+        guildManagedVcp: '100% VCP Reward',
+        comingSoon: 'Coming Soon',
+        comingSoonTooltip: 'Guild Escrow will be available after MVP validation.',
+        payMilestone: 'Pay Milestone',
+        paying: 'Processing...',
+        paySuccess: 'Payment confirmed on-chain.',
+        payError: 'Payment failed. Please try again.',
+        approveFirst: 'Approve USDC first',
+        approving: 'Approving USDC...',
+        needsApprove: 'You need to approve USDC spending before paying.',
+    },
 };
 
 export default en;

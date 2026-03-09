@@ -17,6 +17,7 @@ import {
     CollabApplication,
 } from '@/hooks/useCollaborations';
 import { useGuildEscrow, EscrowStep } from '@/hooks/useGuildEscrow';
+import { useDirectPay } from '@/hooks/useDirectPay';
 import { useT } from '@/lib/i18n';
 import Markdown from '@/components/ui/Markdown';
 import { useProfileByAddress, displayName } from '@/hooks/useProfile';
@@ -55,6 +56,7 @@ export default function CollaborationDetailPage() {
     const confirmMs = useConfirmMilestone();
     const disputeCollab = useDisputeCollaboration();
     const escrow = useGuildEscrow();
+    const directPay = useDirectPay();
 
     const [applyMessage, setApplyMessage] = useState('');
     const [showApplyForm, setShowApplyForm] = useState(false);
@@ -86,6 +88,7 @@ export default function CollaborationDetailPage() {
     const status = statusConfig[collab.status] || statusConfig.OPEN;
     const isInitiator = address?.toLowerCase() === collab.initiator_id?.toLowerCase();
     const isProvider = address?.toLowerCase() === collab.provider_id?.toLowerCase();
+    const isGuildManaged = collab.payment_mode === 'guild_managed';
 
     const completedMs = milestones.filter(m => m.status === 'CONFIRMED');
     const releasedPct = completedMs.reduce((sum, m) => sum + m.amount_percentage, 0);
@@ -191,17 +194,19 @@ export default function CollaborationDetailPage() {
                                     key={app.id}
                                     application={app}
                                     onApprove={async () => {
-                                        await escrow.approveAndDeposit(
-                                            collab.id,
-                                            app.applicant_id as `0x${string}`,
-                                            milestones,
-                                            collab.total_budget,
-                                        );
+                                        if (isGuildManaged) {
+                                            await escrow.approveAndDeposit(
+                                                collab.id,
+                                                app.applicant_id as `0x${string}`,
+                                                milestones,
+                                                collab.total_budget,
+                                            );
+                                        }
                                         await approveApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id });
                                         escrow.reset();
                                     }}
                                     isApproving={approveApp.isPending || escrow.isPending}
-                                    escrowStep={escrow.step}
+                                    escrowStep={isGuildManaged ? escrow.step : undefined}
                                 />
                             ))}
                         </div>
@@ -274,8 +279,8 @@ export default function CollaborationDetailPage() {
                     </div>
                 )}
 
-                {/* Escrow Monitor */}
-                <div className="relative group">
+                {/* Escrow Monitor — guild_managed only */}
+                {isGuildManaged && <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500" />
                     <div className="relative bg-white rounded-xl p-8 border border-[#E8EAF0]/60 shadow-antigravity flex flex-col md:flex-row gap-8 items-center">
                         <div className="flex-1 w-full">
@@ -318,7 +323,7 @@ export default function CollaborationDetailPage() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>}
 
                 {/* Milestone Console */}
                 <div className="space-y-6">
@@ -342,15 +347,27 @@ export default function CollaborationDetailPage() {
                                 setProofMilestoneSortOrder(sortOrder);
                             }}
                             onConfirm={async (msId: string, sortOrder: number) => {
-                                await escrow.confirmMilestoneOnChain(collab.id, sortOrder - 1);
+                                if (isGuildManaged) {
+                                    await escrow.confirmMilestoneOnChain(collab.id, sortOrder - 1);
+                                } else {
+                                    // Self-managed: pay via DirectPay contract
+                                    const ms = milestones.find(m => m.id === msId);
+                                    const milestoneAmount = ms ? (collab.total_budget * ms.amount_percentage) / 100 : 0;
+                                    await directPay.payMilestone(
+                                        collab.id,
+                                        collab.provider_id as `0x${string}`,
+                                        milestoneAmount,
+                                    );
+                                }
                                 await confirmMs.mutateAsync({ milestoneId: msId, collabId: collab.id });
                                 escrow.reset();
+                                directPay.reset();
                             }}
-                            onDispute={async (msId: string, sortOrder: number) => {
+                            onDispute={isGuildManaged ? async (msId: string, sortOrder: number) => {
                                 await escrow.disputeMilestoneOnChain(collab.id, sortOrder - 1);
                                 await disputeCollab.mutateAsync(collab.id);
                                 escrow.reset();
-                            }}
+                            } : undefined}
                         />
                     )}
                 </div>
@@ -367,7 +384,7 @@ export default function CollaborationDetailPage() {
                         confirmClass="bg-red-500 hover:bg-red-600 text-white"
                         isLoading={cancelCollab.isPending || escrow.isPending}
                         onConfirm={async () => {
-                            if (['LOCKED', 'ACTIVE'].includes(collab.status)) {
+                            if (isGuildManaged && ['LOCKED', 'ACTIVE'].includes(collab.status)) {
                                 await escrow.cancelEscrow(collab.id);
                             }
                             await cancelCollab.mutateAsync(collab.id);
@@ -414,6 +431,24 @@ export default function CollaborationDetailPage() {
                         <span className="material-symbols-outlined !text-[18px]">error</span>
                         <span className="text-sm font-medium">{escrow.error}</span>
                         <button onClick={escrow.reset} className="text-xs underline ml-2">{t.common.cancel}</button>
+                    </div>
+                )}
+
+                {/* DirectPay status banner (self-managed) */}
+                {!isGuildManaged && directPay.isPending && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-[#121317] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                        <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
+                        <span className="text-sm font-medium">
+                            {directPay.step === 'approving' && t.payment.approving}
+                            {directPay.step === 'paying' && t.payment.paying}
+                        </span>
+                    </div>
+                )}
+                {!isGuildManaged && directPay.error && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+                        <span className="material-symbols-outlined !text-[18px]">error</span>
+                        <span className="text-sm font-medium">{directPay.error}</span>
+                        <button onClick={directPay.reset} className="text-xs underline ml-2">{t.common.cancel}</button>
                     </div>
                 )}
 

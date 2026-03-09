@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createRateLimiter } from '@/utils/rate-limit';
+
+const limiter = createRateLimiter({ windowMs: 60_000, max: 20 });
 
 export async function POST(request: Request) {
+  const limited = limiter.check(request);
+  if (limited) return limited;
   try {
     const body = await request.json();
 

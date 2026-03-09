@@ -53,6 +53,7 @@ export default function CreateCollaborationPage() {
     const [deadline, setDeadline] = useState('');
     const [deliveryStandard, setDeliveryStandard] = useState('');
     const [customDelivery, setCustomDelivery] = useState('');
+    const [paymentMode, setPaymentMode] = useState<'self_managed' | 'guild_managed'>('self_managed');
     const [milestones, setMilestones] = useState<MilestoneInput[]>([
         { title: '', amount_percentage: 100 },
     ]);
@@ -71,7 +72,8 @@ export default function CreateCollaborationPage() {
         milestonesMeetGrade &&
         totalPercentage === 100 &&
         milestones.every((m: MilestoneInput) => m.title.trim()) &&
-        finalDelivery.trim();
+        finalDelivery.trim() &&
+        paymentMode === 'self_managed'; // MVP: guild_managed not yet open
 
     const addMilestone = () => setMilestones([...milestones, { title: '', amount_percentage: 0 }]);
     const removeMilestone = (i: number) => {
@@ -103,6 +105,7 @@ export default function CreateCollaborationPage() {
                 reward_token: rewardToken,
                 total_budget: Number(totalBudget),
                 secret_content: secretContent.trim(),
+                payment_mode: paymentMode,
                 reference_links: referenceLinks.filter((r: ReferenceLink) => r.url.trim()),
                 deadline: deadline || undefined,
                 delivery_standard: finalDelivery.trim(),
@@ -327,6 +330,57 @@ export default function CreateCollaborationPage() {
                             rows={4}
                             className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
+                    </div>
+
+                    {/* Payment Mode */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                            {t.payment.modeTitle} <span className="text-red-500">*</span>
+                        </label>
+                        <p className="text-[13px] text-[#6A6A71] mb-3">{t.payment.modeSectionDesc}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {/* Self-Managed — selectable */}
+                            <button
+                                type="button"
+                                onClick={() => setPaymentMode('self_managed')}
+                                className={`p-4 rounded-2xl border text-left transition-all duration-200 ${
+                                    paymentMode === 'self_managed'
+                                        ? 'ring-2 ring-primary border-primary bg-primary/5'
+                                        : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[14px] font-bold text-[#121317]">{t.payment.selfManaged}</span>
+                                    <span className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                        {t.payment.selfManagedVcp}
+                                    </span>
+                                </div>
+                                <p className="text-[12px] text-[#6A6A71]">{t.payment.selfManagedDesc}</p>
+                            </button>
+
+                            {/* Guild Managed — disabled (Coming Soon) */}
+                            <div
+                                className="p-4 rounded-2xl border border-[#E8EAF0] bg-[#F8F9FC] opacity-50 cursor-not-allowed relative"
+                                title={t.payment.comingSoonTooltip}
+                            >
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[14px] font-bold text-[#6A6A71]">{t.payment.guildManaged}</span>
+                                    <span className="text-[11px] font-bold text-[#6A6A71] bg-[#E8EAF0] px-2 py-0.5 rounded-full">
+                                        {t.payment.comingSoon}
+                                    </span>
+                                </div>
+                                <p className="text-[12px] text-[#B8BACA]">{t.payment.guildManagedDesc}</p>
+                            </div>
+                        </div>
+
+                        {/* Risk warning */}
+                        {paymentMode === 'self_managed' && (
+                            <div className="mt-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20">
+                                <p className="text-[12px] text-amber-700 leading-relaxed">
+                                    {t.payment.selfManagedWarning}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Milestones */}

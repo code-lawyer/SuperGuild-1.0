@@ -1,4 +1,4 @@
-import { http, createConfig } from 'wagmi'
+import { http, fallback, createConfig } from 'wagmi'
 import { polygon, lineaSepolia, flowTestnet, opBNBTestnet, anvil, baseSepolia, base, arbitrumSepolia, arbitrum, sepolia, mainnet } from 'wagmi/chains'
 import monad from './monad'
 import {
@@ -41,17 +41,18 @@ const connectors = connectorsForWallets(
   }
 )
 
-// configure transports — Alchemy for primary + privilege chains, public for others
+// configure transports — Alchemy primary + public fallback for reliability
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_ID;
 
 const transports = Object.fromEntries(
   chains.map((chain) => [
     chain.id,
-    chain.id === PRIMARY_CHAIN_ID && alchemyKey
-      ? http(getAlchemyRpcUrl(PRIMARY_CHAIN_ID, alchemyKey))
-      : chain.id === PRIVILEGE_CHAIN_ID && alchemyKey
-        ? http(getAlchemyRpcUrl(PRIVILEGE_CHAIN_ID, alchemyKey))
-        : http()
+    (chain.id === PRIMARY_CHAIN_ID || chain.id === PRIVILEGE_CHAIN_ID) && alchemyKey
+      ? fallback([
+          http(getAlchemyRpcUrl(chain.id, alchemyKey)),
+          http(),  // public RPC fallback when Alchemy is down
+        ])
+      : http()
   ])
 ) as Record<number, ReturnType<typeof http>>
 

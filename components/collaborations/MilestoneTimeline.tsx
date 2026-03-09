@@ -14,7 +14,7 @@ interface MilestoneTimelineProps {
     escrowStep: EscrowStep;
     onSubmitProof: (milestoneId: string, sortOrder: number) => void;
     onConfirm: (milestoneId: string, sortOrder: number) => void;
-    onDispute: (milestoneId: string, sortOrder: number) => void;
+    onDispute?: (milestoneId: string, sortOrder: number) => void;
 }
 
 const statusConfig: Record<string, { label: string; badgeClass: string }> = {
@@ -152,14 +152,16 @@ export default function MilestoneTimeline({
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                                                 {t.quests.confirmAndRelease} {amount} USDC
                                             </button>
-                                            <button
-                                                onClick={() => onDispute(ms.id, ms.sort_order)}
-                                                disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
-                                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-lg transition-colors transition-transform flex items-center gap-2 disabled:opacity-50"
-                                            >
-                                                <span className="material-symbols-outlined text-[18px]">gavel</span>
-                                                {t.quests.disputeMilestone}
-                                            </button>
+                                            {onDispute && (
+                                                <button
+                                                    onClick={() => onDispute(ms.id, ms.sort_order)}
+                                                    disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
+                                                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-lg transition-colors transition-transform flex items-center gap-2 disabled:opacity-50"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">gavel</span>
+                                                    {t.quests.disputeMilestone}
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

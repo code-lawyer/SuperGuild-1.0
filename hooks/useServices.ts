@@ -24,6 +24,10 @@ export interface Service {
     is_active: boolean;
     created_at: string;
     children?: Service[];
+    price_usdc?: number | null;
+    expert_avatar_url?: string | null;
+    expert_tags?: string[] | null;
+    documents?: { name: string; url: string; size: string }[] | null;
 }
 
 export function useServices(channelFilter?: number) {

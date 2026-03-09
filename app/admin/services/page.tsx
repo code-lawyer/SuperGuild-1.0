@@ -25,6 +25,9 @@ interface Service {
     unlock_type: string;
     is_active: boolean;
     documents: ServiceDoc[];
+    price_usdc: number | null;
+    expert_avatar_url: string | null;
+    expert_tags: string[] | null;
 }
 
 export default function AdminServicesPage() {
@@ -45,6 +48,13 @@ export default function AdminServicesPage() {
     const [documents, setDocuments] = useState<ServiceDoc[]>([]);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // New fields for channel-specific data
+    const [priceUsdc, setPriceUsdc] = useState<number | ''>('');
+    const [expertAvatarUrl, setExpertAvatarUrl] = useState('');
+    const [expertTags, setExpertTags] = useState('');
+    const [parentId, setParentId] = useState('');
+    // Channel filter for list view
+    const [channelFilter, setChannelFilter] = useState(0);
 
     const fetchServices = async () => {
         setLoading(true);
@@ -77,6 +87,10 @@ export default function AdminServicesPage() {
         setIcon(service.icon || 'hub');
         setIsActive(service.is_active);
         setDocuments(service.documents || []);
+        setPriceUsdc(service.price_usdc ?? '');
+        setExpertAvatarUrl(service.expert_avatar_url || '');
+        setExpertTags((service.expert_tags || []).join(', '));
+        setParentId(service.parent_id || '');
         setIsEditing(true);
     };
 
@@ -90,6 +104,10 @@ export default function AdminServicesPage() {
         setIcon('hub');
         setIsActive(true);
         setDocuments([]);
+        setPriceUsdc('');
+        setExpertAvatarUrl('');
+        setExpertTags('');
+        setParentId('');
         setIsEditing(true);
     };
 
@@ -113,6 +131,10 @@ export default function AdminServicesPage() {
             unlock_type: 'ITEM',
             sort_order: 0,
             documents,
+            price_usdc: priceUsdc !== '' ? Number(priceUsdc) : null,
+            expert_avatar_url: expertAvatarUrl || null,
+            expert_tags: expertTags ? expertTags.split(',').map(tag => tag.trim()).filter(Boolean) : null,
+            parent_id: parentId || null,
         };
 
         if (currentEditId) {
@@ -145,6 +167,8 @@ export default function AdminServicesPage() {
                 await supabase.storage.from('service-docs').remove(paths);
             }
         }
+        // Cascade: delete child items that reference this parent
+        await supabase.from('services').delete().eq('parent_id', id);
         await supabase.from('services').delete().eq('id', id);
         fetchServices();
     };
@@ -246,14 +270,15 @@ export default function AdminServicesPage() {
                     <div className="grid grid-cols-3 gap-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormChannel}</label>
-                            <input
-                                type="number"
-                                min={1}
-                                max={3}
+                            <select
                                 value={channel}
                                 onChange={(e) => setChannel(Number(e.target.value))}
                                 className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none"
-                            />
+                            >
+                                <option value={1}>{t.admin.channelFilterInfra}</option>
+                                <option value={2}>{t.admin.channelFilterCore}</option>
+                                <option value={3}>{t.admin.channelFilterConsulting}</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormCategory}</label>
@@ -274,6 +299,71 @@ export default function AdminServicesPage() {
                             />
                         </div>
                     </div>
+
+                    {/* Parent ID (for child items in channel 2/3) */}
+                    {(channel === 2 || channel === 3) && (
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                {t.admin.parentIdLabel}
+                            </label>
+                            <select
+                                value={parentId}
+                                onChange={(e) => setParentId(e.target.value)}
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none"
+                            >
+                                <option value="">{t.admin.parentIdNone}</option>
+                                {services.filter(s => s.channel === channel && !s.parent_id).map(s => (
+                                    <option key={s.id} value={s.id}>{s.title}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Channel 1: price_usdc */}
+                    {channel === 1 && (
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                {t.admin.priceUsdcLabel}
+                            </label>
+                            <input
+                                type="number"
+                                value={priceUsdc}
+                                onChange={(e) => setPriceUsdc(e.target.value === '' ? '' : Number(e.target.value))}
+                                placeholder={t.admin.priceUsdcPlaceholder}
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none"
+                            />
+                        </div>
+                    )}
+
+                    {/* Channel 3: expert fields */}
+                    {channel === 3 && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                    {t.admin.expertAvatarLabel}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={expertAvatarUrl}
+                                    onChange={(e) => setExpertAvatarUrl(e.target.value)}
+                                    placeholder="https://..."
+                                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                    {t.admin.expertTagsLabel}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={expertTags}
+                                    onChange={(e) => setExpertTags(e.target.value)}
+                                    placeholder={t.admin.expertTagsPlaceholder}
+                                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t.admin.serviceFormDescription}</label>
@@ -376,6 +466,28 @@ export default function AdminServicesPage() {
                 </Button>
             </div>
 
+            {/* Channel filter */}
+            <div className="flex gap-2">
+                {[
+                    { value: 0, label: t.admin.channelFilterAll },
+                    { value: 1, label: t.admin.channelFilterInfra },
+                    { value: 2, label: t.admin.channelFilterCore },
+                    { value: 3, label: t.admin.channelFilterConsulting },
+                ].map(opt => (
+                    <button
+                        key={opt.value}
+                        onClick={() => setChannelFilter(opt.value)}
+                        className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border rounded-lg transition-colors ${
+                            channelFilter === opt.value
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary/40'
+                        }`}
+                    >
+                        {opt.label}
+                    </button>
+                ))}
+            </div>
+
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {loading ? (
                     <div className="p-8 text-center text-slate-500">{t.admin.serviceLoading}</div>
@@ -383,7 +495,7 @@ export default function AdminServicesPage() {
                     <div className="p-8 text-center text-slate-500">{t.admin.serviceEmpty}</div>
                 ) : (
                     <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {services.map((service) => (
+                        {services.filter(s => channelFilter === 0 || s.channel === channelFilter).map((service) => (
                             <li key={service.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary">
@@ -396,9 +508,16 @@ export default function AdminServicesPage() {
                                                 <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded-full text-slate-500">{t.admin.serviceDraft}</span>
                                             )}
                                         </h3>
-                                        <p className="text-sm text-slate-500 mt-1 flex gap-4">
-                                            <span>{t.admin.serviceChannel} {service.channel}</span>
+                                        <p className="text-sm text-slate-500 mt-1 flex gap-4 flex-wrap">
+                                            <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
+                                                service.channel === 1 ? 'bg-blue-500/10 text-blue-500' :
+                                                service.channel === 2 ? 'bg-emerald-500/10 text-emerald-500' :
+                                                'bg-purple-500/10 text-purple-500'
+                                            }`}>
+                                                CH{service.channel}
+                                            </span>
                                             <span className="font-mono">{service.price} USDC</span>
+                                            {service.parent_id && <span className="text-xs text-slate-400">{t.admin.childItem}</span>}
                                             {service.documents?.length > 0 && (
                                                 <span className="flex items-center gap-1 text-primary">
                                                     <span className="material-symbols-outlined !text-[14px]">attach_file</span>

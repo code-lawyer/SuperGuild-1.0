@@ -36,9 +36,9 @@ export default function Header() {
             label: t.nav.services,
             href: '/services',
             subItems: [
-                { label: t.nav.sub_services_infra, href: '/services#infra' },
-                { label: t.nav.sub_services_core, href: '/services#core' },
-                { label: t.nav.sub_services_co_create, href: '/services#co-create' },
+                { label: t.nav.sub_services_infra, href: '/services/infrastructure' },
+                { label: t.nav.sub_services_core, href: '/services/core' },
+                { label: t.nav.sub_services_co_create, href: '/services/consulting' },
             ]
         },
         {

@@ -137,6 +137,39 @@ const en = {
         consultingDesc: 'Ecosystem network connecting resources and opportunities, providing expert advisory.',
         itemsCount: 'Services',
         noServices: 'No service plans available',
+        // Entry page
+        entry_title: 'Autonomous Office',
+        entry_subtitle: 'Choose your service channel',
+        entry_infra_title: 'Base Infrastructure',
+        entry_infra_desc: 'Legal, tax, IP protection and compliance packages',
+        entry_core_title: 'Core Services',
+        entry_core_desc: 'Customized solutions, purchase individually',
+        entry_consulting_title: 'Expert Consulting',
+        entry_consulting_desc: 'Connect directly with domain experts, book 1-on-1',
+        // Infrastructure channel
+        infra_activate: 'Activate',
+        infra_activated: 'Active',
+        infra_docs: 'Attachments',
+        infra_price_label: 'Package Price',
+        infra_approving: 'Approving...',
+        infra_paying: 'Processing...',
+        // Core services channel
+        core_select_category: 'Select Category',
+        core_solution_detail: 'Solution Detail',
+        core_contact: 'Contact to Get',
+        // Consulting channel
+        consulting_book: 'Book Session',
+        consulting_contact: 'Contact Expert',
+        consulting_expertise: 'Expertise',
+        consulting_no_experts: 'No experts yet',
+        // Entry page cards
+        enter_channel: 'Enter Channel',
+        view_detail: 'View',
+        price_negotiable: 'Negotiable',
+        solutions_count: 'Solutions',
+        per_session: '/ session',
+        consulting_fee: 'Consultation Fee',
+        retry: 'Retry',
     },
 
     // ── Collaborations / Quests ──
@@ -569,6 +602,20 @@ const en = {
         serviceDocEmpty: 'No documents attached',
         serviceDocDelete: 'Delete',
         serviceDocDeleteConfirm: 'Are you sure you want to delete this document?',
+        // Channel filter
+        channelFilterAll: 'All',
+        channelFilterInfra: 'Infrastructure',
+        channelFilterCore: 'Core Services',
+        channelFilterConsulting: 'Consulting',
+        // New field labels
+        parentIdLabel: 'Parent Category (empty = top-level, select = child item)',
+        parentIdNone: 'None (top-level category)',
+        priceUsdcLabel: 'On-chain Price (USDC)',
+        priceUsdcPlaceholder: 'e.g. 299',
+        expertAvatarLabel: 'Expert Avatar URL',
+        expertTagsLabel: 'Expertise Tags (comma-separated)',
+        expertTagsPlaceholder: 'Contract Law, IP, Cross-border',
+        childItem: 'Child',
     },
 
     // ── Payment / Settlement ──

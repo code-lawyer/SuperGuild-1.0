@@ -134,6 +134,39 @@ const zh: TranslationKeys = {
         consultingDesc: '连接资源与机会的生态网络，为超级个体提供专业顾问服务',
         itemsCount: '项服务',
         noServices: '暂无服务方案',
+        // 入口页
+        entry_title: '万用中后台',
+        entry_subtitle: '选择你需要的服务频道',
+        entry_infra_title: '基础设施',
+        entry_infra_desc: '法律、财税、IP 保护等基础合规服务，按套餐激活',
+        entry_core_title: '专项服务',
+        entry_core_desc: '定制化解决方案，按需购买单项',
+        entry_consulting_title: '专家咨询',
+        entry_consulting_desc: '直接对接领域专家，预约一对一咨询',
+        // 基础设施频道
+        infra_activate: '激活服务',
+        infra_activated: '已激活',
+        infra_docs: '附件文档',
+        infra_price_label: '套餐价格',
+        infra_approving: '授权中...',
+        infra_paying: '支付中...',
+        // 专项服务频道
+        core_select_category: '选择分类',
+        core_solution_detail: '解决方案详情',
+        core_contact: '联系获取',
+        // 专家咨询频道
+        consulting_book: '预约咨询',
+        consulting_contact: '联系专家',
+        consulting_expertise: '专长领域',
+        consulting_no_experts: '暂无专家',
+        // 入口页卡片
+        enter_channel: '进入频道',
+        view_detail: '查看',
+        price_negotiable: '面议',
+        solutions_count: '项方案',
+        per_session: '/ 次',
+        consulting_fee: '咨询费用',
+        retry: '重试',
     },
 
     quests: {
@@ -559,6 +592,20 @@ const zh: TranslationKeys = {
         serviceDocEmpty: '暂无附属文档',
         serviceDocDelete: '删除',
         serviceDocDeleteConfirm: '确定要删除此文档吗？',
+        // 频道筛选
+        channelFilterAll: '全部',
+        channelFilterInfra: '基础设施',
+        channelFilterCore: '专项服务',
+        channelFilterConsulting: '专家咨询',
+        // 新增字段标签
+        parentIdLabel: '父级分类（留空 = 顶级分类，填写 = 子项）',
+        parentIdNone: '无（顶级分类）',
+        priceUsdcLabel: '链上价格 (USDC 精确值)',
+        priceUsdcPlaceholder: '例: 299',
+        expertAvatarLabel: '专家头像 URL',
+        expertTagsLabel: '专长标签（逗号分隔）',
+        expertTagsPlaceholder: '合同法, 知识产权, 跨境合规',
+        childItem: '子项',
     },
 
     // ── 支付 / 结算 ──

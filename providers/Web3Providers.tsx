@@ -6,6 +6,7 @@ import { config } from './config';
 import { RainbowKitProvider, lightTheme, darkTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 
+import { AuthProvider } from './AuthProvider';
 import { useSyncProfile } from '@/hooks/useSyncProfile';
 import ProfileGateModal from '@/components/ui/ProfileGateModal';
 
@@ -53,9 +54,11 @@ export default function Web3Providers({ children }: { children: ReactNode }) {
           modalSize="compact"
           showRecentTransactions={true}
         >
-          <SyncProfileWrapper>
-            {children}
-          </SyncProfileWrapper>
+          <AuthProvider>
+            <SyncProfileWrapper>
+              {children}
+            </SyncProfileWrapper>
+          </AuthProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

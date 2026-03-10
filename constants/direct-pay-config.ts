@@ -32,7 +32,7 @@ export const DIRECT_PAY_ABI = [
     },
 ] as const;
 
-/** ERC-20 approve ABI (for USDC pre-approval) */
+/** ERC-20 ABI subset (approve, allowance, transfer — for USDC operations) */
 export const ERC20_APPROVE_ABI = [
     {
         type: 'function',
@@ -53,5 +53,15 @@ export const ERC20_APPROVE_ABI = [
             { name: 'spender', type: 'address' },
         ],
         outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+        type: 'function',
+        name: 'transfer',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: 'to',     type: 'address' },
+            { name: 'amount', type: 'uint256' },
+        ],
+        outputs: [{ name: '', type: 'bool' }],
     },
 ] as const;

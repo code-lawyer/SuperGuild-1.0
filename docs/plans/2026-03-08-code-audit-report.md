@@ -112,6 +112,8 @@
 
 ## 修复记录（2026-03-09）
 
+### 安全漏洞修复
+
 | # | 问题 | 修复方式 |
 |---|------|---------|
 | #1 | 加密密钥 NEXT_PUBLIC_ 前缀 | ✅ 代码已使用 `ENCRYPTION_KEY`（无前缀），且模块为死代码（无引用），不构成风险 |
@@ -121,3 +123,18 @@
 | #11 | useNFTGate 硬编码 sepolia.id | ✅ 已改为 PRIVILEGE_CHAIN_ID + DEV_MOCK_NFTS 开关 |
 
 **修复后统计**：CRITICAL 0 条 → HIGH 7 条 → MEDIUM 16 条 → LOW 6 条
+
+### 万能中后台重构修复（同日）
+
+万能中后台三频道重构过程中发现并修复的问题：
+
+| 级别 | 问题 | 修复方式 |
+|------|------|---------|
+| HIGH | services page.tsx 13 处硬编码文案 | ✅ 全部通过 i18n useT() 替换，zh/en 两文件同步 |
+| HIGH | 服务详情 Modal 无 ESC 关闭 | ✅ 集中在 ServiceModal 组件内用 useEffect 监听 keydown |
+| MEDIUM | 服务激活后数据不刷新（stale） | ✅ `queryClient.invalidateQueries(['services', 1])` 在激活成功后触发 |
+| MEDIUM | variable shadowing：`t` 变量名冲突 | ✅ `handleSave` 中 `.map(t => ...)` 改为 `.map(tag => ...)` |
+| MEDIUM | 删除父类别时孤立子记录 | ✅ 级联删除：先 `DELETE WHERE parent_id=id` 再删自身 |
+| MEDIUM | `price_usdc=0` 被当 falsy 处理 | ✅ `price_usdc ?` 改为 `price_usdc != null ?`，0 元服务正确显示 |
+| LOW | channel 输入可填非法值（非 1/2/3） | ✅ `<input type="number">` 改为 `<select>` 枚举 |
+| LOW | 三频道页面无共享布局/Modal 抽象 | ✅ 提取 `ServicePageLayout`、`ServiceModal`、`ServiceModalHeader` 共享组件 |

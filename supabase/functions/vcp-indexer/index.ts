@@ -163,9 +163,10 @@ Deno.serve(async (req) => {
         const txHash = activity.hash || null;
 
         // ── GuildEscrow: MilestoneSettled ──
-        // topics: [topic0, escrowId, boardId, taskId]
+        // topics: [topic0, collabId, ...]
         // data:   [worker (32 bytes), vcpMinted (32 bytes)]
         if (topic0 === TOPIC_MILESTONE_SETTLED) {
+          const topics = activity.log.topics;
           const cleanData = dataBytes.startsWith('0x') ? dataBytes.slice(2) : dataBytes;
           if (cleanData.length < 128) continue;
 
@@ -182,14 +183,53 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Anti-cheat: monthly cap (publisher not available in MilestoneSettled event)
+          // Resolve publisher from collaborations table via collabId
+          // collabId is keccak256(uuid) stored in topics[1]
+          let publisherAddress: string | null = null;
+          if (topics && topics.length >= 2) {
+            const collabIdBytes32 = topics[1];
+            // Look up which collaboration has this on-chain collabId
+            // We search by provider_id (worker) + status DISPUTED/ACTIVE to narrow results
+            const { data: collabMatch } = await supabase
+              .from('collaborations')
+              .select('initiator_id')
+              .eq('provider_id', workerAddress)
+              .in('status', ['ACTIVE', 'PENDING', 'SETTLED', 'DISPUTED'])
+              .order('updated_at', { ascending: false })
+              .limit(1);
+
+            if (collabMatch && collabMatch.length > 0) {
+              publisherAddress = collabMatch[0].initiator_id?.toLowerCase() || null;
+              console.log(`Resolved publisher for MilestoneSettled: ${publisherAddress}`);
+            }
+          }
+
+          // Anti-cheat #1: cooldown (same publisher+worker pair, 7 days)
+          if (publisherAddress) {
+            const cooldownSkip = await checkCooldown(supabase, publisherAddress, workerAddress);
+            if (cooldownSkip) {
+              console.warn(`Anti-cheat blocked: ${cooldownSkip}`);
+              await writeSettlement(supabase, {
+                settlement_key: settlementKey,
+                worker_address: workerAddress,
+                publisher_address: publisherAddress,
+                vcp_amount: vcpMinted,
+                anti_cheat_passed: false,
+                skip_reason: cooldownSkip,
+                tx_hash: txHash,
+              });
+              continue;
+            }
+          }
+
+          // Anti-cheat #2: monthly cap
           const monthlySkip = await checkMonthlyCap(supabase, workerAddress, vcpMinted);
           if (monthlySkip) {
             console.warn(`Anti-cheat blocked: ${monthlySkip}`);
             await writeSettlement(supabase, {
               settlement_key: settlementKey,
               worker_address: workerAddress,
-              publisher_address: null,
+              publisher_address: publisherAddress,
               vcp_amount: vcpMinted,
               anti_cheat_passed: false,
               skip_reason: monthlySkip,
@@ -203,7 +243,7 @@ Deno.serve(async (req) => {
           await writeSettlement(supabase, {
             settlement_key: settlementKey,
             worker_address: workerAddress,
-            publisher_address: null,
+            publisher_address: publisherAddress,
             vcp_amount: vcpMinted,
             anti_cheat_passed: true,
             skip_reason: null,

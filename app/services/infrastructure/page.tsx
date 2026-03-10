@@ -6,9 +6,13 @@ import { useServices, type Service } from '@/hooks/useServices';
 import { ServicePageLayout } from '@/components/services/ServicePageLayout';
 import { ServiceModal, ServiceModalHeader } from '@/components/services/ServiceModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient, useReadContract } from 'wagmi';
+import { parseUnits } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { MOCK_USDC, SERVICE_TREASURY } from '@/constants/nft-config';
+import { PRIMARY_CHAIN_ID } from '@/constants/chain-config';
+import { ERC20_APPROVE_ABI } from '@/constants/direct-pay-config';
 
 export default function InfrastructurePage() {
     const t = useT();
@@ -87,30 +91,59 @@ function InfraModal({ service: s, isUnlocked, onClose }: {
     const t = useT();
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const publicClient = usePublicClient();
+    const { writeContractAsync } = useWriteContract();
     const [step, setStep] = useState<'idle' | 'approving' | 'paying' | 'done' | 'error'>('idle');
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    const priceUsdc = s.price_usdc != null ? s.price_usdc : s.price;
+    const isFree = priceUsdc === 0;
 
     const handleActivate = async () => {
         if (!address) return;
+        setErrorMsg(null);
         try {
-            setStep('approving');
-            // TODO: Replace with real USDC approve + contract call before mainnet
-            await new Promise(r => setTimeout(r, 800));
-            setStep('paying');
-            await new Promise(r => setTimeout(r, 800));
+            let txHash: string;
 
+            if (isFree) {
+                // Free service — no on-chain tx needed, use deterministic hash
+                txHash = `free_${s.id}_${address.toLowerCase()}`;
+            } else {
+                // Real USDC payment: transfer to SERVICE_TREASURY
+                const amount = parseUnits(String(priceUsdc), MOCK_USDC.decimals);
+
+                // Step 1: USDC transfer (no approve needed — using transfer, not transferFrom)
+                setStep('paying');
+                const hash = await writeContractAsync({
+                    address: MOCK_USDC.address,
+                    abi: ERC20_APPROVE_ABI,
+                    functionName: 'transfer',
+                    args: [SERVICE_TREASURY.address, amount],
+                    chainId: PRIMARY_CHAIN_ID,
+                });
+
+                // Wait for confirmation
+                if (publicClient) {
+                    await publicClient.waitForTransactionReceipt({ hash, timeout: 120_000 });
+                }
+
+                txHash = hash;
+            }
+
+            // Record unlock in database
             const { error } = await supabase
                 .from('service_access')
                 .insert([{
                     user_address: address.toLowerCase(),
                     target_id: s.id,
-                    tx_hash: `MOCK_INFRA_${Date.now()}`,
+                    tx_hash: txHash,
                 }]);
             if (error) throw error;
             setStep('done');
             queryClient.invalidateQueries({ queryKey: ['service_access', address] });
             queryClient.invalidateQueries({ queryKey: ['services', 1] });
-        } catch (e) {
-            console.error(e);
+        } catch (e: any) {
+            setErrorMsg(e?.shortMessage ?? e?.message ?? 'Unknown error');
             setStep('error');
         }
     };
@@ -156,14 +189,19 @@ function InfraModal({ service: s, isUnlocked, onClose }: {
                         {t.services.infra_activated}
                     </div>
                 ) : (
-                    <button
-                        onClick={handleActivate}
-                        disabled={step === 'approving' || step === 'paying'}
-                        className="w-full py-3 bg-primary text-white text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:bg-primary/90 transition-colors"
-                        style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-                    >
-                        {step === 'error' ? t.services.retry : activateLabel}
-                    </button>
+                    <>
+                        <button
+                            onClick={handleActivate}
+                            disabled={step === 'approving' || step === 'paying'}
+                            className="w-full py-3 bg-primary text-white text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
+                        >
+                            {step === 'error' ? t.services.retry : activateLabel}
+                        </button>
+                        {errorMsg && (
+                            <p className="text-xs text-red-400 mt-2">{errorMsg}</p>
+                        )}
+                    </>
                 )}
             </div>
         </ServiceModal>

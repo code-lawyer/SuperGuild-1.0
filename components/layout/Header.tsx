@@ -7,9 +7,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useState, useEffect } from 'react';
 import { useI18n, useT } from '@/lib/i18n';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
-
-const adminWalletsEnv = process.env.NEXT_PUBLIC_ADMIN_WALLETS || '';
-const ADMIN_WALLETS = adminWalletsEnv.split(',').map(addr => addr.trim().toLowerCase());
+import { useNFTGate } from '@/hooks/useNFTGate';
+import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
 export default function Header() {
     const pathname = usePathname();
@@ -18,10 +17,12 @@ export default function Header() {
     const [notifOpen, setNotifOpen] = useState(false);
     const { locale, setLocale } = useI18n();
     const t = useT();
+    const { hasNFT: isAdmin } = useNFTGate({
+        contractAddress: PRIVILEGE_NFT.address,
+        tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
+    });
 
     useEffect(() => setMounted(true), []);
-
-    const isAdmin = mounted && isConnected && address && ADMIN_WALLETS.includes(address.toLowerCase());
 
     const navItems = [
         {

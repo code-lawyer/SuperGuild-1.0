@@ -25,64 +25,89 @@ SuperGuild 的全部核心功能围绕三大模块展开，辅以身份声誉系
 
 ## 一、万能中后台
 
+> **实现状态**: ✅ 已实现（2026-03-09 完成三频道拆分重构）
+
 ### 1.1 定位
 
 为超级个体提供货架化的非创造性后勤服务，稳定币一站式解锁，消除独立运营的隐性壁垒。
 
-### 1.2 三大频道
+### 1.2 三大频道与路由结构
 
-| 频道 | 定位 | 交付物形式 |
-|------|------|-----------|
-| **基础设施** | 超级个体数字基座 | Markdown 知识手册 / PDF 买断下载 |
-| **核心服务** | 专项业务解决方案 | 资源包、模板库、结构化文件（ZIP/PDF） |
-| **专家咨询** | 一对一专家资源对接 | 专家联系方式（邮件 / Telegram）|
+| 频道 | 路由 | 定位 | 展示模式 |
+|------|------|------|---------|
+| **基础设施** | `/services/infrastructure` | 超级个体数字基座 | 3 列 Grid + 详情 Modal |
+| **核心服务** | `/services/core` | 专项业务解决方案（多分类） | 左侧分类导航 + 2 列 Grid + 详情 Modal |
+| **专家咨询** | `/services/consulting` | 一对一专家资源对接 | 分类 Tab + 3 列 Expert Grid + 专家 Modal |
+
+**服务入口页**: `/services` — 三频道卡片入口，引导进入对应子页面
 
 **核心服务频道示例：** 法律合规、财税统筹、IP 防御、跨境贸易、自媒体运维
 
-### 1.3 支付解锁机制
+### 1.3 页面交互模式
 
-双轨制支付，两种方式均写入 `service_access` 表：
+所有服务详情均通过 **Modal 弹层** 展示，不跳转新页面：
 
 ```
-用户选择服务
-  ├── 链上支付路径：
-  │     钱包签名 USDC → 合约事件监听
-  │     → 后端写入 service_access → 页面解锁交付物
-  │
-  └── 兑换码路径：
-        输入兑换码 → 验证签名（ECDSA）
-        → 后端写入 service_access → 页面解锁交付物
+基础设施卡片点击 → InfraModal（描述 + 文档列表 + 价格 + 激活按钮）
+核心服务方案点击 → SolutionModal（描述 + 文档列表 + 价格 + Calendly/联系方式）
+专家卡片点击 → ExpertModal（头像 + 标签 + 描述 + 费用 + Calendly 预约）
 ```
 
-### 1.4 数据结构
+共享组件：`components/services/ServiceModal.tsx`（backdrop + motion panel + ESC 关闭）、`ServiceModalHeader`
 
-`services.payload_config`（JSONB）按频道类型存储不同结构：
+### 1.4 支付解锁机制
+
+**基础设施频道**：USDC 链上激活，写入 `service_access` 表，当前 MVP 阶段使用模拟交易哈希（上主网前需替换为真实合约调用）。
+
+**核心服务 / 专家咨询**：通过 `payload_config.url` 配置外链（Calendly 预约 / 微信二维码 / 其他联系方式），无链上操作。
+
+### 1.5 数据结构
+
+**DB 表：`services`**（`channel` 字段区分频道，`parent_id` 支持父子层级）
+
+```sql
+services
+  id          UUID PK
+  channel     INT (1=基础设施, 2=核心服务, 3=专家咨询)
+  parent_id   UUID NULL FK→services(id)  -- 子项引用父类别
+  title       TEXT
+  description TEXT
+  icon        TEXT  -- Material Symbols 图标名
+  price       NUMERIC  -- USDC 价格（channel=1 激活价）
+  price_usdc  NUMERIC NULL  -- channel=1 专用，覆盖 price（支持 0）
+  expert_avatar_url TEXT NULL  -- channel=3 专家头像
+  expert_tags TEXT[] NULL  -- channel=3 技能标签数组
+  payload_config JSONB  -- 联系/预约配置
+  is_active   BOOL DEFAULT true
+```
+
+`services.payload_config`（JSONB）结构：
 
 ```jsonc
-// 基础设施 / 核心服务：文档或下载
+// 基础设施/核心服务：文档附件列表
 {
-  "type": "document" | "download",
-  "content": "Markdown 正文...",      // type=document 时
-  "download_url": "https://...",      // type=download 时
-  "file_size": "4.8MB"
+  "type": "document" | "calendly" | "qr_contact",
+  "url": "https://...",               // Calendly 链接或二维码图片 URL
+  "documents": [                      // 附件列表
+    { "name": "文件名", "url": "...", "size": "4.8MB" }
+  ]
 }
 
-// 专家咨询：联系方式
+// 专家咨询：联系/预约
 {
-  "type": "contact",
-  "expert_name": "张三",
-  "expert_bio": "资深法律顾问...",
-  "contact_email": "xxx@xxx.com",
-  "contact_telegram": "@xxx"
+  "type": "calendly" | "contact",
+  "url": "https://calendly.com/..."   // Calendly 直接预约链接
 }
 ```
 
-### 1.5 Admin 管理
+### 1.6 Admin 管理
 
-Admin 面板（`/admin/services`）提供服务 CRUD：
-- 上架新服务（选择频道、填写内容、设定价格、选择解锁方式）
-- 编辑已有服务内容（`payload_config` 可热更新）
-- 下架服务（`is_active = false`，已购用户保留访问权）
+Admin 面板（`/admin/services`）提供完整 CRUD：
+- **频道筛选**：全部 / 基础设施 / 核心服务 / 专家咨询 四个 filter 按钮
+- **父子层级**：channel=2/3 可选 parent_id 将服务归入父类别
+- **条件字段**：channel=1 显示 price_usdc；channel=3 显示 expert_avatar_url + expert_tags
+- **级联删除**：删除父类别时先删所有子项，再删父记录
+- **频道输入**：`<select>` 下拉，避免非法值
 
 **Admin 准入：** Token #3（The First Flame）NFT 门控
 
@@ -339,3 +364,4 @@ DAO 提案可以决定：
 | B | 柴薪王座（Cinder Throne） | ✅ 视觉完成，AI 待接入 |
 | C | VCP 铸造机制（等级制 + 反作弊） | ⚠️ 等级表+冷却期+月度上限已实现，刷单检测/PoW 强制待做 |
 | D | 双轨支付模式 | ✅ 已实现 |
+| E | 万能中后台三频道重构 | ✅ 已实现（2026-03-09） |

@@ -99,3 +99,9 @@ export const GUILD_ESCROW = {
     '0x8828c3fe2f579a70057714e4034d8c8f91232a60') as `0x${string}`,
   chainId: PRIMARY_CHAIN_ID,
 } as const;
+
+// ── Service Treasury — receives USDC for service purchases ──
+export const SERVICE_TREASURY = {
+  address: (process.env.NEXT_PUBLIC_SERVICE_TREASURY ||
+    '0xE358B67C35810312E7AFDce9ADbE5c14e66BAEc6') as `0x${string}`,
+} as const;

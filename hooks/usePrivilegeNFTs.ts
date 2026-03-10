@@ -1,14 +1,8 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAccount, useReadContracts } from 'wagmi';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
-import { IS_MAINNET } from '@/constants/chain-config';
 
 const { address: CONTRACT, chainId, tokens } = PRIVILEGE_NFT;
-
-/**
- * Dev/testnet fallback: when RPC is unreliable, set NEXT_PUBLIC_DEV_MOCK_NFTS=true
- * in .env.local to force all badges as owned. NEVER enable on mainnet.
- */
-const DEV_MOCK_NFTS = !IS_MAINNET && process.env.NEXT_PUBLIC_DEV_MOCK_NFTS === 'true';
 
 const erc1155Abi = [
     {
@@ -23,19 +17,23 @@ const erc1155Abi = [
     },
 ] as const;
 
-// Token 列表按 ID 排序，顺序与 balanceOfBatch 返回值对应
 const TOKEN_LIST = Object.values(tokens).sort((a, b) =>
     Number(a.id) - Number(b.id)
 );
 
 /**
- * 批量查询所有特权 NFT 的持有状态。
- * 顺序与 nft-config.ts 中 tokens 的 ID 顺序一致（#1 → #5）。
- * 新增 NFT 只需在 nft-config.ts 中添加配置，此 hook 自动扩展。
+ * Batch-query all Privilege NFT balances with dual-source fallback.
+ *
+ * Primary:  wagmi RPC balanceOfBatch (staleTime 5 min)
+ * Fallback: /api/nft/verify (Alchemy NFT REST API)
  */
 export function usePrivilegeNFTs() {
     const { address } = useAccount();
+    const [fallbackBalances, setFallbackBalances] = useState<number[] | null>(null);
+    const [fallbackLoading, setFallbackLoading] = useState(false);
+    const fallbackAttempted = useRef(false);
 
+    // ── Primary: wagmi RPC ──────────────────────────────────────────────────
     const { data, isLoading, isError, refetch } = useReadContracts({
         contracts: address && CONTRACT ? [
             {
@@ -49,30 +47,68 @@ export function usePrivilegeNFTs() {
                 ],
             }
         ] : [],
+        query: {
+            staleTime: 5 * 60_000,
+            gcTime: 30 * 60_000,
+            retry: 2,
+            retryDelay: 1000,
+        },
     });
 
-    const balances = data?.[0]?.result as readonly bigint[] | undefined;
-    const balanceNums = DEV_MOCK_NFTS
-        ? TOKEN_LIST.map(() => 1)  // Dev fallback: pretend all badges are owned
-        : balances
-            ? TOKEN_LIST.map((_, i) => Number(balances[i] ?? BigInt(0)))
+    const rpcBalances = data?.[0]?.result as readonly bigint[] | undefined;
+
+    // ── Fallback: Alchemy NFT REST API ──────────────────────────────────────
+    useEffect(() => {
+        if (!address || !isError || fallbackAttempted.current || fallbackLoading) return;
+        fallbackAttempted.current = true;
+        setFallbackLoading(true);
+
+        fetch(`/api/nft/verify?address=${address}`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data?.balances) {
+                    const bals = TOKEN_LIST.map(t => {
+                        const tid = t.id.toString();
+                        return Number(data.balances[tid] ?? 0);
+                    });
+                    setFallbackBalances(bals);
+                }
+            })
+            .catch(() => { /* fail-closed */ })
+            .finally(() => setFallbackLoading(false));
+    }, [address, isError, fallbackLoading]);
+
+    // Reset fallback when address changes
+    useEffect(() => {
+        fallbackAttempted.current = false;
+        setFallbackBalances(null);
+    }, [address]);
+
+    // ── Combined result ─────────────────────────────────────────────────────
+    const balanceNums = rpcBalances
+        ? TOKEN_LIST.map((_, i) => Number(rpcBalances[i] ?? BigInt(0)))
+        : fallbackBalances
+            ? fallbackBalances
             : TOKEN_LIST.map(() => 0);
 
-    // 按 Token ID 顺序解构（#1 #2 #3 #4 #5）
     const [hasPioneer, hasLantern, hasFlame, hasJustice, hasBeacon] =
         balanceNums.map(b => b > 0);
 
+    const handleRefetch = useCallback(() => {
+        fallbackAttempted.current = false;
+        setFallbackBalances(null);
+        return refetch();
+    }, [refetch]);
+
     return {
-        // 具名布尔值（向后兼容现有门控 hook）
         hasPioneer,
         hasLantern,
         hasFlame,
         hasJustice,
         hasBeacon,
-        // 原始数值数组，顺序与 TOKEN_LIST 一致
         balances: balanceNums,
-        isLoading: DEV_MOCK_NFTS ? false : isLoading,
-        isError: DEV_MOCK_NFTS ? false : isError,
-        refetch,
+        isLoading: isLoading || (isError && fallbackLoading),
+        isError: isError && !fallbackLoading && fallbackBalances === null,
+        refetch: handleRefetch,
     };
 }

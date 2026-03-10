@@ -1,20 +1,41 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Ensure this is only imported on the server side
 if (typeof window !== 'undefined') {
     throw new Error('supabaseAdmin cannot be imported on the client side.');
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// Lazy singleton — avoids placeholder fallback, validates at call time
+let _client: SupabaseClient | null = null;
 
-// Vercel build phase workaround
-const finalUrl = supabaseUrl || 'https://placeholder.supabase.co';
-const finalKey = supabaseServiceRoleKey || 'placeholder-key';
+function getSupabaseAdmin(): SupabaseClient {
+    if (_client) return _client;
 
-export const supabaseAdmin = createClient(finalUrl, finalKey, {
-    auth: {
-        autoRefreshToken: false,
-        persistSession: false
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+        throw new Error(
+            'Missing Supabase configuration: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.'
+        );
     }
+
+    _client = createClient(supabaseUrl, supabaseServiceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+        },
+    });
+
+    return _client;
+}
+
+// Export as a getter proxy so existing `supabaseAdmin.from(...)` calls still work
+// without changing any import sites
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+    get(_target, prop, receiver) {
+        const client = getSupabaseAdmin();
+        const value = Reflect.get(client, prop, receiver);
+        return typeof value === 'function' ? value.bind(client) : value;
+    },
 });

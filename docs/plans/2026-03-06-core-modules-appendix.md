@@ -264,5 +264,79 @@ VCP Indexer 同时监听两种事件:
 
 ---
 
+---
+
+## 附录 E：万能中后台三频道重构（2026-03-09）
+
+> 实施日期: 2026-03-09 · 状态: ✅ 全部实现
+
+### E.1 背景
+
+原 `/services` 为单一列表页，无法体现三频道的差异化体验。本次重构将其拆分为 4 个独立路由，每个频道有专属 UI 模式。
+
+### E.2 路由结构
+
+```
+/services                   — 入口页（三频道卡片 + 跳转链接）
+/services/infrastructure    — 基础设施（useServices(1)，Grid + InfraModal）
+/services/core              — 核心服务（useServices(2)，左侧分类导航 + SolutionModal）
+/services/consulting        — 专家咨询（useServices(3)，Tab + ExpertModal）
+```
+
+### E.3 新增 DB 字段（已 migrate）
+
+```sql
+ALTER TABLE services ADD COLUMN IF NOT EXISTS price_usdc NUMERIC;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS expert_avatar_url TEXT;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS expert_tags TEXT[];
+```
+
+### E.4 共享组件
+
+| 组件 | 路径 | 职责 |
+|------|------|------|
+| `ServicePageLayout` | `components/services/ServicePageLayout.tsx` | 统一页面框架（WalletGatePage + 背景网格 + PageHeader） |
+| `ServiceModal` | `components/services/ServiceModal.tsx` | 通用 Modal（backdrop + motion panel + ESC 关闭） |
+| `ServiceModalHeader` | `components/services/ServiceModal.tsx` | Modal 头部（头像 / 图标 + 标题 + 关闭按钮） |
+
+### E.5 频道特性说明
+
+**频道 1 — 基础设施**
+- `useServices(1)` 返回扁平列表（无父子层级）
+- 显示 `isUnlocked` 激活状态（查 `service_access` 表）
+- Modal 有「激活」按钮，MVP 使用 mock tx hash（主网前需替换真实合约调用）
+- `price_usdc != null` 判断以正确处理 0 元服务
+
+**频道 2 — 核心服务**
+- `useServices(2)` 返回带 `children` 的父子树（父 = 分类，子 = 方案）
+- 左侧导航切换分类，右侧 2 列 Grid 展示方案
+- SolutionModal 支持 Calendly 链接 + 微信二维码两种联系方式
+
+**频道 3 — 专家咨询**
+- `useServices(3)` 返回带 `children` 的父子树（父 = 专业方向，子 = 专家）
+- 顶部 Tab 切换方向，3 列 Expert Grid
+- 专家卡片展示头像（圆形，默认占位图）+ 标签（最多显示 2 个）
+- ExpertModal 展示完整标签列表 + Calendly 预约按钮
+
+### E.6 Admin 变更
+
+Admin `/admin/services` 新增：
+- 频道筛选 filter（全部/基础设施/核心服务/专家咨询）
+- `parent_id` 下拉（channel=2/3 可选父类别，channel=1 隐藏）
+- `price_usdc` 输入（channel=1 专用，用于精确控制激活价格，支持 0）
+- `expert_avatar_url` + `expert_tags` 输入（channel=3 专用）
+- channel 从 `<input type="number">` 改为 `<select>`（防止非法值）
+- 删除逻辑：先 `DELETE WHERE parent_id=id`，再删自身（级联安全）
+
+### E.7 i18n 新增 Keys
+
+两个语言文件均已同步添加：
+
+**`t.services.*`**: `entry_title`, `entry_subtitle`, `entry_infra_title/desc`, `entry_core_title/desc`, `entry_consulting_title/desc`, `enter_channel`, `infra_activated`, `infra_activate`, `infra_approving`, `infra_paying`, `infra_price_label`, `infra_docs`, `core_select_category`, `solutions_count`, `core_contact`, `consulting_book`, `consulting_contact`, `consulting_expertise`, `consulting_no_experts`, `consulting_fee`, `per_session`, `noServices`, `price_negotiable`, `retry`, `view_detail`
+
+**`t.admin.*`**: `channelFilter_all`, `channelFilter_1/2/3`, `parentId`, `parentId_none`, `parentId_placeholder`, `priceUsdc`, `priceUsdc_placeholder`, `expertAvatar`, `expertAvatar_placeholder`, `expertTags`, `expertTags_placeholder`, `childItem`
+
+---
+
 *本文档为 `core-modules-design.md` 的产品设计附录，汇集各子系统详细规格。*
 *随开发推进更新各章节实现状态标记。*

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useWriteContract, useReadContract } from 'wagmi';
-import { parseUnits, keccak256, toBytes } from 'viem';
+import { useAccount, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
+import { parseUnits } from 'viem';
 import { DIRECT_PAY_ADDRESS, DIRECT_PAY_ABI, ERC20_APPROVE_ABI } from '@/constants/direct-pay-config';
 import { MOCK_USDC } from '@/constants/nft-config';
 import { PRIMARY_CHAIN_ID } from '@/constants/chain-config';
+import { toCollabId } from './useGuildEscrow';
 
 export type DirectPayStep = 'idle' | 'approving' | 'paying' | 'done' | 'error';
 
@@ -15,6 +16,7 @@ export type DirectPayStep = 'idle' | 'approving' | 'paying' | 'done' | 'error';
  */
 export function useDirectPay() {
     const { address } = useAccount();
+    const publicClient = usePublicClient();
     const [step, setStep] = useState<DirectPayStep>('idle');
     const [error, setError] = useState<string | null>(null);
 
@@ -41,32 +43,38 @@ export function useDirectPay() {
         setError(null);
 
         const amount = parseUnits(String(usdcAmount), MOCK_USDC.decimals);
-        const collabIdBytes32 = keccak256(toBytes(collabId));
+        const collabIdBytes32 = toCollabId(collabId);
 
         try {
             // Step 1: Approve if allowance is insufficient
             const currentAllowance = allowance ?? BigInt(0);
             if (currentAllowance < amount) {
                 setStep('approving');
-                await writeContractAsync({
+                const approveHash = await writeContractAsync({
                     address: MOCK_USDC.address,
                     abi: ERC20_APPROVE_ABI,
                     functionName: 'approve',
                     args: [DIRECT_PAY_ADDRESS, amount],
                     chainId: PRIMARY_CHAIN_ID,
                 });
+                if (publicClient) {
+                    await publicClient.waitForTransactionReceipt({ hash: approveHash, timeout: 60_000 });
+                }
                 await refetchAllowance();
             }
 
             // Step 2: Pay via DirectPay contract (atomic: USDC passes through instantly)
             setStep('paying');
-            await writeContractAsync({
+            const payHash = await writeContractAsync({
                 address: DIRECT_PAY_ADDRESS,
                 abi: DIRECT_PAY_ABI,
                 functionName: 'pay',
                 args: [collabIdBytes32, worker, amount],
                 chainId: PRIMARY_CHAIN_ID,
             });
+            if (publicClient) {
+                await publicClient.waitForTransactionReceipt({ hash: payHash, timeout: 60_000 });
+            }
 
             setStep('done');
         } catch (e: any) {

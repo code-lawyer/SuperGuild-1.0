@@ -59,11 +59,18 @@ export default function Markdown({ content, className = '' }: MarkdownProps) {
             if (part.startsWith('[') && part.includes('](')) {
                 const match = part.match(/\[(.*?)\]\((.*?)\)/);
                 if (match) {
-                    return (
-                        <a key={i} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                            {match[1]}
-                        </a>
-                    );
+                    const href = match[2];
+                    // Security: only allow http(s) URLs, block javascript: and other protocols
+                    const isSafeUrl = /^https?:\/\//i.test(href);
+                    if (isSafeUrl) {
+                        return (
+                            <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                                {match[1]}
+                            </a>
+                        );
+                    }
+                    // Unsafe URL: render as plain text
+                    return <span key={i} className="font-medium">{match[1]}</span>;
                 }
             }
             return part;

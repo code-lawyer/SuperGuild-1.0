@@ -51,3 +51,6 @@ vercel-import.env
 
 # Claude Code local config
 .claude/
+
+# Agent config (may contain secrets)
+.agents/

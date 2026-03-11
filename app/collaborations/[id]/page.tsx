@@ -25,6 +25,7 @@ import MilestoneTimeline from '@/components/collaborations/MilestoneTimeline';
 import UploadProofDialog from '@/components/collaborations/UploadProofDialog';
 import MintTestUSDC from '@/components/collaborations/MintTestUSDC';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
+import { safeHref } from '@/lib/utils';
 
 function useStatusConfig() {
     const t = useT();
@@ -254,7 +255,7 @@ export default function CollaborationDetailPage() {
                                 <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.referenceLinks}</p>
                                 <div className="space-y-2">
                                     {collab.reference_links.map((ref: any, i: number) => (
-                                        <a key={i} href={ref.url} target="_blank" rel="noopener noreferrer"
+                                        <a key={i} href={safeHref(ref.url)} target="_blank" rel="noopener noreferrer"
                                             className="flex items-center gap-2 text-[14px] text-primary hover:underline font-medium">
                                             <span className="material-symbols-outlined !text-[16px]">link</span>
                                             {ref.label || ref.url}

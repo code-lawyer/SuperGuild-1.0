@@ -3,6 +3,7 @@
 import { Milestone, Proof, CollabStatus } from '@/hooks/useCollaborations';
 import { EscrowStep } from '@/hooks/useGuildEscrow';
 import { useT } from '@/lib/i18n';
+import { safeHref } from '@/lib/utils';
 
 interface MilestoneTimelineProps {
     milestones: Milestone[];
@@ -75,7 +76,7 @@ export default function MilestoneTimeline({
                                     {msProofs.length > 0 && (
                                         <>
                                             <span className="w-1 h-1 rounded-full bg-slate-300" />
-                                            <a className="text-primary hover:underline flex items-center gap-1 cursor-pointer" href={msProofs[0].content_url} target="_blank" rel="noopener">
+                                            <a className="text-primary hover:underline flex items-center gap-1 cursor-pointer" href={safeHref(msProofs[0].content_url)} target="_blank" rel="noopener">
                                                 {t.quests.viewDeliverable}
                                                 <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                                             </a>
@@ -116,7 +117,7 @@ export default function MilestoneTimeline({
                                             {msProofs.map(proof => (
                                                 <div key={proof.id} className="bg-[#F0F1F5]/50 rounded-lg p-3 border border-[#E8EAF0]/60 flex items-center gap-3">
                                                     <span className="material-symbols-outlined text-[16px] text-emerald-500">task_alt</span>
-                                                    <a href={proof.content_url} target="_blank" rel="noopener" className="text-sm text-primary hover:underline truncate flex-1">
+                                                    <a href={safeHref(proof.content_url)} target="_blank" rel="noopener" className="text-sm text-primary hover:underline truncate flex-1">
                                                         {proof.content_url}
                                                     </a>
                                                     <span className="text-[10px] font-mono text-[#6A6A71] shrink-0">

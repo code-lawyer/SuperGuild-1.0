@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
+import { formatUnits } from 'viem'
 import { supabase } from '@/utils/supabase/client'
 import { VCP_TOKEN } from '@/constants/nft-config'
 import vcpAbi from '@/constants/VCPTokenV2.json'
@@ -91,13 +92,14 @@ export function useVCP() {
     }, [address])
 
     // 优先链上数据，fallback 到 Supabase
+    // VCP is 18-decimal ERC-20: use formatUnits to convert wei → human-readable
     const vcp = onChainBalance !== undefined
-        ? Number(onChainBalance)
+        ? Number(formatUnits(onChainBalance as bigint, 18))
         : vcpFallback
 
     return {
         vcp,
-        votes: votingPower ? Number(votingPower) : 0,
+        votes: votingPower ? Number(formatUnits(votingPower as bigint, 18)) : 0,
         isLocked: isLocked as boolean | undefined,
         isOnChain: onChainBalance !== undefined,
         refetchBalance,

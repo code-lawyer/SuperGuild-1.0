@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createRateLimiter } from '@/utils/rate-limit'
 
 const limiter = createRateLimiter({ windowMs: 60_000, max: 30 })
 
-function getSupabase() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-}
-
 export async function GET(request: Request) {
     const limited = limiter.check(request)
     if (limited) return limited
-    const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
     const address = searchParams.get('address')
 
@@ -22,7 +14,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ isPioneer: false })
     }
 
-    const { data } = await supabase
+    const { data } = await supabaseAdmin
         .from('pioneer_codes')
         .select('claimed_at, tx_hash')
         .eq('claimed_by', address.toLowerCase())
@@ -38,7 +30,7 @@ export async function GET(request: Request) {
     }
 
     // Check remaining slots
-    const { count } = await supabase
+    const { count } = await supabaseAdmin
         .from('pioneer_codes')
         .select('code', { count: 'exact', head: true })
         .is('claimed_by', null)

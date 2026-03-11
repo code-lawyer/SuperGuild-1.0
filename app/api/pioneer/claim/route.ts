@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createWalletClient, createPublicClient, http, verifyMessage } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import vcpAbi from '@/constants/VCPTokenV2.json'
 import { VCP_TOKEN } from '@/constants/nft-config'
 import { PRIMARY_CHAIN, getAlchemyRpcUrl, PRIMARY_CHAIN_ID } from '@/constants/chain-config'
@@ -9,18 +9,9 @@ import { createRateLimiter } from '@/utils/rate-limit'
 
 const limiter = createRateLimiter({ windowMs: 60_000, max: 5 })
 
-function getSupabase() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-}
-
 export async function POST(request: Request) {
     const limited = limiter.check(request)
     if (limited) return limited
-
-    const supabase = getSupabase()
     try {
         const { code, address, signature } = await request.json()
 
@@ -37,7 +28,7 @@ export async function POST(request: Request) {
         }
 
         // ─── 3. Check if address already claimed any code ───
-        const { data: existingClaim } = await supabase
+        const { data: existingClaim } = await supabaseAdmin
             .from('pioneer_codes')
             .select('code')
             .eq('claimed_by', address.toLowerCase())
@@ -50,7 +41,7 @@ export async function POST(request: Request) {
 
         // ─── 4. Atomic claim: UPDATE only if code exists AND is unclaimed ───
         // This prevents race conditions: only the first concurrent request succeeds
-        const { data: claimedRows, error: claimError } = await supabase
+        const { data: claimedRows, error: claimError } = await supabaseAdmin
             .from('pioneer_codes')
             .update({
                 claimed_by: address.toLowerCase(),
@@ -107,7 +98,7 @@ export async function POST(request: Request) {
         } catch (mintError: any) {
             // Mint failed — rollback the claim lock so the code can be reused
             console.error('VCP mint failed, rolling back claim lock:', mintError)
-            await supabase
+            await supabaseAdmin
                 .from('pioneer_codes')
                 .update({ claimed_by: null, claimed_at: null })
                 .eq('code', code.toUpperCase())
@@ -119,7 +110,7 @@ export async function POST(request: Request) {
         }
 
         // ─── 6. Update tx_hash (claimed_by/claimed_at already set in step 4) ───
-        await supabase
+        await supabaseAdmin
             .from('pioneer_codes')
             .update({ tx_hash: txHash })
             .eq('code', code.toUpperCase())

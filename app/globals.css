@@ -139,6 +139,92 @@
   }
 }
 
+/* ── Antigravity Button System ── */
+.ag-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background-color: #137fec;
+  border: 1px solid #137fec;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  transition: background-color 0.2s, opacity 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.ag-btn-primary:hover:not(:disabled) {
+  background-color: rgba(19, 127, 236, 0.85);
+}
+
+.ag-btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.ag-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ag-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #45474D;
+  background-color: transparent;
+  border: 1px solid #E8EAF0;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.ag-btn-secondary:hover:not(:disabled) {
+  border-color: rgba(19, 127, 236, 0.4);
+  color: #137fec;
+  background-color: rgba(19, 127, 236, 0.04);
+}
+
+.ag-btn-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.ag-btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dark .ag-btn-secondary {
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+.dark .ag-btn-secondary:hover:not(:disabled) {
+  border-color: rgba(19, 127, 236, 0.5);
+  color: #60a5fa;
+  background-color: rgba(19, 127, 236, 0.08);
+}
+
+/* ── Antigravity Card ── */
+.ag-card {
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid #E8EAF0;
+  border-radius: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dark .ag-card {
+  background-color: rgba(15, 23, 42, 0.4);
+  border-color: #1e293b;
+}
+
 /* ── Material Symbols ── */
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;

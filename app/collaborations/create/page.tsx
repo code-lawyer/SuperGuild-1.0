@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n';
 import { useCreateCollaboration } from '@/hooks/useCollaborations';
+import { useAuth } from '@/providers/AuthProvider';
+import { toast } from '@/components/ui/use-toast';
 import Link from 'next/link';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 
@@ -41,6 +43,7 @@ export default function CreateCollaborationPage() {
     const t = useT();
     const router = useRouter();
     const createCollab = useCreateCollaboration();
+    const { isAuthenticated, signIn, isAuthenticating } = useAuth();
     const DELIVERY_PRESETS = useDeliveryPresets();
 
     const [title, setTitle] = useState('');
@@ -97,6 +100,17 @@ export default function CreateCollaborationPage() {
 
     const handleSubmit = async () => {
         if (!isValid) return;
+
+        // Ensure user is authenticated before writing
+        if (!isAuthenticated) {
+            try {
+                await signIn();
+            } catch {
+                toast({ title: t.common.connectWallet, description: t.quests.authRequiredDesc, variant: 'destructive' });
+                return;
+            }
+        }
+
         try {
             const result = await createCollab.mutateAsync({
                 title: title.trim(),
@@ -114,6 +128,7 @@ export default function CreateCollaborationPage() {
             router.push(`/collaborations/${result.id}`);
         } catch (e: any) {
             console.error('Failed to create collaboration:', e);
+            toast({ title: t.quests.createFailed, description: e?.message ?? 'Unknown error', variant: 'destructive' });
         }
     };
 

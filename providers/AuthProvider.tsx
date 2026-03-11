@@ -176,7 +176,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             signInAttempted.current = true;
         } catch (err) {
             console.error('[AuthProvider] Sign-in failed:', err);
-            // Don't block the user — fall back to anon client
+            // Mark as attempted so we don't infinitely retry on user rejection
+            signInAttempted.current = true;
         } finally {
             setIsAuthenticating(false);
         }
@@ -190,10 +191,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInAttempted.current = false;
     }, []);
 
-    // Auto sign-in when wallet connects (only once per address)
+    // Auto sign-in when wallet connects (retry on failure)
     useEffect(() => {
         if (isConnected && address && !signInAttempted.current && !isAuthenticated) {
-            signInAttempted.current = true;
             signIn();
         }
     }, [isConnected, address, isAuthenticated, signIn]);

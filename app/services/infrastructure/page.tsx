@@ -157,7 +157,7 @@ function InfraModal({ service: s, isUnlocked, onClose }: {
             <ServiceModalHeader title={s.title} icon={s.icon || 'settings_input_component'} onClose={onClose} />
             <div className="p-6 space-y-5">
                 {s.description && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{s.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">{s.description}</p>
                 )}
 
                 <div className="flex items-center justify-between py-3 border-y border-slate-100 dark:border-slate-800">

@@ -167,6 +167,10 @@ const zh: TranslationKeys = {
         per_session: '/ 次',
         consulting_fee: '咨询费用',
         retry: '重试',
+        purchase: '购买方案',
+        purchase_paying: '支付中...',
+        purchase_done: '已购买',
+        book_and_pay: '支付并预约',
     },
 
     quests: {
@@ -271,6 +275,8 @@ const zh: TranslationKeys = {
         addMilestone: '添加里程碑',
         creating: '创建中…',
         publishQuest: '发布协作任务',
+        createFailed: '任务创建失败',
+        authRequiredDesc: '请先完成钱包签名认证',
         percentageMustBe100: '里程碑占比之和必须等于 100%',
         currentPct: '当前',
         // 交付标准预设

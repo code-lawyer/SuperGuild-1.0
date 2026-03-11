@@ -58,10 +58,12 @@ export function useMyCollaborations() {
             if (!address) return [];
             // Validate address format before interpolating into query string
             if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return [];
+            // Query with both checksummed and lowercase addresses for robustness
+            const addrLower = address.toLowerCase();
             const { data, error } = await supabase
                 .from('collaborations')
                 .select('*')
-                .or(`initiator_id.eq.${address},provider_id.eq.${address},pending_provider_id.eq.${address}`)
+                .or(`initiator_id.eq.${address},initiator_id.eq.${addrLower},provider_id.eq.${address},provider_id.eq.${addrLower},pending_provider_id.eq.${address},pending_provider_id.eq.${addrLower}`)
                 .neq('status', 'CANCELLED')
                 .order('created_at', { ascending: false });
             if (error) throw error;

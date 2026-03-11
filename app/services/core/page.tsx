@@ -6,10 +6,17 @@ import { useServices, type Service } from '@/hooks/useServices';
 import { ServicePageLayout } from '@/components/services/ServicePageLayout';
 import { ServiceModal, ServiceModalHeader } from '@/components/services/ServiceModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
+import { parseUnits } from 'viem';
+import { supabase } from '@/utils/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { MOCK_USDC, SERVICE_TREASURY } from '@/constants/nft-config';
+import { PRIMARY_CHAIN_ID } from '@/constants/chain-config';
+import { ERC20_APPROVE_ABI } from '@/constants/direct-pay-config';
 
 export default function CoreServicesPage() {
     const t = useT();
-    const { services, isLoading } = useServices(2);
+    const { services, isLoading, unlockedIds } = useServices(2);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [selectedSolution, setSelectedSolution] = useState<Service | null>(null);
 
@@ -69,37 +76,49 @@ export default function CoreServicesPage() {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {activeCat.children.map((sol, i) => (
-                                            <motion.div
-                                                key={sol.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.04 }}
-                                                onClick={() => setSelectedSolution(sol)}
-                                                className="cursor-pointer group border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 hover:border-emerald-500/40 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.15)] transition-all"
-                                                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
-                                            >
-                                                <div className="flex items-start gap-3 mb-3">
-                                                    {sol.icon && (
-                                                        <div className="w-8 h-8 bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                                            <span className="material-symbols-outlined !text-[16px] text-emerald-500">{sol.icon}</span>
-                                                        </div>
+                                        {activeCat.children.map((sol, i) => {
+                                            const isUnlocked = unlockedIds.includes(sol.id);
+                                            return (
+                                                <motion.div
+                                                    key={sol.id}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: i * 0.04 }}
+                                                    onClick={() => setSelectedSolution(sol)}
+                                                    className="cursor-pointer group border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 hover:border-emerald-500/40 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.15)] transition-all"
+                                                    style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
+                                                >
+                                                    <div className="flex items-start gap-3 mb-3">
+                                                        {sol.icon && (
+                                                            <div className="w-8 h-8 bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                                                <span className="material-symbols-outlined !text-[16px] text-emerald-500">{sol.icon}</span>
+                                                            </div>
+                                                        )}
+                                                        <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{sol.title}</h4>
+                                                    </div>
+                                                    {sol.description && (
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{sol.description}</p>
                                                     )}
-                                                    <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{sol.title}</h4>
-                                                </div>
-                                                {sol.description && (
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{sol.description}</p>
-                                                )}
-                                                <div className="mt-3 flex items-center justify-between">
-                                                    <span className="text-xs font-bold font-mono text-slate-600 dark:text-slate-300">
-                                                        {sol.price > 0 ? `${sol.price} USDC` : t.services.price_negotiable}
-                                                    </span>
-                                                    <span className="text-xs text-emerald-500 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                                        {t.services.view_detail} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
-                                                    </span>
-                                                </div>
-                                            </motion.div>
-                                        ))}
+                                                    <div className="mt-3 flex items-center justify-between">
+                                                        <span className="text-xs font-bold font-mono text-slate-600 dark:text-slate-300">
+                                                            {sol.price > 0 ? `${sol.price} USDC` : t.services.price_negotiable}
+                                                        </span>
+                                                        <span className="text-xs font-bold flex items-center gap-1">
+                                                            {isUnlocked ? (
+                                                                <span className="text-emerald-500 flex items-center gap-1">
+                                                                    <span className="material-symbols-outlined !text-[12px]">check_circle</span>
+                                                                    {t.services.infra_activated}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-emerald-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                                                    {t.services.view_detail} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </>
@@ -113,6 +132,7 @@ export default function CoreServicesPage() {
                 {selectedSolution && (
                     <SolutionModal
                         service={selectedSolution}
+                        isUnlocked={unlockedIds.includes(selectedSolution.id)}
                         onClose={() => setSelectedSolution(null)}
                     />
                 )}
@@ -121,16 +141,67 @@ export default function CoreServicesPage() {
     );
 }
 
-function SolutionModal({ service: s, onClose }: { service: Service; onClose: () => void }) {
+function SolutionModal({ service: s, isUnlocked, onClose }: { service: Service; isUnlocked: boolean; onClose: () => void }) {
     const t = useT();
+    const { address } = useAccount();
+    const queryClient = useQueryClient();
+    const publicClient = usePublicClient();
+    const { writeContractAsync } = useWriteContract();
+    const [step, setStep] = useState<'idle' | 'paying' | 'done' | 'error'>('idle');
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
     const payloadType = s.payload_config?.type;
+    const priceUsdc = s.price_usdc != null ? s.price_usdc : s.price;
+    const isFree = priceUsdc === 0;
+    const hasPaidPrice = priceUsdc > 0;
+
+    const handlePurchase = async () => {
+        if (!address) return;
+        setErrorMsg(null);
+        try {
+            let txHash: string;
+
+            if (isFree) {
+                txHash = `free_${s.id}_${address.toLowerCase()}`;
+            } else {
+                const amount = parseUnits(String(priceUsdc), MOCK_USDC.decimals);
+                setStep('paying');
+                const hash = await writeContractAsync({
+                    address: MOCK_USDC.address,
+                    abi: ERC20_APPROVE_ABI,
+                    functionName: 'transfer',
+                    args: [SERVICE_TREASURY.address, amount],
+                    chainId: PRIMARY_CHAIN_ID,
+                });
+                if (publicClient) {
+                    await publicClient.waitForTransactionReceipt({ hash, timeout: 120_000 });
+                }
+                txHash = hash;
+            }
+
+            const { error } = await supabase
+                .from('service_access')
+                .insert([{
+                    user_address: address.toLowerCase(),
+                    target_id: s.id,
+                    tx_hash: txHash,
+                }]);
+            if (error) throw error;
+            setStep('done');
+            queryClient.invalidateQueries({ queryKey: ['service_access', address] });
+            queryClient.invalidateQueries({ queryKey: ['services', 2] });
+        } catch (e: any) {
+            setErrorMsg(e?.shortMessage ?? e?.message ?? 'Unknown error');
+            setStep('error');
+        }
+    };
 
     return (
         <ServiceModal onClose={onClose} maxWidth="max-w-md">
             <ServiceModalHeader title={s.title} onClose={onClose} />
             <div className="p-6 space-y-4">
                 {s.description && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{s.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">{s.description}</p>
                 )}
 
                 {s.documents && s.documents.length > 0 && (
@@ -152,25 +223,68 @@ function SolutionModal({ service: s, onClose }: { service: Service; onClose: () 
                 <div className="flex items-center justify-between py-3 border-y border-slate-100 dark:border-slate-800">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.services.infra_price_label}</span>
                     <span className="text-base font-black font-mono text-slate-900 dark:text-white">
-                        {s.price > 0 ? `${s.price} USDC` : t.services.price_negotiable}
+                        {hasPaidPrice ? `${priceUsdc} USDC` : t.services.price_negotiable}
                     </span>
                 </div>
 
-                {payloadType === 'calendly' && s.payload_config?.url && (
-                    <a href={s.payload_config.url} target="_blank" rel="noopener noreferrer"
-                        className="block w-full py-3 bg-primary text-white text-xs font-black uppercase tracking-widest text-center hover:bg-primary/90 transition-colors"
-                        style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
-                        {t.services.consulting_book}
-                    </a>
-                )}
-                {(payloadType === 'qr_contact') && s.payload_config?.url && (
-                    <div className="text-center">
-                        <p className="text-xs text-slate-400 mb-2">{t.services.core_contact}</p>
-                        <img src={s.payload_config.url} alt={s.title} className="mx-auto max-w-[160px]" />
+                {/* Payment / Unlock section */}
+                {(isUnlocked || step === 'done') ? (
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-emerald-500 text-sm font-bold">
+                            <span className="material-symbols-outlined !text-[18px]">check_circle</span>
+                            {t.services.purchase_done}
+                        </div>
+                        {/* Show contact/calendly after purchase */}
+                        {payloadType === 'calendly' && s.payload_config?.url && (
+                            <a href={s.payload_config.url} target="_blank" rel="noopener noreferrer"
+                                className="block w-full py-3 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest text-center hover:bg-emerald-700 transition-colors"
+                                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
+                                {t.services.consulting_book}
+                            </a>
+                        )}
+                        {payloadType === 'qr_contact' && s.payload_config?.url && (
+                            <div className="text-center">
+                                <p className="text-xs text-slate-400 mb-2">{t.services.core_contact}</p>
+                                <img src={s.payload_config.url} alt={s.title} className="mx-auto max-w-[160px]" />
+                            </div>
+                        )}
                     </div>
-                )}
-                {!payloadType && (
-                    <p className="text-xs text-slate-400 text-center py-2">{t.services.core_contact}</p>
+                ) : hasPaidPrice ? (
+                    <>
+                        <button
+                            onClick={handlePurchase}
+                            disabled={step === 'paying'}
+                            className="w-full py-3 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:bg-emerald-700 transition-colors"
+                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
+                        >
+                            {step === 'paying' ? t.services.purchase_paying
+                                : step === 'error' ? t.services.retry
+                                : `${t.services.purchase} — ${priceUsdc} USDC`}
+                        </button>
+                        {errorMsg && (
+                            <p className="text-xs text-red-400 mt-2">{errorMsg}</p>
+                        )}
+                    </>
+                ) : (
+                    /* Free or negotiable — show contact directly */
+                    <>
+                        {payloadType === 'calendly' && s.payload_config?.url && (
+                            <a href={s.payload_config.url} target="_blank" rel="noopener noreferrer"
+                                className="block w-full py-3 bg-primary text-white text-xs font-black uppercase tracking-widest text-center hover:bg-primary/90 transition-colors"
+                                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
+                                {t.services.consulting_book}
+                            </a>
+                        )}
+                        {payloadType === 'qr_contact' && s.payload_config?.url && (
+                            <div className="text-center">
+                                <p className="text-xs text-slate-400 mb-2">{t.services.core_contact}</p>
+                                <img src={s.payload_config.url} alt={s.title} className="mx-auto max-w-[160px]" />
+                            </div>
+                        )}
+                        {!payloadType && (
+                            <p className="text-xs text-slate-400 text-center py-2">{t.services.core_contact}</p>
+                        )}
+                    </>
                 )}
             </div>
         </ServiceModal>

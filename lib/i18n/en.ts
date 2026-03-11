@@ -170,6 +170,10 @@ const en = {
         per_session: '/ session',
         consulting_fee: 'Consultation Fee',
         retry: 'Retry',
+        purchase: 'Purchase',
+        purchase_paying: 'Paying...',
+        purchase_done: 'Purchased',
+        book_and_pay: 'Pay & Book',
     },
 
     // ── Collaborations / Quests ──
@@ -275,6 +279,8 @@ const en = {
         addMilestone: 'Add Milestone',
         creating: 'Creating…',
         publishQuest: 'Publish Quest',
+        createFailed: 'Failed to create quest',
+        authRequiredDesc: 'Please sign the wallet message first',
         percentageMustBe100: 'Milestone percentages must sum to 100%',
         currentPct: 'Current',
         // Delivery presets

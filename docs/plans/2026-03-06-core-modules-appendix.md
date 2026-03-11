@@ -8,7 +8,7 @@
 
 ## 附录 A：特权 NFT 体系与 BadgeWall
 
-> 原始文档: `2026-03-06-privilege-nft-design.md` · 状态: ✅ 全部实现
+> 原始文档: `2026-03-06-privilege-nft-design.md` · 状态: ✅ 全部实现（含双源门控验证 2026-03-10）
 
 ### A.1 五大特权 NFT 定义
 
@@ -44,6 +44,26 @@
 | DAO 投票权重 | `usePrivilegeNFTs().hasLantern` | #2 |
 | VCP 速度加成 | `usePrivilegeNFTs().hasPioneer` | #1 |
 | 批量查询 | `usePrivilegeNFTs()` | 全部 5 个 |
+
+### A.3.1 双源验证架构（2026-03-10）
+
+所有 NFT 门控 hook 均采用双源验证以解决测试网 RPC 不稳定问题：
+
+```
+主源: wagmi useReadContract (RPC balanceOf)
+  ├── staleTime: 5 分钟 — 成功结果缓存 5 分钟不再查询
+  ├── gcTime: 30 分钟 — 内存中保留 30 分钟
+  └── retry: 2 次 × 1s 间隔
+
+后备: /api/nft/verify (Alchemy NFT REST API)
+  ├── HTTP 请求（非 RPC），基础设施完全独立
+  ├── 服务端 5 分钟地址级缓存
+  └── 仅在主源失败时触发
+
+安全原则: fail-closed — 两源都失败时 hasNFT=false，永不在错误时放行
+```
+
+`usePioneerGate` / `useLanternGate` 为 `useNFTGate` 的 thin wrapper，自动继承双源验证。
 
 ### A.4 BadgeWall 架构
 
@@ -109,7 +129,7 @@
 
 ## 附录 C：VCP 铸造机制（等级制 + 反作弊）
 
-> 原始文档: `2026-03-07-vcp-minting-mechanism-design.md` · 状态: ⚠️ 等级表已实现，反作弊未实现
+> 原始文档: `2026-03-07-vcp-minting-mechanism-design.md` · 状态: ⚠️ 等级表+冷却期+月度上限+publisher 反查已实现，刷单检测/PoW 强制待做
 
 ### C.1 背景
 
@@ -136,7 +156,7 @@ AI Oracle（LLM 动态评估）属于 Phase 11+，MVP 阶段采用**等级制固
 
 #### C.3.1 冷却期 ✅
 
-同一 `(publisher, worker)` 地址组合，7 天内只铸造一次 VCP。indexer 铸造前查询 `vcp_settlements` 检查。（DirectPay 事件已实现，MilestoneSettled 因 publisher 不在事件数据中暂跳过）
+同一 `(publisher, worker)` 地址组合，7 天内只铸造一次 VCP。indexer 铸造前查询 `vcp_settlements` 检查。DirectPay `Paid` 事件直接包含 publisher；MilestoneSettled 事件通过 Supabase 反查 `collaborations` 表（匹配 `provider_id` + 活跃状态）获取 publisher。两条路径均已实现冷却检查。
 
 #### C.3.2 最低里程碑数 🔲
 
@@ -304,7 +324,8 @@ ALTER TABLE services ADD COLUMN IF NOT EXISTS expert_tags TEXT[];
 **频道 1 — 基础设施**
 - `useServices(1)` 返回扁平列表（无父子层级）
 - 显示 `isUnlocked` 激活状态（查 `service_access` 表）
-- Modal 有「激活」按钮，MVP 使用 mock tx hash（主网前需替换真实合约调用）
+- Modal 有「激活」按钮，真实 USDC `transfer` 至 `SERVICE_TREASURY`（2026-03-10 修复，已替换 mock tx hash）
+- 免费服务（`price_usdc=0`）跳过链上操作，使用确定性哈希 `free_{serviceId}_{address}`
 - `price_usdc != null` 判断以正确处理 0 元服务
 
 **频道 2 — 核心服务**
@@ -335,6 +356,61 @@ Admin `/admin/services` 新增：
 **`t.services.*`**: `entry_title`, `entry_subtitle`, `entry_infra_title/desc`, `entry_core_title/desc`, `entry_consulting_title/desc`, `enter_channel`, `infra_activated`, `infra_activate`, `infra_approving`, `infra_paying`, `infra_price_label`, `infra_docs`, `core_select_category`, `solutions_count`, `core_contact`, `consulting_book`, `consulting_contact`, `consulting_expertise`, `consulting_no_experts`, `consulting_fee`, `per_session`, `noServices`, `price_negotiable`, `retry`, `view_detail`
 
 **`t.admin.*`**: `channelFilter_all`, `channelFilter_1/2/3`, `parentId`, `parentId_none`, `parentId_placeholder`, `priceUsdc`, `priceUsdc_placeholder`, `expertAvatar`, `expertAvatar_placeholder`, `expertTags`, `expertTags_placeholder`, `childItem`
+
+---
+
+---
+
+## 附录 F：NFT 门控双源验证（2026-03-10）
+
+> 状态: ✅ 已实现
+
+### F.1 背景
+
+Sepolia 测试网 RPC 不稳定，NFT `balanceOf` 查询经常超时或返回错误。导致 NFT 门控页面频繁显示错误/重试 UI，严重影响公测体验。早期版本曾使用 hardcoded 后门钱包作为 fallback，存在安全漏洞（已在 C3/C4 修复中移除）。
+
+### F.2 双源架构
+
+```
+useNFTGate / usePrivilegeNFTs
+  │
+  ├─ 主源: wagmi RPC balanceOf / balanceOfBatch
+  │    配置: staleTime=5min, gcTime=30min, retry=2
+  │    成功 → 直接用缓存结果
+  │    失败 → 触发后备
+  │
+  └─ 后备: GET /api/nft/verify?address=0x...
+       使用 Alchemy NFT REST API (getNFTsForOwner)
+       独立基础设施（HTTP CDN，非 JSON-RPC）
+       服务端 5 分钟地址级 Map 缓存
+       返回所有 5 个 Token 的余额
+       支持 stale cache（API 失败时返回过期缓存）
+```
+
+### F.3 安全模型
+
+- **Fail-closed**: 两源都失败 → `hasNFT=false` → 用户看到错误 UI + 重试按钮
+- **永不放行**: 不存在任何路径使得错误状态导致 `hasNFT=true`
+- **地址切换重置**: 用户切换钱包时自动清除 fallback 缓存，重新验证
+
+### F.4 文件清单
+
+| 文件 | 职责 |
+|------|------|
+| `hooks/useNFTGate.ts` | 单 Token 门控 hook（双源） |
+| `hooks/usePrivilegeNFTs.ts` | 全 5 Token 批量查询 hook（双源） |
+| `hooks/usePioneerGate.ts` | Token #5 wrapper → 自动继承双源 |
+| `hooks/useLanternGate.ts` | Token #4 wrapper → 自动继承双源 |
+| `app/api/nft/verify/route.ts` | 服务端 Alchemy NFT REST API + 缓存 |
+
+### F.5 预期效果
+
+| 场景 | 之前 | 之后 |
+|------|------|------|
+| RPC 正常 | 正常 | 正常（缓存 5min 减少请求） |
+| RPC 超时 | 显示错误页 + 重试按钮 | 透明切换到 HTTP API，用户无感 |
+| RPC + HTTP API 都挂 | N/A | 显示错误页 + 重试（极罕见） |
+| 页面频繁刷新 | 每次都查链 | 5 分钟内直接读缓存 |
 
 ---
 

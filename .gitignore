@@ -42,3 +42,12 @@ run-*.json
 certificates
 
 /draft
+
+# local assets (already on Supabase CDN or not for repo)
+*.glb
+*.gltf
+supabase-*.png
+vercel-import.env
+
+# Claude Code local config
+.claude/

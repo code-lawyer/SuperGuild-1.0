@@ -167,13 +167,15 @@ const t = useT();
 所有需要 NFT 权限的功能，必须使用现有 hooks：
 
 ```ts
-useNFTGate(tokenId)        // 通用门控
-useLanternGate()           // Token #2 门控
-usePioneerGate()           // Token #5 门控
-usePrivilegeNFTs()         // 批量查询所有 5 个 Token
+useNFTGate(tokenId)        // 通用门控（双源验证：RPC + Alchemy REST API fallback）
+useLanternGate()           // Token #4 门控（wrapper）
+usePioneerGate()           // Token #5 门控（wrapper）
+usePrivilegeNFTs()         // 批量查询所有 5 个 Token（双源验证）
 ```
 
 **跨链查询说明：** Privilege NFT 在 Sepolia ETH，通过 wagmi `chainId` 参数强制读取，用户无需手动切链。
+
+**双源验证架构：** 主源 wagmi RPC（staleTime 5min）+ 后备 `/api/nft/verify`（Alchemy NFT REST API）。Fail-closed：两源都失败 → `hasNFT=false`，永不在错误时放行。
 
 ### Supabase 操作规范
 
@@ -206,11 +208,17 @@ if (!address) throw new Error('请先连接钱包');
 | 问题 | 影响 | 优先级 |
 |------|------|--------|
 | ~~Supabase 多张表无 RLS~~ | ✅ 已修复：敏感表写入策略已收紧，仅 service_role 可写 | ~~已完成~~ |
-| ~~Admin 权限仍为 hardcoded 钱包地址~~ | ✅ 已改为 Token #3 NFT 门控（AdminGuard） | ~~已完成~~ |
+| ~~Admin 权限仍为 hardcoded 钱包地址~~ | ✅ 已改为 Token #3 NFT 门控（AdminGuard + Header） | ~~已完成~~ |
 | ~~GLB 模型从 `/public/models/` 本地加载~~ | ✅ 已迁移至 Supabase Storage CDN | ~~已完成~~ |
+| ~~NFT 门控测试网不稳定~~ | ✅ 已实现双源验证（RPC + Alchemy REST API fallback） | ~~已完成~~ |
+| ~~基础设施假交易哈希~~ | ✅ 已替换为真实 USDC transfer | ~~已完成~~ |
+| ~~Supabase Admin 占位符~~ | ✅ 已改为 Proxy 延迟初始化 | ~~已完成~~ |
 | MedalNFT Dynamic Traits 未接入前端 | 3D 渲染参数硬编码 | Phase 12 |
 | 直接 RPC 轮询（无 Ponder 索引层） | 用户量大后性能瓶颈 | Phase 12 |
-| Supabase 无 Auth 层（anon key 直连） | collaborations/profiles 等表仍然公开可写 | 上主网前需加 Auth |
+| Supabase 核心表无 RLS（collaborations/milestones/proofs） | 主网需加写入保护 | Phase 11.5 |
+| Supabase Auth 层未前端集成 | JWT 签发 API 已就绪，前端未接入 | Phase 11.5 |
+| 仲裁庭链上结算未实现 | 投票只写 DB，不触发链上释放/罚没 | Phase 11.5 |
+| VCP 刷单检测未实现 | 快速确认检测 + S/A 级 PoW 强制待做 | Phase 11.5 |
 
 ---
 
@@ -233,33 +241,26 @@ if (!address) throw new Error('请先连接钱包');
 
 ## 当前开发优先级
 
-### 🔴 Phase 10（当前阶段）— 链上结算闭环
+### ✅ Phase 10（已完成）— 链上结算闭环 + 全系统闭环
 
-**目标：** 让项目的几大基本功能真正可用
+Phase 10 全部完成（2026-03-10），包括：GuildEscrow/DirectPay 双轨支付、VCP 反作弊、万能中后台三频道重构、6 项 CRITICAL 审计修复、NFT 门控双源验证。**测试网公测已启动。**
 
-1. **编写并部署 GuildEscrow 合约**（Arbitrum Sepolia）
-   - `deposit()` — 发布者锁仓 USDC
-   - `submitProof()` — 承接人提交 Hash，触发 7 天倒计时
-   - `confirmMilestone()` — 发布者确认，立即释放
-   - `autoRelease()` — 乐观超时释放
-   - `disputeMilestone()` — 发起争议，10% 罚没国库
-   - `voteArbitration()` — Hand of Justice (#4) 投票
+### 🔴 Phase 11（当前阶段）— Rhythm AI 人格
 
-2. **前端接入 GuildEscrow**
-   - 协作创建后引导发布者 `deposit()`
-   - 承接人提交凭证时调用 `submitProof()`
-   - 仲裁庭连接真实争议数据
-
-3. **Admin 权限改为 Token #3 门控**
-
-### 🟡 Phase 11（下阶段）— Rhythm AI 人格
-
-- 柴薪王座 3D 锚点
+- 长老 persona agent 聊天 + Rhythm 聊天界面
 - Function Calling 自然语言发单
 - DAO 议案 → 链上 Calldata 自动生成
+- 真实链上成员数据接入柴薪王座
+
+### 🟡 Phase 11.5 — 主网安全加固
+
+- Supabase RLS 全表覆盖 + Auth 前端集成
+- Faucet 页面 `IS_MAINNET` 守卫
+- 仲裁庭链上结算 + VCP 刷单检测
+- 合约安全审计
 
 ### 🟢 Phase 12-14（远期）
 
 - Arweave 存储迁移 + Ponder 索引
 - ERC-4337 AA 账户 + Passkey
-- Arbitrum One 主网部署
+- Arbitrum One 主网部署（详见 `docs/plans/2026-03-10-mainnet-launch-division.md`）

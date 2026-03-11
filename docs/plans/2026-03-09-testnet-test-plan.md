@@ -1,8 +1,8 @@
 # SuperGuild Testnet 测试方案
 
-> **版本**: v1.0 · **日期**: 2026-03-09
+> **版本**: v1.1 · **日期**: 2026-03-10（更新于深度审计修复后）
 > **环境**: Arbitrum Sepolia 测试网
-> **测试目标**: Phase 10 核心功能全链路验证
+> **测试目标**: Phase 10 核心功能全链路验证 + 安全修复验证
 
 ---
 
@@ -339,10 +339,11 @@
 | 限制 | 说明 |
 |------|------|
 | 公会托管模式不可用 | 创建协作时「公会托管」显示 Coming Soon，这是预期行为 |
-| 仲裁庭 Chief Arbitrator 为 Mock 数据 | `/api/council/arbitration/chief` 还未接入真实链上查询 |
+| ~~仲裁庭 Chief Arbitrator 为 Mock 数据~~ | ✅ 已修复 (v1.1)：通过 Alchemy NFT API 查询真实 Token #4 持有者 |
 | VCP 有 1-2 分钟延迟 | Alchemy Webhook → Edge Function 处理有延迟 |
 | Gas 费用较低但非零 | 测试网操作需要 Sepolia ETH，请提前从水龙头领取 |
 | 7 天乐观释放仅公会托管模式生效 | 自行管理模式无托管，无乐观释放 |
+| NFT 门控双源验证 | 主源 RPC 失败时自动切换到 HTTP API 后备，用户应无感知；极端情况下显示重试按钮 |
 
 ---
 

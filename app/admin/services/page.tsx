@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/lib/i18n';
+import { useAdminAction } from '@/hooks/useAdminAction';
 
 interface ServiceDoc {
     name: string;
@@ -32,6 +33,7 @@ interface Service {
 
 export default function AdminServicesPage() {
     const t = useT();
+    const { callAdmin } = useAdminAction();
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -127,8 +129,6 @@ export default function AdminServicesPage() {
             category,
             icon,
             is_active: isActive,
-            currency: 'USDC',
-            unlock_type: 'ITEM',
             sort_order: 0,
             documents,
             price_usdc: priceUsdc !== '' ? Number(priceUsdc) : null,
@@ -137,15 +137,16 @@ export default function AdminServicesPage() {
             parent_id: parentId || null,
         };
 
-        if (currentEditId) {
-            await supabase
-                .from('services')
-                .update(payload)
-                .eq('id', currentEditId);
-        } else {
-            await supabase
-                .from('services')
-                .insert([payload]);
+        try {
+            const action = currentEditId ? `update-service:${currentEditId}` : 'create-service';
+            await callAdmin('/api/admin/services', 'POST', action, {
+                id: currentEditId,
+                ...payload,
+            });
+        } catch (err: any) {
+            console.error('Admin service save error:', err);
+            alert(err.message || 'Failed to save service');
+            return;
         }
 
         setIsEditing(false);
@@ -154,22 +155,28 @@ export default function AdminServicesPage() {
 
     const handleDelete = async (id: string) => {
         if (!window.confirm(t.admin.serviceDeleteConfirm)) return;
-        // Also clean up storage files for this service
-        const service = services.find(s => s.id === id);
-        if (service?.documents?.length) {
-            const paths = service.documents.map(d => {
-                const url = new URL(d.url);
-                // Extract path after /service-docs/
-                const match = url.pathname.match(/\/service-docs\/(.+)/);
-                return match ? match[1] : '';
-            }).filter(Boolean);
-            if (paths.length > 0) {
-                await supabase.storage.from('service-docs').remove(paths);
+
+        try {
+            // Storage cleanup still uses client-side Supabase (public bucket, read-only risk is low)
+            const service = services.find(s => s.id === id);
+            if (service?.documents?.length) {
+                const paths = service.documents.map(d => {
+                    const url = new URL(d.url);
+                    const match = url.pathname.match(/\/service-docs\/(.+)/);
+                    return match ? match[1] : '';
+                }).filter(Boolean);
+                if (paths.length > 0) {
+                    await supabase.storage.from('service-docs').remove(paths);
+                }
             }
+
+            // Server-side delete with signature + NFT verification
+            await callAdmin('/api/admin/services', 'DELETE', `delete-service:${id}`, { id });
+        } catch (err: any) {
+            console.error('Admin service delete error:', err);
+            alert(err.message || 'Failed to delete service');
+            return;
         }
-        // Cascade: delete child items that reference this parent
-        await supabase.from('services').delete().eq('parent_id', id);
-        await supabase.from('services').delete().eq('id', id);
         fetchServices();
     };
 

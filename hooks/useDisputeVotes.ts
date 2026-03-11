@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract, useSignMessage } from 'wagmi';
 import { supabase } from '@/utils/supabase/client';
 import { useCollaborationDetail, Collaboration, Milestone } from './useCollaborations';
 import { toCollabId } from './useGuildEscrow';
@@ -106,6 +106,7 @@ export function useDisputeVotesForMilestone(milestoneId: string | undefined) {
 
 export function useCastDisputeVote() {
     const { address } = useAccount();
+    const { signMessageAsync } = useSignMessage();
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -122,17 +123,26 @@ export function useCastDisputeVote() {
         }) => {
             if (!address) throw new Error('Wallet not connected');
 
-            const { error } = await supabase
-                .from('dispute_votes')
-                .upsert({
-                    collab_id: collabId,
-                    milestone_id: milestoneId,
-                    voter_address: address,
-                    worker_won: workerWon,
-                    reason: reason || null,
-                }, { onConflict: 'milestone_id,voter_address' });
+            // Sign message to prove address ownership
+            const message = `SuperGuild Dispute Vote\nCollab: ${collabId}\nMilestone: ${milestoneId}\nVote: ${workerWon ? 'worker' : 'publisher'}\nAddress: ${address}`;
+            const signature = await signMessageAsync({ message });
 
-            if (error) throw error;
+            // Call server-side API with NFT verification
+            const res = await fetch('/api/council/arbitration/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    collabId,
+                    milestoneId,
+                    workerWon,
+                    reason,
+                    address,
+                    signature,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Vote failed');
         },
         onSuccess: (_, vars) => {
             queryClient.invalidateQueries({ queryKey: ['dispute_votes', vars.milestoneId] });

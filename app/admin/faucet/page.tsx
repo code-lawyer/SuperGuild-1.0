@@ -6,6 +6,7 @@ import { parseUnits, formatUnits, isAddress } from 'viem';
 import { useT } from '@/lib/i18n';
 import { MOCK_USDC } from '@/constants/nft-config';
 import { useUSDCBalance } from '@/hooks/useGuildEscrow';
+import { IS_MAINNET } from '@/constants/chain-config';
 
 const mockUsdcMintAbi = [
     {
@@ -23,6 +24,21 @@ const mockUsdcMintAbi = [
 export default function AdminFaucetPage() {
     const t = useT();
     const { address } = useAccount();
+
+    // Faucet is testnet-only. On mainnet there's no MockUSDC contract to mint.
+    if (IS_MAINNET) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+                <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">block</span>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    {t.admin.faucetMainnetBlocked ?? 'Faucet Unavailable'}
+                </h2>
+                <p className="text-slate-500 max-w-md">
+                    {t.admin.faucetMainnetBlockedDesc ?? 'The test USDC faucet is only available on testnet. On mainnet, use real USDC.'}
+                </p>
+            </div>
+        );
+    }
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('1000');
     const [lastTxHash, setLastTxHash] = useState<`0x${string}` | null>(null);

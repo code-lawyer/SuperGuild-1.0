@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useT, useI18n } from '@/lib/i18n';
+import { useAdminAction } from '@/hooks/useAdminAction';
 import { format } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 
@@ -20,6 +21,7 @@ export default function AdminBulletinsPage() {
     const t = useT();
     const { locale } = useI18n();
     const dateLocale = locale === 'zh' ? zhCN : enUS;
+    const { callAdmin } = useAdminAction();
 
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -76,15 +78,19 @@ export default function AdminBulletinsPage() {
     const handleSave = async () => {
         if (!title.trim() || !content.trim()) return;
 
-        if (currentEditId) {
-            await supabase
-                .from('bulletins')
-                .update({ title, content, category, is_pinned: isPinned })
-                .eq('id', currentEditId);
-        } else {
-            await supabase
-                .from('bulletins')
-                .insert([{ title, content, category, is_pinned: isPinned }]);
+        try {
+            const action = currentEditId ? `update-bulletin:${currentEditId}` : 'create-bulletin';
+            await callAdmin('/api/admin/bulletins', 'POST', action, {
+                id: currentEditId,
+                title,
+                content,
+                category,
+                is_pinned: isPinned,
+            });
+        } catch (err: any) {
+            console.error('Admin bulletin save error:', err);
+            alert(err.message || 'Failed to save bulletin');
+            return;
         }
 
         setIsEditing(false);
@@ -94,7 +100,13 @@ export default function AdminBulletinsPage() {
     const handleDelete = async (id: string) => {
         if (!window.confirm(t.admin.bulletinDeleteConfirm)) return;
 
-        await supabase.from('bulletins').delete().eq('id', id);
+        try {
+            await callAdmin('/api/admin/bulletins', 'DELETE', `delete-bulletin:${id}`, { id });
+        } catch (err: any) {
+            console.error('Admin bulletin delete error:', err);
+            alert(err.message || 'Failed to delete bulletin');
+            return;
+        }
         fetchAnnouncements();
     };
 

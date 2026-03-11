@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, verifyMessage } from 'viem';
 import { createRateLimiter } from '@/utils/rate-limit';
 
 const limiter = createRateLimiter({ windowMs: 60_000, max: 10 });
@@ -32,10 +32,21 @@ export async function POST(req: Request) {
     if (limited) return limited;
     try {
         const body = await req.json();
-        const { title, content, authorAddress, attachment } = body;
+        const { title, content, authorAddress, attachment, signature } = body;
 
-        if (!authorAddress || !title || !content) {
+        if (!authorAddress || !title || !content || !signature) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // 0. Verify EIP-191 signature (prevent address spoofing)
+        const message = `I am posting a Pioneer Bulletin to SuperGuild\nAddress: ${authorAddress}`;
+        const valid = await verifyMessage({
+            address: authorAddress as `0x${string}`,
+            message,
+            signature: signature as `0x${string}`,
+        });
+        if (!valid) {
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
         }
 
         // 1. Verify NFT Holding

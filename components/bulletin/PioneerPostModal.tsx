@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useT } from '@/lib/i18n';
 import { supabase } from '@/utils/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSignMessage } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PioneerPostModalProps {
@@ -15,6 +16,7 @@ interface PioneerPostModalProps {
 export default function PioneerPostModal({ isOpen, onClose, authorAddress }: PioneerPostModalProps) {
     const t = useT();
     const queryClient = useQueryClient();
+    const { signMessageAsync } = useSignMessage();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [file, setFile] = useState<File | null>(null);
@@ -72,7 +74,11 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                 };
             }
 
-            // 2. Call Secure API
+            // 2. Sign message to prove address ownership
+            const message = `I am posting a Pioneer Bulletin to SuperGuild\nAddress: ${authorAddress}`;
+            const signature = await signMessageAsync({ message });
+
+            // 3. Call Secure API
             const res = await fetch('/api/bulletin/pioneer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -80,6 +86,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                     title: title.trim(),
                     content: content.trim(),
                     authorAddress,
+                    signature,
                     attachment: attachmentMeta
                 })
             });

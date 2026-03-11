@@ -1,4 +1,4 @@
-import { keccak256, encodeAbiParameters, parseAbiParameters, SignableMessage } from 'viem';
+import { keccak256, encodeAbiParameters, parseAbiParameters, SignableMessage, verifyMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { NextRequest, NextResponse } from 'next/server';
 import { createRateLimiter } from '@/utils/rate-limit';
@@ -11,12 +11,26 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   try {
-    const { nickname, avatar, socialAccount, subject } = await req.json();
+    const { nickname, avatar, socialAccount, subject, signature: callerSignature } = await req.json();
 
-    if (!nickname || !avatar || !socialAccount || !subject) {
+    if (!nickname || !avatar || !socialAccount || !subject || !callerSignature) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
+      );
+    }
+
+    // Verify caller owns the subject address (EIP-191)
+    const authMessage = `Request SuperGuild profile attestation for ${subject}`;
+    const ownershipValid = await verifyMessage({
+      address: subject as `0x${string}`,
+      message: authMessage,
+      signature: callerSignature as `0x${string}`,
+    });
+    if (!ownershipValid) {
+      return NextResponse.json(
+        { error: 'Invalid signature — you must prove ownership of the subject address' },
+        { status: 403 },
       );
     }
 
@@ -40,13 +54,13 @@ export async function POST(req: NextRequest) {
     // Create account
     const account = privateKeyToAccount(SIGNER_PRIVATE_KEY);
 
-    // Sign the message
-    const signature = await account.signMessage({
+    // Sign the message (server attestation)
+    const attestation = await account.signMessage({
       message: { raw: messageHash } as SignableMessage
     });
 
     return NextResponse.json({
-      signature,
+      signature: attestation,
       nickname,
       avatar,
       socialAccount,

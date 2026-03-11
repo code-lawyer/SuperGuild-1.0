@@ -528,6 +528,8 @@ const en = {
         faucetFillSelf: 'Fill my address',
         faucetViewTx: 'View Transaction',
         faucetCurrentBalance: 'Your USDC Balance',
+        faucetMainnetBlocked: 'Faucet Unavailable',
+        faucetMainnetBlockedDesc: 'The test USDC faucet is only available on testnet. On mainnet, use real USDC.',
 
         // Pioneer Management
         pioneerTitle: 'Pioneer Recruitment Dashboard',

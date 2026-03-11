@@ -518,6 +518,8 @@ const zh: TranslationKeys = {
         faucetFillSelf: '填入我的地址',
         faucetViewTx: '查看交易',
         faucetCurrentBalance: '你的 USDC 余额',
+        faucetMainnetBlocked: '水龙头不可用',
+        faucetMainnetBlockedDesc: '测试 USDC 水龙头仅在测试网可用。主网请使用真实 USDC。',
 
         // 先行者管理
         pioneerTitle: '先行者招募看板',

@@ -79,24 +79,11 @@ export function useServices(channelFilter?: number) {
         enabled: !!address,
     });
 
-    // ⚠️ MOCK: Simulated payment — must replace with GuildEscrow USDC flow before mainnet
+    // Service unlock is handled per-channel (infrastructure page has its own USDC flow).
+    // This mutation is a no-op guard — channels 2 & 3 do not have unlock flows yet.
     const unlockMutation = useMutation({
-        mutationFn: async (serviceId: string) => {
-            if (!address) throw new Error("请先连接钱包");
-
-            console.warn(`[useServices] MOCK payment — no real USDC transferred for service ${serviceId}`);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            const { error } = await supabase
-                .from('service_access')
-                .insert([{
-                    user_address: address,
-                    target_id: serviceId,
-                    tx_hash: `MOCK_${Date.now()}`,
-                }]);
-
-            if (error) throw error;
-            return true;
+        mutationFn: async (_serviceId: string) => {
+            throw new Error('Service unlock not implemented for this channel. Use the channel-specific payment flow.');
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['service_access', address] });

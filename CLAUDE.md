@@ -87,17 +87,38 @@ pnpm lint       # ESLint 检查
 
 **VCP mint 触发链：** `MilestoneSettled` 合约事件 → 热钱包监听 → 调用 VCP `mint()`
 
+### 1.5 双轨支付模式 — MVP 阶段性架构决策
+
+> **详细文档：** `docs/plans/2026-03-12-payment-mode-architecture.md`
+
+**两种模式：**
+
+| | self_managed (DirectPay) | guild_managed (GuildEscrow) |
+|---|---|---|
+| 资金托管 | 无托管，USDC 直通 | 合约托管，里程碑释放 |
+| 凭证上链 | 否 | 是（contentHash bytes32） |
+| 7天争议窗 | 无 | 有（合约强制执行） |
+| 仲裁 | 不可用 | 完整（罚没 + Hand of Justice） |
+| VCP 倍率 | 0.5x | 1.0x |
+
+**MVP 阶段（当前）只开放 self_managed，原因：**
+1. GuildEscrow 持有用户资金，主网上线前必须经过专业安全审计
+2. DirectPay 是无状态 pass-through，攻击面接近于零
+3. 先用 P2P 模式积累社区信任，再开放托管模式
+
+**已知妥协：** self_managed 模式下，协作全生命周期数据（任务详情、凭证提交、里程碑确认）仅存在 Supabase，无链上锚定。仅付款金额有链上记录（DirectPay `Paid` 事件）。这是**有意的临时妥协**，不代表链上证据功能不需要。
+
+**guild_managed 代码已实现约 80%，禁止删除。** 相关文件见架构文档。
+
 ### 2. 身份认证模型
 
-- **当前：** Supabase `anon key` 直连，钱包地址作为业务层标识符（非 Supabase auth uid）
-- **RLS 状态：** 大部分表未启用 RLS（见技术债章节）
+- **当前：** JWT wallet auth（AuthProvider + /api/auth/wallet）+ RLS 迁移就绪
 - **链上操作：** 通过 Wagmi 钱包签名，这是真正的身份验证层
-- **规则：** 所有 Supabase 写操作必须在业务逻辑层校验 `address === wallet_address`，不依赖 RLS
+- **规则：** 所有 Supabase 写操作必须在业务逻辑层校验 `address === wallet_address`
 
 ### 3. Admin 权限
 
-- **当前：** hardcoded 钱包地址白名单（`components/admin/AdminGuard.tsx`）
-- **目标：** 改为 Token #3（The First Flame）NFT 门控，与 `useNFTGate` 体系统一
+- **当前：** Token #3（The First Flame）NFT 门控（AdminGuard + Header），已完成迁移
 
 ### 4. AI Oracle 引擎（后端已实现）
 
@@ -198,6 +219,7 @@ if (!address) throw new Error('请先连接钱包');
 4. **不直接 `git push` 或操作远程分支** — 所有 git 操作需用户确认
 5. **不直接修改 Supabase 生产数据** — 只能通过代码逻辑写入，不执行原始 SQL 删改
 6. **不删除或覆盖 `proofs` 表记录** — 凭证链是信用系统核心，必须不可逆
+7. **不删除 guild_managed 相关代码** — `useGuildEscrow`、`resolver-bot`、仲裁 UI/API、UploadProofDialog 的链上分支等均为已完成的预备功能，MVP 阶段暂未激活但**禁止当作死代码清理**（详见 `docs/plans/2026-03-12-payment-mode-architecture.md`）
 
 ---
 

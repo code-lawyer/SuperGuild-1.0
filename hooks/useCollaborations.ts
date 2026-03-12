@@ -20,7 +20,6 @@ export interface Collaboration {
     delivery_standard: string | null;
     total_budget: number;
     reward_token: string;
-    difficulty: string | null;
     grade: string;
     secret_content: string | null;
     status: CollabStatus;
@@ -131,7 +130,6 @@ export interface CreateCollabInput {
     delivery_standard?: string;
     total_budget: number;
     reward_token?: string;
-    difficulty?: string;
     grade?: string;
     secret_content?: string;
     secret_attachments?: any[];
@@ -158,7 +156,6 @@ export function useCreateCollaboration() {
                     delivery_standard: input.delivery_standard || null,
                     total_budget: input.total_budget,
                     reward_token: input.reward_token || 'USDC',
-                    difficulty: input.grade || 'E',
                     grade: input.grade || 'E',
                     secret_content: input.secret_content || null,
                     secret_attachments: input.secret_attachments || [],

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/lib/i18n';
 import { useCreateProposal } from '@/hooks/useProposals';
 
 interface CreateProposalModalProps {
@@ -10,6 +11,7 @@ interface CreateProposalModalProps {
 }
 
 export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProps) {
+    const t = useT();
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [linkInput, setLinkInput] = useState('');
@@ -63,8 +65,8 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                         {/* Header */}
                         <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white">发起提案</h2>
-                                <p className="text-sm text-slate-500 mt-1">需支付 1 USDC（含 Gas 费）</p>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white">{t.council.createProposal}</h2>
+                                <p className="text-sm text-slate-500 mt-1">{t.council.createProposalFee}</p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -79,13 +81,13 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                             {/* Title */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                    提案标题 *
+                                    {t.council.proposalTitleLabel}
                                 </label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="简洁描述提案目标..."
+                                    placeholder={t.council.proposalTitlePlaceholder}
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform"
                                     maxLength={120}
                                 />
@@ -95,12 +97,12 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                             {/* Body */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                    提案正文 *
+                                    {t.council.proposalBodyLabel}
                                 </label>
                                 <textarea
                                     value={body}
                                     onChange={(e) => setBody(e.target.value)}
-                                    placeholder="详细说明提案内容、背景、预期影响..."
+                                    placeholder={t.council.proposalBodyPlaceholder}
                                     rows={8}
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform resize-none"
                                 />
@@ -109,7 +111,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                             {/* Attachments */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                    附件 / 补充链接（可选）
+                                    {t.council.attachmentsLabel}
                                 </label>
                                 <div className="flex gap-2">
                                     <input
@@ -124,7 +126,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                         onClick={addLink}
                                         className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                     >
-                                        添加
+                                        {t.council.addAttachment}
                                     </button>
                                 </div>
                                 {attachmentUrls.length > 0 && (
@@ -153,14 +155,14 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                         <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-xs text-slate-500">
                                 <span className="material-symbols-outlined !text-[16px]">info</span>
-                                <span>提案将在链上创建，需要两步签名</span>
+                                <span>{t.council.proposalOnchainNote}</span>
                             </div>
                             <div className="flex gap-3">
                                 <button
                                     onClick={onClose}
                                     className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                                 >
-                                    取消
+                                    {t.common.cancel}
                                 </button>
                                 <button
                                     onClick={handleSubmit}
@@ -170,12 +172,12 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                     {isPending ? (
                                         <>
                                             <span className="material-symbols-outlined !text-[16px] animate-spin">progress_activity</span>
-                                            处理中...
+                                            {t.council.submitting}
                                         </>
                                     ) : (
                                         <>
                                             <span className="material-symbols-outlined !text-[16px]">bolt</span>
-                                            提交提案 (1 USDC)
+                                            {t.council.submitProposal}
                                         </>
                                     )}
                                 </button>

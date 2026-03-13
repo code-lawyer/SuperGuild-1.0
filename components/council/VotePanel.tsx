@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RequireWallet } from '@/components/ui/RequireWallet';
+import { useT } from '@/lib/i18n';
 import {
     useProposalOnchain,
     useUserProposalState,
@@ -15,7 +16,7 @@ interface VotePanelProps {
     proposal: ProposalData;
 }
 
-function useCountdown(deadline: number) {
+function useCountdown(deadline: number, endedLabel: string) {
     const [timeLeft, setTimeLeft] = useState('');
 
     useEffect(() => {
@@ -25,7 +26,7 @@ function useCountdown(deadline: number) {
             const now = Math.floor(Date.now() / 1000);
             const remaining = deadline - now;
             if (remaining <= 0) {
-                setTimeLeft('已结束');
+                setTimeLeft(endedLabel);
                 return;
             }
             const h = Math.floor(remaining / 3600);
@@ -43,6 +44,7 @@ function useCountdown(deadline: number) {
 }
 
 export function VotePanel({ proposal }: VotePanelProps) {
+    const t = useT();
     const {
         votesFor,
         votesAgainst,
@@ -54,7 +56,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
     const voteMutation = useCastVote();
     const finalizeMutation = useFinalizeProposal();
 
-    const timeLeft = useCountdown(votingDeadline);
+    const timeLeft = useCountdown(votingDeadline, t.council.voteEnded);
     const totalVotes = votesFor + votesAgainst;
     const forPercent = totalVotes > 0 ? (votesFor / totalVotes) * 100 : 50;
     const againstPercent = totalVotes > 0 ? (votesAgainst / totalVotes) * 100 : 50;
@@ -163,18 +165,18 @@ export function VotePanel({ proposal }: VotePanelProps) {
             <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 {isFinished ? (
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        最终结果: <span className={isPassed ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
-                            {isPassed ? '通过' : '否决'}
+                        {t.council.finalResult} <span className={isPassed ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+                            {isPassed ? t.council.statusPassed : t.council.statusRejected}
                         </span>
                     </p>
                 ) : totalVotes > 0 ? (
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        当前预计: <span className={votesFor > votesAgainst ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
-                            {votesFor > votesAgainst ? '通过' : '否决'}
+                        {t.council.currentProjection} <span className={votesFor > votesAgainst ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+                            {votesFor > votesAgainst ? t.council.statusPassed : t.council.statusRejected}
                         </span>
                     </p>
                 ) : (
-                    <p className="text-sm text-slate-400">暂无投票</p>
+                    <p className="text-sm text-slate-400">{t.council.noVotesYet}</p>
                 )}
 
                 <div className="flex gap-3">
@@ -194,7 +196,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                             disabled={finalizeMutation.isPending}
                             className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
                         >
-                            {finalizeMutation.isPending ? '结算中…' : '结算提案'}
+                            {finalizeMutation.isPending ? t.council.settling : t.council.settleProposal}
                         </button>
                     )}
                     {isActive && !votingEnded && !hasVoted && (
@@ -225,7 +227,7 @@ export function VotePanel({ proposal }: VotePanelProps) {
                     )}
                     {hasVoted && (
                         <span className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-400 border border-slate-200 dark:border-slate-700">
-                            已投票 ✓
+                            {t.council.alreadyVoted}
                         </span>
                     )}
                 </div>

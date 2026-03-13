@@ -44,23 +44,23 @@ export default function SparkPlazaPage() {
                 />
 
                 {/* System Stats Bar */}
-                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                        { label: 'VCP 总量', value: totalSupply.toLocaleString(), icon: 'token' },
-                        { label: '1% 阈值', value: `${threshold.toLocaleString()} VCP`, icon: 'trending_up' },
-                        { label: '总提案数', value: String(proposalCount), icon: 'description' },
-                        { label: '你的 VCP', value: address ? (userVCP ?? 0).toLocaleString() : '—', icon: 'account_balance_wallet' },
+                        { label: t.council.vcpTotal, value: totalSupply.toLocaleString(), icon: 'token', accent: 'text-primary' },
+                        { label: t.council.vcpThreshold, value: `${threshold.toLocaleString()} VCP`, icon: 'trending_up', accent: 'text-amber-500' },
+                        { label: t.council.proposalCount, value: String(proposalCount), icon: 'description', accent: 'text-purple-500' },
+                        { label: t.council.yourVcp, value: address ? (userVCP ?? 0).toLocaleString() : '—', icon: 'account_balance_wallet', accent: 'text-emerald-500' },
                     ].map((stat) => (
                         <div
                             key={stat.label}
-                            className="p-4 rounded-xl bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 flex items-center gap-3"
+                            className="p-4 rounded-xl bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 flex items-center gap-3"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
-                                <span className="material-symbols-outlined !text-[20px] text-slate-500">{stat.icon}</span>
+                            <div className="w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center shrink-0">
+                                <span className={`material-symbols-outlined !text-[18px] ${stat.accent}`}>{stat.icon}</span>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                                <p className="text-lg font-black text-slate-900 dark:text-white font-mono tabular-nums tracking-tight">{stat.value}</p>
+                            <div className="min-w-0">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.label}</p>
+                                <p className="text-base font-black text-slate-900 dark:text-white font-mono tabular-nums leading-tight">{stat.value}</p>
                             </div>
                         </div>
                     ))}
@@ -85,11 +85,11 @@ export default function SparkPlazaPage() {
                         ))
                     ) : (
                         <div className="text-center py-24">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
-                                <span className="material-symbols-outlined !text-[40px] text-slate-300 dark:text-slate-600">auto_awesome_motion</span>
+                            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center">
+                                <span className="material-symbols-outlined !text-[28px] text-slate-400 dark:text-slate-500">auto_awesome_motion</span>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">暂无提案</h3>
-                            <p className="text-sm text-slate-400 dark:text-slate-600">成为第一个发起提案的人吧</p>
+                            <h3 className="text-base font-bold text-slate-500 dark:text-slate-400 mb-2">{t.council.noProposals}</h3>
+                            <p className="text-sm text-slate-400 dark:text-slate-500">{t.council.noProposalsDesc}</p>
                         </div>
                     )}
                 </div>

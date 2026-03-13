@@ -231,60 +231,68 @@ export default function CollaborationsPage() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                 {filtered.map((c: Collaboration, index: number) => (
                                     <motion.div
                                         key={c.id}
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: index * 0.05 }}
+                                        initial={{ opacity: 0, y: 16 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.04, duration: 0.35, ease: 'easeOut' }}
+                                        className="h-full"
                                     >
                                         <Link
                                             href={`/collaborations/${c.id}`}
-                                            className="group relative flex flex-col h-full bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors transition-transform duration-300 hover:translate-x-1 hover:-translate-y-1 block p-1 overflow-hidden"
-                                            style={{ clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%)" }}
+                                            className="group relative flex flex-col h-full bg-white/70 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden hover:border-primary/30 dark:hover:border-primary/20 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
                                         >
-                                            <div className="p-6 flex flex-col h-full bg-white dark:bg-[#0a0f18] relative overflow-hidden" style={{ clipPath: "polygon(0 0, calc(100% - 19px) 0, 100% 19px, 100% 100%, 0 100%)" }}>
-                                                {/* Accent corner */}
-                                                <div className="absolute top-0 right-0 w-8 h-8 bg-primary/5 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+                                            {/* Top accent bar — color per status */}
+                                            <div className={`h-0.5 w-full ${
+                                                c.status === 'OPEN' ? 'bg-blue-400' :
+                                                c.status === 'ACTIVE' ? 'bg-emerald-400' :
+                                                c.status === 'PENDING_APPROVAL' ? 'bg-amber-400' :
+                                                'bg-slate-200 dark:bg-slate-700'
+                                            }`} />
 
-                                                <div className="flex items-start justify-between mb-4 gap-4">
-                                                    <div className="space-y-1 overflow-hidden">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-[9px] font-mono text-primary font-bold tracking-widest uppercase">
-                                                                {`NODE_ID: ${c.id.split('-')[0].toUpperCase()}`}
+                                            <div className="p-5 flex flex-col h-full">
+                                                {/* Header row */}
+                                                <div className="flex items-start justify-between mb-3 gap-3">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="text-[9px] font-mono text-primary/70 font-bold tracking-widest uppercase">
+                                                            {c.id.split('-')[0].toUpperCase()}
+                                                        </span>
+                                                        {c.grade && (
+                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/10">
+                                                                {c.grade}
                                                             </span>
-                                                            {c.grade && (
-                                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                                                                    {c.grade}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <h4 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 md:h-[3.5rem] leading-[1.2] tracking-tight">
-                                                            {c.title}
-                                                        </h4>
+                                                        )}
                                                     </div>
-                                                    <span className={`px-2 py-1 rounded text-[10px] font-black border uppercase tracking-tighter shrink-0 ${statusStyle[c.status] || ''}`}>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${statusStyle[c.status] || ''}`}>
                                                         {statusLabel[c.status] || c.status}
                                                     </span>
                                                 </div>
 
-                                                <p className="text-sm text-slate-500 font-medium line-clamp-2 mb-8 flex-grow leading-relaxed">
+                                                {/* Title */}
+                                                <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-2 tracking-tight">
+                                                    {c.title}
+                                                </h4>
+
+                                                {/* Description */}
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium line-clamp-2 leading-relaxed flex-grow mb-4">
                                                     {c.description || t.quests.noDescription}
                                                 </p>
 
-                                                <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider">{t.quests.budget}</span>
-                                                        <span className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1.5 leading-none">
+                                                {/* Footer */}
+                                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">{t.quests.budget}</span>
+                                                        <span className="text-base font-black text-slate-900 dark:text-white flex items-baseline gap-1 leading-none">
                                                             {c.total_budget || '0'}
-                                                            <span className="text-[11px] text-primary font-semibold">USDC</span>
+                                                            <span className="text-[10px] text-primary font-bold">USDC</span>
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg group-hover:bg-primary/10 transition-colors">
-                                                        <span className="material-symbols-outlined !text-[16px] text-slate-400 group-hover:text-primary">schedule</span>
-                                                        <span className="text-[11px] text-slate-500 font-medium">
-                                                            {new Date(c.created_at).toLocaleDateString()}
+                                                    <div className="flex items-center gap-1.5 text-slate-400">
+                                                        <span className="material-symbols-outlined !text-[14px]">schedule</span>
+                                                        <span className="text-[10px] font-medium">
+                                                            {new Date(c.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                                                         </span>
                                                     </div>
                                                 </div>

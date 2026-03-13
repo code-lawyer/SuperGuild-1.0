@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { RequireWallet } from '@/components/ui/RequireWallet';
+import { useT } from '@/lib/i18n';
 import {
     useProposalOnchain,
     useUserProposalState,
@@ -19,6 +20,7 @@ interface ProposalCardProps {
 }
 
 export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardProps) {
+    const t = useT();
     const { totalVCPSignaled, status: onchainStatus, cosignerCount } = useProposalOnchain(proposal.onchain_id);
     const { hasCosigned } = useUserProposalState(proposal.onchain_id);
     const cosignMutation = useCosign();
@@ -92,7 +94,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                             className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs rounded-lg hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors"
                         >
                             <span className="material-symbols-outlined !text-[14px]">link</span>
-                            附件 {idx + 1}
+                            {t.council.attachmentLabel} {idx + 1}
                         </a>
                     ))}
                 </div>
@@ -118,7 +120,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                                 / {threshold.toLocaleString()} VCP (1% Threshold)
                             </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">{cosignerCount} 位联署人</p>
+                        <p className="text-xs text-slate-400 mt-1">{cosignerCount} {t.council.cosigners}</p>
                     </div>
                     <div className="text-right">
                         <p className={`text-xs font-bold ${thresholdMet ? 'text-emerald-500' : 'text-orange-500'}`}>
@@ -151,7 +153,7 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                                     disabled={hasCosigned || cosignMutation.isPending}
                                     className="px-5 py-2 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-orange-600 border border-orange-500/30 hover:bg-orange-500 hover:text-white transition-colors transition-transform shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-900 disabled:hover:text-orange-600"
                                 >
-                                    {hasCosigned ? '已联署 ✓' : cosignMutation.isPending ? '签名中…' : '附议联署'}
+                                    {hasCosigned ? t.council.alreadyCosigned : cosignMutation.isPending ? t.council.signing : t.council.cosign}
                                 </button>
                             )}
                         </RequireWallet>
@@ -162,8 +164,8 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                                 <span className="material-symbols-outlined !text-[20px]">rocket_launch</span>
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">已进入链上表决</p>
-                                <p className="text-xs text-emerald-600 dark:text-emerald-500">前往曜石刻刀参与投票</p>
+                                <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">{t.council.proposalOnChain}</p>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-500">{t.council.proposalOnChainDesc}</p>
                             </div>
                         </div>
                     )}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
-import { useMyCollaborations, type Collaboration } from '@/hooks/useCollaborations';
+import { useMyCollaborations, useOpenCollaborations, type Collaboration } from '@/hooks/useCollaborations';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { PerspectiveTransition } from '@/components/ui/PerspectiveTransition';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
@@ -15,7 +15,9 @@ import { motion } from 'framer-motion';
 export default function CollaborationsPage() {
     const t = useT();
     const router = useRouter();
-    const { data: collabs, isLoading } = useMyCollaborations();
+    const { data: myCollabs, isLoading: myLoading } = useMyCollaborations();
+    const { data: openCollabs, isLoading: openLoading } = useOpenCollaborations();
+    const [view, setView] = useState<'marketplace' | 'mine'>('marketplace');
     const [activeTab, setActiveTab] = useState('all');
 
     const tabs = [
@@ -26,9 +28,15 @@ export default function CollaborationsPage() {
         { key: 'cancelled', label: t.quests.cancelledQuests, statuses: ['CANCELLED', 'DISPUTED'] },
     ];
 
-    const items = collabs ?? [];
+    const isMarketplace = view === 'marketplace';
+    const isLoading = isMarketplace ? openLoading : myLoading;
+    const items = isMarketplace ? (openCollabs ?? []) : (myCollabs ?? []);
     const currentTab = tabs.find(tab => tab.key === activeTab);
-    const filtered = activeTab === 'all' ? items : items.filter((c: Collaboration) => currentTab?.statuses?.includes(c.status));
+    const filtered = isMarketplace
+        ? items
+        : activeTab === 'all'
+            ? items
+            : items.filter((c: Collaboration) => currentTab?.statuses?.includes(c.status));
 
     const statusStyle: Record<string, string> = {
         OPEN: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -77,26 +85,52 @@ export default function CollaborationsPage() {
                         }
                     />
 
-                    {/* Status Tabs */}
-                    <div className="flex flex-wrap gap-2 mb-10">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.key}
-                                onClick={() => setActiveTab(tab.key)}
-                                className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeTab === tab.key
-                                    ? 'bg-primary text-white shadow-md'
-                                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                    }`}
-                            >
-                                <span className="relative z-10">{tab.label}</span>
-                            </button>
-                        ))}
+                    {/* View Toggle: Marketplace vs My Quests */}
+                    <div className="flex items-center gap-1 mb-6 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-lg w-fit">
+                        <button
+                            onClick={() => { setView('marketplace'); setActiveTab('all'); }}
+                            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${isMarketplace
+                                ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined !text-[14px] align-middle mr-1">storefront</span>
+                            {t.quests.marketplace}
+                        </button>
+                        <button
+                            onClick={() => { setView('mine'); setActiveTab('all'); }}
+                            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${!isMarketplace
+                                ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined !text-[14px] align-middle mr-1">person</span>
+                            {t.quests.myQuests}
+                        </button>
                     </div>
+
+                    {/* Status Tabs (only for My Quests view) */}
+                    {!isMarketplace && (
+                        <div className="flex flex-wrap gap-2 mb-10">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.key}
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeTab === tab.key
+                                        ? 'bg-primary text-white shadow-md'
+                                        : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                                    }`}
+                                >
+                                    <span className="relative z-10">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Content Grid */}
                     <PerspectiveTransition
-                        id={activeTab}
-                        direction={tabs.findIndex(t => t.key === activeTab)}
+                        id={`${view}-${activeTab}`}
+                        direction={isMarketplace ? 0 : tabs.findIndex(t => t.key === activeTab)}
                         className="flex-grow pb-24"
                     >
                         {isLoading ? (
@@ -107,8 +141,14 @@ export default function CollaborationsPage() {
                         ) : filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-32 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
                                 <span className="material-symbols-outlined !text-[48px] text-slate-300 mb-4">dataset_linked</span>
-                                <p className="text-sm font-semibold text-slate-500">{t.quests.noQuests}</p>
-                                <p className="text-xs text-slate-400 mt-2">{activeTab === 'all' ? t.quests.noQuestsDesc : t.quests.noQuestsFilterDesc}</p>
+                                <p className="text-sm font-semibold text-slate-500">
+                                    {isMarketplace ? t.quests.noOpenQuests : t.quests.noQuests}
+                                </p>
+                                <p className="text-xs text-slate-400 mt-2">
+                                    {isMarketplace
+                                        ? t.quests.noOpenQuestsDesc
+                                        : activeTab === 'all' ? t.quests.noQuestsDesc : t.quests.noQuestsFilterDesc}
+                                </p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

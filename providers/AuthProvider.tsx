@@ -26,8 +26,8 @@ interface AuthState {
     isAuthenticated: boolean;
     /** Auth is in progress (signing or verifying) */
     isAuthenticating: boolean;
-    /** Trigger sign-in manually */
-    signIn: () => Promise<void>;
+    /** Trigger sign-in manually. Returns true if auth succeeded. */
+    signIn: () => Promise<boolean>;
     /** Clear auth session */
     signOut: () => void;
     /** The wallet address of the authenticated user */
@@ -38,7 +38,7 @@ const AuthContext = createContext<AuthState>({
     supabase: anonClient,
     isAuthenticated: false,
     isAuthenticating: false,
-    signIn: async () => {},
+    signIn: async () => false,
     signOut: () => {},
     walletAddress: undefined,
 });
@@ -139,8 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [isConnected, address]);
 
-    const signIn = useCallback(async () => {
-        if (!isConnected || !address || isAuthenticating) return;
+    const signIn = useCallback(async (): Promise<boolean> => {
+        if (!isConnected || !address) return false;
+        if (isAuthenticating) return false;
 
         setIsAuthenticating(true);
         try {
@@ -174,10 +175,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsAuthenticated(true);
             storeToken(token, expiresAt);
             signInAttempted.current = true;
+            return true;
         } catch (err) {
             console.error('[AuthProvider] Sign-in failed:', err);
             // Mark as attempted so we don't infinitely retry on user rejection
             signInAttempted.current = true;
+            return false;
         } finally {
             setIsAuthenticating(false);
         }

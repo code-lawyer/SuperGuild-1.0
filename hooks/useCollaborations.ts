@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
+import { useAuth } from '@/providers/AuthProvider';
 import { createNotification } from './useNotifications';
 
 export type CollabStatus = 'OPEN' | 'PENDING_APPROVAL' | 'LOCKED' | 'ACTIVE' | 'PENDING' | 'SETTLED' | 'DISPUTED' | 'CANCELLED';
@@ -139,11 +140,18 @@ export interface CreateCollabInput {
 
 export function useCreateCollaboration() {
     const { address } = useAccount();
+    const { isAuthenticated, signIn } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async (input: CreateCollabInput) => {
             if (!address) throw new Error('请先连接钱包');
+
+            // Ensure authenticated before writing (RLS requires auth)
+            if (!isAuthenticated) {
+                const ok = await signIn();
+                if (!ok) throw new Error('Authentication required — please sign the message in your wallet');
+            }
 
             const { data: collab, error: collabErr } = await supabase
                 .from('collaborations')
@@ -222,7 +230,7 @@ export function useApplyToAccept() {
                     .single();
 
                 await createNotification({
-                    user_address: collab.initiator_id,
+                    user_address: collab.initiator_id.toLowerCase(),
                     type: 'ACCEPT_REQUEST',
                     title: '有人申请承接你的任务',
                     body: `「${collab.title}」收到承接申请`,
@@ -544,11 +552,17 @@ export interface CollabApplication {
 // ── Apply to a collaboration (Adventurer side) ──
 export function useApplyToCollab() {
     const { address } = useAccount();
+    const { isAuthenticated, signIn } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async ({ collabId, message }: { collabId: string; message: string }) => {
             if (!address) throw new Error('请先连接钱包');
+
+            if (!isAuthenticated) {
+                const ok = await signIn();
+                if (!ok) throw new Error('Authentication required');
+            }
 
             // Insert into collaboration_applications
             const { error: appErr } = await supabase

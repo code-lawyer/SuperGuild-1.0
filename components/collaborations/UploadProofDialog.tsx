@@ -12,9 +12,11 @@ interface UploadProofDialogProps {
     milestoneSortOrder: number;
     isOpen: boolean;
     onClose: () => void;
+    /** When true, submit proof hash on-chain via GuildEscrow (guild_managed only) */
+    isGuildManaged?: boolean;
 }
 
-export default function UploadProofDialog({ milestoneId, collabId, milestoneSortOrder, isOpen, onClose }: UploadProofDialogProps) {
+export default function UploadProofDialog({ milestoneId, collabId, milestoneSortOrder, isOpen, onClose, isGuildManaged = false }: UploadProofDialogProps) {
     const t = useT();
     const [contentUrl, setContentUrl] = useState('');
     const [contentHash, setContentHash] = useState('');
@@ -36,9 +38,11 @@ export default function UploadProofDialog({ milestoneId, collabId, milestoneSort
     const handleSubmit = async () => {
         if (!contentUrl || !contentHash) return;
         try {
-            // 1. On-chain: submit proof hash (triggers 7-day window)
-            const contentHashBytes = `0x${contentHash}` as `0x${string}`;
-            await escrow.submitProofOnChain(collabId, milestoneSortOrder - 1, contentHashBytes);
+            // 1. On-chain: submit proof hash (guild_managed only — triggers 7-day window)
+            if (isGuildManaged) {
+                const contentHashBytes = `0x${contentHash}` as `0x${string}`;
+                await escrow.submitProofOnChain(collabId, milestoneSortOrder - 1, contentHashBytes);
+            }
 
             // 2. Supabase: insert proof record + update milestone status
             await submitProof.mutateAsync({

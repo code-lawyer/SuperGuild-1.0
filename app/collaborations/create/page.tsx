@@ -103,9 +103,8 @@ export default function CreateCollaborationPage() {
 
         // Ensure user is authenticated before writing
         if (!isAuthenticated) {
-            try {
-                await signIn();
-            } catch {
+            const ok = await signIn();
+            if (!ok) {
                 toast({ title: t.common.connectWallet, description: t.quests.authRequiredDesc, variant: 'destructive' });
                 return;
             }

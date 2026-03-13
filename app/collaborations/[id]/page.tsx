@@ -460,6 +460,7 @@ export default function CollaborationDetailPage() {
                     milestoneSortOrder={proofMilestoneSortOrder}
                     isOpen={!!proofMilestoneId}
                     onClose={() => setProofMilestoneId(null)}
+                    isGuildManaged={isGuildManaged}
                 />
             </div>
         </WalletGatePage>

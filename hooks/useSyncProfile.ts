@@ -3,14 +3,17 @@
 import { useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { supabase } from '@/utils/supabase/client';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function useSyncProfile() {
     const { address, isConnected } = useAccount();
+    const { isAuthenticated } = useAuth();
     const hasSynced = useRef(false);
     const retryCount = useRef(0);
 
     useEffect(() => {
-        if (isConnected && address && !hasSynced.current) {
+        // Wait for auth to complete before upserting — RLS UPDATE requires authenticated role
+        if (isConnected && address && isAuthenticated && !hasSynced.current) {
             let cancelled = false;
 
             const syncProfileToSupabase = async () => {
@@ -46,5 +49,5 @@ export function useSyncProfile() {
             hasSynced.current = false;
             retryCount.current = 0;
         }
-    }, [isConnected, address]);
+    }, [isConnected, address, isAuthenticated]);
 } 

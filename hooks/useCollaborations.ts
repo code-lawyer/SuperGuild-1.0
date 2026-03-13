@@ -546,6 +546,10 @@ export interface CollabApplication {
     applicant_profile?: {
         username: string | null;
         bio: string | null;
+        contact_email: string | null;
+        contact_telegram: string | null;
+        portfolio: string | null;
+        vcp_cache: number;
     };
 }
 
@@ -611,7 +615,7 @@ export function useCollabApplications(collabId: string) {
                 .from('collaboration_applications')
                 .select(`
                     *,
-                    applicant_profile:profiles!collaboration_applications_applicant_id_fkey(username, bio)
+                    applicant_profile:profiles!collaboration_applications_applicant_id_fkey(username, bio, contact_email, contact_telegram, portfolio, vcp_cache)
                 `)
                 .eq('collab_id', collabId)
                 .order('created_at', { ascending: false });
@@ -677,6 +681,37 @@ export function useApproveApplication() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collaborations'] });
             queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+            queryClient.invalidateQueries({ queryKey: ['collab_applications'] });
+        },
+    });
+}
+
+// ── Reject an application (Initiator side) ──
+export function useRejectApplication() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ collabId, applicationId, applicantId }: { collabId: string; applicationId: string; applicantId: string }) => {
+            const { error } = await supabase
+                .from('collaboration_applications')
+                .update({ status: 'REJECTED' })
+                .eq('id', applicationId);
+
+            if (error) throw error;
+
+            // Notify the rejected applicant
+            const { data: collab } = await supabase.from('collaborations').select('title').eq('id', collabId).single();
+            if (collab) {
+                await createNotification({
+                    user_address: applicantId.toLowerCase(),
+                    type: 'ACCEPT_REJECTED',
+                    title: '你的承接申请未通过',
+                    body: `「${collab.title}」的发布人已拒绝你的申请。`,
+                    metadata: { collab_id: collabId },
+                });
+            }
+        },
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collab_applications'] });
         },
     });

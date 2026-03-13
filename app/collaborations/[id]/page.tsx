@@ -9,6 +9,7 @@ import {
     useApplyToCollab,
     useCollabApplications,
     useApproveApplication,
+    useRejectApplication,
     useAbandonCollaboration,
     useCancelCollaboration,
     useConfirmMilestone,
@@ -52,6 +53,7 @@ export default function CollaborationDetailPage() {
     const { data: applications } = useCollabApplications(id);
     const applyToCollab = useApplyToCollab();
     const approveApp = useApproveApplication();
+    const rejectApp = useRejectApplication();
     const abandonCollab = useAbandonCollaboration();
     const cancelCollab = useCancelCollaboration();
     const confirmMs = useConfirmMilestone();
@@ -189,8 +191,8 @@ export default function CollaborationDetailPage() {
                 {isInitiator && collab.status === 'OPEN' && applications && applications.length > 0 && (
                     <div className="space-y-4">
                         <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.viewApplicants}</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {applications.map((app: CollabApplication) => (
+                        <div className="grid grid-cols-1 gap-4">
+                            {applications.filter(a => a.status === 'PENDING').map((app: CollabApplication) => (
                                 <ApplicantReviewCard
                                     key={app.id}
                                     application={app}
@@ -206,7 +208,11 @@ export default function CollaborationDetailPage() {
                                         await approveApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id });
                                         escrow.reset();
                                     }}
+                                    onReject={async () => {
+                                        await rejectApp.mutateAsync({ collabId: collab.id, applicationId: app.id, applicantId: app.applicant_id });
+                                    }}
                                     isApproving={approveApp.isPending || escrow.isPending}
+                                    isRejecting={rejectApp.isPending}
                                     escrowStep={isGuildManaged ? escrow.step : undefined}
                                 />
                             ))}
@@ -215,15 +221,30 @@ export default function CollaborationDetailPage() {
                 )}
 
                 {/* Application status for current user */}
-                {!isInitiator && applications?.find(a => a.applicant_id.toLowerCase() === address?.toLowerCase()) && collab.status === 'OPEN' && (
-                    <div className="ag-card p-6 bg-amber-50/50 border-amber-200/40 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-amber-500">schedule</span>
-                            <span className="text-sm font-medium text-amber-800">{t.quests.applicationPending}</span>
+                {!isInitiator && (() => {
+                    const myApp = applications?.find(a => a.applicant_id.toLowerCase() === address?.toLowerCase());
+                    if (!myApp || collab.status !== 'OPEN') return null;
+                    if (myApp.status === 'REJECTED') {
+                        return (
+                            <div className="ag-card p-6 bg-red-50/50 border-red-200/40 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-red-500">block</span>
+                                    <span className="text-sm font-medium text-red-800">{t.quests.applicationRejected}</span>
+                                </div>
+                                <span className="text-[11px] font-bold text-red-600 uppercase tracking-widest">{t.quests.rejectProvider}</span>
+                            </div>
+                        );
+                    }
+                    return (
+                        <div className="ag-card p-6 bg-amber-50/50 border-amber-200/40 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-amber-500">schedule</span>
+                                <span className="text-sm font-medium text-amber-800">{t.quests.applicationPending}</span>
+                            </div>
+                            <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">{t.common.pending}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">{t.common.pending}</span>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* Task Details */}
                 {(collab.description || collab.delivery_standard || (collab.reference_links && collab.reference_links.length > 0)) && (
@@ -486,51 +507,138 @@ function UserBadge({ role, address, isSelf }: { role: 'initiator' | 'provider'; 
 function ApplicantReviewCard({
     application,
     onApprove,
+    onReject,
     isApproving,
+    isRejecting,
     escrowStep,
 }: {
     application: CollabApplication;
     onApprove: () => void;
+    onReject: () => void;
     isApproving: boolean;
+    isRejecting: boolean;
     escrowStep?: EscrowStep;
 }) {
     const t = useT();
-    const { data: profile } = useProfileByAddress(application.applicant_id);
+    const profile = application.applicant_profile;
+    const [showRejectConfirm, setShowRejectConfirm] = useState(false);
 
     return (
         <div className="ag-card p-6 space-y-4 border-slate-200/60 hover:border-primary/40 transition-colors transition-transform group">
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[14px]">
+            {/* Header: avatar + name + actions */}
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[15px] shrink-0">
                         {(profile?.username || application.applicant_id)[0].toUpperCase()}
                     </div>
-                    <div>
-                        <p className="text-[15px] font-bold text-[#121317]">{displayName(profile, application.applicant_id)}</p>
+                    <div className="min-w-0">
+                        <Link
+                            href={`/profile?address=${application.applicant_id}`}
+                            className="text-[15px] font-bold text-[#121317] hover:text-primary transition-colors"
+                        >
+                            {displayName(profile, application.applicant_id)}
+                        </Link>
                         <p className="text-[11px] text-[#6A6A71] font-mono">{application.applicant_id.slice(0, 6)}&hellip;{application.applicant_id.slice(-4)}</p>
                     </div>
                 </div>
-                <button
-                    onClick={onApprove}
-                    disabled={isApproving}
-                    className="ag-btn-primary !px-4 !py-2 !text-[12px] shadow-none"
-                >
-                    {isApproving
-                        ? (escrowStep === 'approving' ? 'USDC...' : escrowStep === 'depositing' ? 'Escrow...' : '…')
-                        : t.quests.approveProvider}
-                </button>
+                <div className="flex gap-2 shrink-0">
+                    <button
+                        onClick={() => setShowRejectConfirm(true)}
+                        disabled={isRejecting || isApproving}
+                        className="px-4 py-2 text-[12px] font-bold rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                        {isRejecting ? '…' : t.quests.rejectProvider}
+                    </button>
+                    <button
+                        onClick={onApprove}
+                        disabled={isApproving || isRejecting}
+                        className="ag-btn-primary !px-4 !py-2 !text-[12px] shadow-none"
+                    >
+                        {isApproving
+                            ? (escrowStep === 'approving' ? 'USDC...' : escrowStep === 'depositing' ? 'Escrow...' : '…')
+                            : t.quests.approveProvider}
+                    </button>
+                </div>
             </div>
 
-            <div className="bg-[#F8F9FC] rounded-xl p-4">
-                <p className="text-[13px] text-[#45474D] leading-relaxed italic">
-                    &ldquo;{application.message || t.quests.noApplicationMessage}&rdquo;
-                </p>
+            {/* Profile info: bio + contact + VCP */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Left: bio + pitch */}
+                <div className="space-y-3">
+                    {profile?.bio && (
+                        <p className="text-[13px] text-[#45474D] leading-relaxed line-clamp-3">{profile.bio}</p>
+                    )}
+                    <div className="bg-[#F8F9FC] rounded-xl p-4">
+                        <p className="text-[10px] font-bold text-[#6A6A71] uppercase tracking-wider mb-1">{t.quests.applyPitch}</p>
+                        <p className="text-[13px] text-[#45474D] leading-relaxed italic">
+                            &ldquo;{application.message || t.quests.noApplicationMessage}&rdquo;
+                        </p>
+                    </div>
+                </div>
+
+                {/* Right: contact + stats */}
+                <div className="space-y-3">
+                    <div className="bg-[#F8F9FC] rounded-xl p-4 space-y-2">
+                        <p className="text-[10px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.contactEmail.replace('Email', 'Contact')}</p>
+                        {profile?.contact_email ? (
+                            <div className="flex items-center gap-2 text-[13px] text-[#45474D]">
+                                <span className="material-symbols-outlined !text-[14px] text-primary">mail</span>
+                                <span>{profile.contact_email}</span>
+                            </div>
+                        ) : null}
+                        {profile?.contact_telegram ? (
+                            <div className="flex items-center gap-2 text-[13px] text-[#45474D]">
+                                <span className="material-symbols-outlined !text-[14px] text-primary">send</span>
+                                <span>{profile.contact_telegram}</span>
+                            </div>
+                        ) : null}
+                        {!profile?.contact_email && !profile?.contact_telegram && (
+                            <p className="text-[12px] text-[#B8BACA] italic">{t.quests.noContact}</p>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        {(profile?.vcp_cache ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-primary">
+                                <span className="material-symbols-outlined !text-[14px]">token</span>
+                                {profile!.vcp_cache} {t.quests.vcpScore}
+                            </span>
+                        )}
+                        {profile?.portfolio && (
+                            <a href={safeHref(profile.portfolio)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-primary font-semibold hover:underline">
+                                <span className="material-symbols-outlined !text-[14px]">work</span>
+                                {t.quests.portfolio}
+                            </a>
+                        )}
+                        <Link
+                            href={`/profile?address=${application.applicant_id}`}
+                            className="inline-flex items-center gap-1.5 text-[12px] text-[#6A6A71] font-semibold hover:text-primary transition-colors"
+                        >
+                            <span className="material-symbols-outlined !text-[14px]">person</span>
+                            {t.quests.viewProfile}
+                        </Link>
+                    </div>
+                </div>
             </div>
 
-            {profile?.portfolio && (
-                <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-primary font-semibold hover:underline">
-                    <span className="material-symbols-outlined !text-[14px]">work</span>
-                    {t.quests.portfolio}
-                </a>
+            {/* Reject confirmation inline */}
+            {showRejectConfirm && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-[13px] font-bold text-red-700">{t.quests.confirmRejectTitle}</p>
+                        <p className="text-[12px] text-red-600 mt-0.5">{t.quests.confirmRejectBody}</p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                        <button onClick={() => setShowRejectConfirm(false)} className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 text-[#6A6A71] hover:bg-slate-50">{t.common.cancel}</button>
+                        <button
+                            onClick={async () => { await onReject(); setShowRejectConfirm(false); }}
+                            disabled={isRejecting}
+                            className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                        >
+                            {isRejecting ? '…' : t.quests.rejectProvider}
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

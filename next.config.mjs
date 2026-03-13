@@ -45,10 +45,12 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'",
+              // Google Fonts CSS is loaded from googleapis.com
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://cdn.img2ipfs.com https://s2.loli.net https://*.supabase.co",
               "connect-src 'self' https: wss:",
-              "font-src 'self' data:",
+              // Material Symbols / Google Fonts files served from gstatic.com
+              "font-src 'self' data: https://fonts.gstatic.com",
               "object-src 'none'",
               "base-uri 'self'",
               "frame-src 'self' https://verify.walletconnect.com https://secure.walletconnect.com",

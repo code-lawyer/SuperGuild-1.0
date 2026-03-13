@@ -107,72 +107,106 @@ export default function CollaborationsPage() {
                         }
                     />
 
-                    {/* Filter Bar */}
-                    <div className="flex flex-wrap items-center gap-4 mb-8">
-                        {/* Status Filter */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterStatus}</span>
-                            <div className="flex gap-1">
-                                {statusFilters.map(sf => (
-                                    <button
-                                        key={sf.key}
-                                        onClick={() => setFilterStatus(sf.key)}
-                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterStatus === sf.key
-                                            ? 'bg-primary text-white shadow-sm'
-                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                        }`}
-                                    >
-                                        {sf.label}
-                                    </button>
-                                ))}
+                    {/* ── Filter Panel ── */}
+                    <div className="mb-8 border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-sm"
+                        style={{ clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%)" }}
+                    >
+                        {/* Panel header */}
+                        <div className="flex items-center justify-between px-5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/60">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined !text-[14px] text-primary">filter_list</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">
+                                    {t.quests.filterStatus.replace(':', '')} &amp; {t.quests.filterGrade.replace(':', '')} &amp; {t.quests.filterBudget.replace(':', '')}
+                                </span>
                             </div>
-                        </div>
-
-                        {/* Grade Filter */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterGrade}</span>
-                            <div className="flex gap-1">
+                            {(filterStatus !== 'all' || filterGrade !== 'all' || filterBudget !== 'all') && (
                                 <button
-                                    onClick={() => setFilterGrade('all')}
-                                    className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterGrade === 'all'
-                                        ? 'bg-primary text-white shadow-sm'
-                                        : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                    }`}
+                                    onClick={() => { setFilterStatus('all'); setFilterGrade('all'); setFilterBudget('all'); }}
+                                    className="text-[10px] font-bold text-zinc-400 hover:text-primary transition-colors flex items-center gap-1"
                                 >
-                                    {t.quests.filterAll}
+                                    <span className="material-symbols-outlined !text-[12px]">close</span>
+                                    Reset
                                 </button>
-                                {GRADES.map(g => (
-                                    <button
-                                        key={g}
-                                        onClick={() => setFilterGrade(g)}
-                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterGrade === g
-                                            ? 'bg-primary text-white shadow-sm'
-                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                        }`}
-                                    >
-                                        {g}
-                                    </button>
-                                ))}
-                            </div>
+                            )}
                         </div>
 
-                        {/* Budget Filter */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterBudget}</span>
-                            <div className="flex gap-1">
-                                {BUDGET_RANGES.map(b => (
-                                    <button
-                                        key={b}
-                                        onClick={() => setFilterBudget(b)}
-                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterBudget === b
-                                            ? 'bg-primary text-white shadow-sm'
-                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                        }`}
-                                    >
-                                        {budgetLabel[b]}
-                                    </button>
-                                ))}
+                        {/* Filter rows */}
+                        <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                            {/* Status */}
+                            <div className="flex items-center gap-4 px-5 py-3">
+                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                    {t.quests.filterStatus.replace(':', '')}
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {statusFilters.map(sf => (
+                                        <button
+                                            key={sf.key}
+                                            onClick={() => setFilterStatus(sf.key)}
+                                            className={`px-3 py-1 text-[11px] font-bold rounded transition-all ${
+                                                filterStatus === sf.key
+                                                    ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
+                                            }`}
+                                        >
+                                            {sf.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
+
+                            {/* Grade */}
+                            <div className="flex items-center gap-4 px-5 py-3">
+                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                    {t.quests.filterGrade.replace(':', '')}
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {(['all', ...GRADES]).map(g => (
+                                        <button
+                                            key={g}
+                                            onClick={() => setFilterGrade(g)}
+                                            className={`px-3 py-1 text-[11px] font-bold rounded transition-all ${
+                                                filterGrade === g
+                                                    ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
+                                            }`}
+                                        >
+                                            {g === 'all' ? t.quests.filterAll : g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Budget */}
+                            <div className="flex items-center gap-4 px-5 py-3">
+                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                    {t.quests.filterBudget.replace(':', '')}
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {BUDGET_RANGES.map(b => (
+                                        <button
+                                            key={b}
+                                            onClick={() => setFilterBudget(b)}
+                                            className={`px-3 py-1 text-[11px] font-bold rounded transition-all ${
+                                                filterBudget === b
+                                                    ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
+                                            }`}
+                                        >
+                                            {budgetLabel[b]}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Results header ── */}
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2">
+                            <div className="w-0.5 h-4 bg-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                <span className="text-primary">{filtered.length}</span> {t.quests.title}
+                            </span>
                         </div>
                     </div>
 

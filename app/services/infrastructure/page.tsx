@@ -30,37 +30,49 @@ export default function InfrastructurePage() {
                     [ {t.services.noServices} ]
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px mt-8 bg-slate-200 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-800">
                     {services.map((s, i) => {
                         const isUnlocked = unlockedIds.includes(s.id);
+                        const serviceId = `S-${String(i + 1).padStart(3, '0')}`;
                         return (
                             <motion.div
                                 key={s.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.05 }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: i * 0.04 }}
                                 onClick={() => setSelectedService(s)}
-                                className="cursor-pointer group border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-6 hover:border-blue-500/40 hover:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.2)] transition-all"
-                                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
+                                className="cursor-pointer group bg-white dark:bg-zinc-950 p-6 hover:bg-slate-50 dark:hover:bg-zinc-900/80 transition-all relative overflow-hidden border border-transparent hover:border-cyan-500/30"
                             >
+                                {/* Left accent bar on hover */}
+                                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-top" />
+
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-blue-500">
-                                        <span className="material-symbols-outlined !text-[22px]">{s.icon || 'settings_input_component'}</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"
+                                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}>
+                                            <span className="material-symbols-outlined !text-[18px] text-cyan-400">{s.icon || 'settings_input_component'}</span>
+                                        </div>
+                                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-600 uppercase">{serviceId}</span>
                                     </div>
-                                    {isUnlocked && (
-                                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold border border-emerald-500/20 uppercase tracking-wider">
+                                    {isUnlocked ? (
+                                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[9px] font-bold border border-emerald-500/20 uppercase tracking-wider flex items-center gap-1">
+                                            <span className="w-1 h-1 rounded-full bg-emerald-500" />
                                             {t.services.infra_activated}
                                         </span>
+                                    ) : (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 group-hover:bg-cyan-400 transition-colors" />
                                     )}
                                 </div>
-                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">{s.title}</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{s.description}</p>
-                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                    <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+
+                                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono mb-2 leading-snug">{s.title}</h3>
+                                <p className="text-xs text-slate-500 dark:text-zinc-500 leading-relaxed line-clamp-2">{s.description}</p>
+
+                                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                    <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
                                         {s.price_usdc != null ? `${s.price_usdc} USDC` : s.price > 0 ? `${s.price} USDC` : 'Free'}
                                     </span>
-                                    <span className="text-xs text-primary font-bold uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                        {t.services.view_detail} <span className="material-symbols-outlined !text-[14px]">arrow_forward</span>
+                                    <span className="text-[9px] text-cyan-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                        {t.services.view_detail} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
                                     </span>
                                 </div>
                             </motion.div>
@@ -114,12 +126,19 @@ function InfraModal({ service: s, isUnlocked, onClose }: {
 
                 // Step 1: USDC transfer (no approve needed — using transfer, not transferFrom)
                 setStep('paying');
+                // Read baseFee directly from latest block to avoid stale wallet estimates
+                const block = await publicClient!.getBlock({ blockTag: 'latest' });
+                const baseFee = block.baseFeePerGas ?? 25_000_000n;
+                const maxFeePerGas = baseFee * 2n;           // 2× headroom
+                const maxPriorityFeePerGas = 1_000_000n;    // 0.001 gwei tip
                 const hash = await writeContractAsync({
                     address: MOCK_USDC.address,
                     abi: ERC20_APPROVE_ABI,
                     functionName: 'transfer',
                     args: [SERVICE_TREASURY.address, amount],
                     chainId: PRIMARY_CHAIN_ID,
+                    maxFeePerGas,
+                    maxPriorityFeePerGas,
                 });
 
                 // Wait for confirmation

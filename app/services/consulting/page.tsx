@@ -38,58 +38,76 @@ export default function ConsultingPage() {
             ) : (
                 <>
                     {/* Category Tabs */}
-                    <div className="flex gap-2 mt-8 overflow-x-auto pb-1">
-                        {categories.map(cat => (
+                    <div className="flex gap-0 mt-8 border border-slate-200 dark:border-zinc-800 overflow-x-auto">
+                        {categories.map((cat, ci) => (
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`shrink-0 px-5 py-2 text-xs font-bold uppercase tracking-widest border transition-colors ${
+                                className={`relative shrink-0 px-6 py-3 text-[10px] font-mono font-bold uppercase tracking-[0.2em] border-r border-slate-200 dark:border-zinc-800 transition-all last:border-r-0 ${
                                     (activeCat?.id === cat.id)
-                                        ? 'border-purple-500 bg-purple-500/10 text-purple-500'
-                                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-purple-500/40 hover:text-purple-400'
+                                        ? 'bg-violet-500/8 dark:bg-violet-500/8 text-violet-500'
+                                        : 'bg-white dark:bg-zinc-950 text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-900/50'
                                 }`}
                             >
+                                {activeCat?.id === cat.id && (
+                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 to-purple-500" />
+                                )}
                                 {cat.title}
-                                <span className="ml-2 text-slate-400">({cat.children?.length ?? 0})</span>
+                                <span className={`ml-2 text-[9px] ${activeCat?.id === cat.id ? 'text-violet-400' : 'text-slate-400 dark:text-zinc-600'}`}>
+                                    [{cat.children?.length ?? 0}]
+                                </span>
                             </button>
                         ))}
                     </div>
 
                     {/* Expert Grid */}
-                    <div className="mt-6">
+                    <div className="mt-0 border border-t-0 border-slate-200 dark:border-zinc-800">
                         {!activeCat || !activeCat.children || activeCat.children.length === 0 ? (
                             <div className="py-20 text-center text-slate-400 font-mono text-xs uppercase tracking-widest">
                                 [ {t.services.consulting_no_experts} ]
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 dark:bg-zinc-800">
                                 {activeCat.children.map((expert, i) => {
                                     const isUnlocked = unlockedIds.includes(expert.id);
                                     return (
                                         <motion.div
                                             key={expert.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
                                             transition={{ delay: i * 0.05 }}
                                             onClick={() => setSelectedExpert(expert)}
-                                            className="cursor-pointer group border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 hover:border-purple-500/40 hover:shadow-[0_10px_30px_-10px_rgba(168,85,247,0.15)] transition-all"
-                                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
+                                            className="cursor-pointer group bg-white dark:bg-zinc-950 p-6 hover:bg-slate-50 dark:hover:bg-zinc-900/60 transition-all relative overflow-hidden border border-transparent hover:border-violet-500/30"
                                         >
-                                            <div className="flex items-center gap-3 mb-3">
-                                                {expert.expert_avatar_url ? (
-                                                    <img src={expert.expert_avatar_url} alt={expert.title}
-                                                        className="w-12 h-12 rounded-full object-cover border border-slate-200 dark:border-slate-700" />
-                                                ) : (
-                                                    <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                                                        <span className="material-symbols-outlined !text-[22px] text-purple-400">person</span>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <h4 className="text-sm font-black text-slate-900 dark:text-white">{expert.title}</h4>
+                                            {/* Corner accent on hover */}
+                                            <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-violet-500/0 group-hover:border-t-violet-500/30 transition-all duration-200" />
+
+                                            {/* Avatar + name row */}
+                                            <div className="flex items-start gap-4 mb-4">
+                                                <div className="relative shrink-0">
+                                                    {expert.expert_avatar_url ? (
+                                                        <img src={expert.expert_avatar_url} alt={expert.title}
+                                                            className="w-14 h-14 object-cover border border-slate-200 dark:border-zinc-700 group-hover:border-violet-500/40 transition-colors"
+                                                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }} />
+                                                    ) : (
+                                                        <div className="w-14 h-14 bg-violet-500/10 border border-violet-500/20 flex items-center justify-center"
+                                                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
+                                                            <span className="material-symbols-outlined !text-[24px] text-violet-400">person</span>
+                                                        </div>
+                                                    )}
+                                                    {isUnlocked && (
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined !text-[8px] text-white">check</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight mb-1">{expert.title}</h4>
                                                     {expert.expert_tags && expert.expert_tags.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 mt-1">
-                                                            {expert.expert_tags.slice(0, 2).map((tag, ti) => (
-                                                                <span key={ti} className="px-1.5 py-0.5 bg-purple-500/10 text-purple-500 text-[9px] font-bold border border-purple-500/20 uppercase">
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {expert.expert_tags.slice(0, 3).map((tag, ti) => (
+                                                                <span key={ti} className="px-1.5 py-0.5 bg-violet-500/8 text-violet-500 dark:text-violet-400 text-[8px] font-bold border border-violet-500/20 uppercase tracking-wide">
                                                                     {tag}
                                                                 </span>
                                                             ))}
@@ -97,27 +115,29 @@ export default function ConsultingPage() {
                                                     )}
                                                 </div>
                                             </div>
+
                                             {expert.description && (
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{expert.description}</p>
+                                                <p className="text-xs text-slate-500 dark:text-zinc-500 leading-relaxed line-clamp-2 mb-4">{expert.description}</p>
                                             )}
-                                            <div className="mt-3 flex items-center justify-between">
-                                                {expert.price > 0 && (
-                                                    <span className="text-xs font-bold font-mono text-slate-600 dark:text-slate-300">
-                                                        {expert.price} USDC {t.services.per_session}
+
+                                            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800/80">
+                                                {expert.price > 0 ? (
+                                                    <span className="text-xs font-black font-mono text-slate-700 dark:text-zinc-200">
+                                                        {expert.price} <span className="text-slate-400 dark:text-zinc-500 font-normal">USDC / {t.services.per_session}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 dark:text-zinc-600 font-mono">{t.services.price_negotiable}</span>
+                                                )}
+                                                {isUnlocked ? (
+                                                    <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                                                        <span className="material-symbols-outlined !text-[11px]">check_circle</span>
+                                                        {t.services.infra_activated}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[9px] text-violet-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                                        {t.services.consulting_book} <span className="material-symbols-outlined !text-[11px]">arrow_forward</span>
                                                     </span>
                                                 )}
-                                                <span className="text-xs font-bold ml-auto flex items-center gap-1">
-                                                    {isUnlocked ? (
-                                                        <span className="text-emerald-500 flex items-center gap-1">
-                                                            <span className="material-symbols-outlined !text-[12px]">check_circle</span>
-                                                            {t.services.infra_activated}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-purple-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                                            {t.services.consulting_book} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
-                                                        </span>
-                                                    )}
-                                                </span>
                                             </div>
                                         </motion.div>
                                     );
@@ -166,12 +186,19 @@ function ExpertModal({ expert: e, isUnlocked, onClose }: { expert: Service; isUn
             } else {
                 const amount = parseUnits(String(priceUsdc), MOCK_USDC.decimals);
                 setStep('paying');
+                // Read baseFee directly from latest block to avoid stale wallet estimates
+                const block = await publicClient!.getBlock({ blockTag: 'latest' });
+                const baseFee = block.baseFeePerGas ?? 25_000_000n;
+                const maxFeePerGas = baseFee * 2n;
+                const maxPriorityFeePerGas = 1_000_000n;
                 const hash = await writeContractAsync({
                     address: MOCK_USDC.address,
                     abi: ERC20_APPROVE_ABI,
                     functionName: 'transfer',
                     args: [SERVICE_TREASURY.address, amount],
                     chainId: PRIMARY_CHAIN_ID,
+                    maxFeePerGas,
+                    maxPriorityFeePerGas,
                 });
                 if (publicClient) {
                     await publicClient.waitForTransactionReceipt({ hash, timeout: 120_000 });

@@ -36,85 +36,104 @@ export default function CoreServicesPage() {
                     [ {t.services.noServices} ]
                 </div>
             ) : (
-                <div className="flex flex-col md:flex-row gap-6 mt-8">
-                    {/* Category Nav */}
-                    <aside className="w-full md:w-56 shrink-0">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">{t.services.core_select_category}</p>
-                        <div className="space-y-1">
-                            {categories.map(cat => (
+                <div className="flex flex-col md:flex-row gap-0 mt-8 border border-slate-200 dark:border-zinc-800">
+                    {/* Category Nav — file tree style */}
+                    <aside className="w-full md:w-60 shrink-0 border-b md:border-b-0 md:border-r border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/50">
+                        <div className="px-4 py-3 border-b border-slate-200 dark:border-zinc-800">
+                            <p className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-[0.2em]">
+                                // {t.services.core_select_category}
+                            </p>
+                        </div>
+                        <div className="py-2">
+                            {categories.map((cat, ci) => (
                                 <button
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id)}
-                                    className={`w-full text-left px-4 py-3 text-sm font-bold uppercase tracking-tight transition-colors border-l-2 ${
+                                    className={`w-full text-left px-4 py-2.5 transition-all relative group/nav ${
                                         (activeCat?.id === cat.id)
-                                            ? 'border-emerald-500 text-emerald-500 bg-emerald-500/5'
-                                            : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300'
+                                            ? 'bg-emerald-500/8 dark:bg-emerald-500/8 text-emerald-600 dark:text-emerald-400'
+                                            : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/50'
                                     }`}
                                 >
+                                    {activeCat?.id === cat.id && (
+                                        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-emerald-500" />
+                                    )}
                                     <div className="flex items-center gap-2">
-                                        {cat.icon && <span className="material-symbols-outlined !text-[16px]">{cat.icon}</span>}
-                                        {cat.title}
+                                        <span className="text-[10px] font-mono text-slate-300 dark:text-zinc-700">{String(ci + 1).padStart(2, '0')}</span>
+                                        {cat.icon && <span className="material-symbols-outlined !text-[14px]">{cat.icon}</span>}
+                                        <span className="text-xs font-bold uppercase tracking-tight truncate">{cat.title}</span>
                                     </div>
-                                    <span className="text-[10px] font-normal text-slate-400 mt-0.5 block">
-                                        {cat.children?.length ?? 0} {t.services.solutions_count}
-                                    </span>
+                                    <div className="mt-0.5 pl-9">
+                                        <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-600">
+                                            {cat.children?.length ?? 0} {t.services.solutions_count}
+                                        </span>
+                                    </div>
                                 </button>
                             ))}
                         </div>
                     </aside>
 
                     {/* Solutions Grid */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 bg-white dark:bg-zinc-950">
                         {activeCat && (
                             <>
-                                <h2 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4">
-                                    {activeCat.title}
-                                </h2>
+                                {/* Category header bar */}
+                                <div className="flex items-center gap-3 px-6 py-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/30">
+                                    {activeCat.icon && (
+                                        <span className="material-symbols-outlined !text-[16px] text-emerald-500">{activeCat.icon}</span>
+                                    )}
+                                    <h2 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white font-mono">
+                                        {activeCat.title}
+                                    </h2>
+                                    <span className="ml-auto text-[9px] font-mono text-slate-400 dark:text-zinc-600">
+                                        {activeCat.children?.length ?? 0} modules
+                                    </span>
+                                </div>
+
                                 {(!activeCat.children || activeCat.children.length === 0) ? (
                                     <div className="py-20 text-center text-slate-400 font-mono text-xs uppercase tracking-widest">
                                         [ {t.services.noServices} ]
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-200 dark:bg-zinc-800 p-px">
                                         {activeCat.children.map((sol, i) => {
                                             const isUnlocked = unlockedIds.includes(sol.id);
                                             return (
                                                 <motion.div
                                                     key={sol.id}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
                                                     transition={{ delay: i * 0.04 }}
                                                     onClick={() => setSelectedSolution(sol)}
-                                                    className="cursor-pointer group border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 hover:border-emerald-500/40 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.15)] transition-all"
-                                                    style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
+                                                    className="cursor-pointer group bg-white dark:bg-zinc-950 p-5 hover:bg-slate-50 dark:hover:bg-zinc-900/60 transition-all relative overflow-hidden border border-transparent hover:border-emerald-500/30"
                                                 >
+                                                    <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-emerald-500 scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-top" />
+
                                                     <div className="flex items-start gap-3 mb-3">
                                                         {sol.icon && (
-                                                            <div className="w-8 h-8 bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                                                <span className="material-symbols-outlined !text-[16px] text-emerald-500">{sol.icon}</span>
+                                                            <div className="w-7 h-7 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                                <span className="material-symbols-outlined !text-[14px] text-emerald-500">{sol.icon}</span>
                                                             </div>
                                                         )}
-                                                        <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{sol.title}</h4>
+                                                        <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight font-mono">{sol.title}</h4>
                                                     </div>
                                                     {sol.description && (
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{sol.description}</p>
+                                                        <p className="text-xs text-slate-500 dark:text-zinc-500 leading-relaxed line-clamp-2">{sol.description}</p>
                                                     )}
-                                                    <div className="mt-3 flex items-center justify-between">
-                                                        <span className="text-xs font-bold font-mono text-slate-600 dark:text-slate-300">
+                                                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                                        <span className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-300">
                                                             {sol.price > 0 ? `${sol.price} USDC` : t.services.price_negotiable}
                                                         </span>
-                                                        <span className="text-xs font-bold flex items-center gap-1">
-                                                            {isUnlocked ? (
-                                                                <span className="text-emerald-500 flex items-center gap-1">
-                                                                    <span className="material-symbols-outlined !text-[12px]">check_circle</span>
-                                                                    {t.services.infra_activated}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-emerald-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                                                    {t.services.view_detail} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
-                                                                </span>
-                                                            )}
-                                                        </span>
+                                                        {isUnlocked ? (
+                                                            <span className="text-emerald-500 text-[9px] font-bold uppercase flex items-center gap-1">
+                                                                <span className="material-symbols-outlined !text-[11px]">check_circle</span>
+                                                                {t.services.infra_activated}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                                                {t.services.view_detail} <span className="material-symbols-outlined !text-[11px]">arrow_forward</span>
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             );
@@ -166,12 +185,19 @@ function SolutionModal({ service: s, isUnlocked, onClose }: { service: Service; 
             } else {
                 const amount = parseUnits(String(priceUsdc), MOCK_USDC.decimals);
                 setStep('paying');
+                // Read baseFee directly from latest block to avoid stale wallet estimates
+                const block = await publicClient!.getBlock({ blockTag: 'latest' });
+                const baseFee = block.baseFeePerGas ?? 25_000_000n;
+                const maxFeePerGas = baseFee * 2n;
+                const maxPriorityFeePerGas = 1_000_000n;
                 const hash = await writeContractAsync({
                     address: MOCK_USDC.address,
                     abi: ERC20_APPROVE_ABI,
                     functionName: 'transfer',
                     args: [SERVICE_TREASURY.address, amount],
                     chainId: PRIMARY_CHAIN_ID,
+                    maxFeePerGas,
+                    maxPriorityFeePerGas,
                 });
                 if (publicClient) {
                     await publicClient.waitForTransactionReceipt({ hash, timeout: 120_000 });

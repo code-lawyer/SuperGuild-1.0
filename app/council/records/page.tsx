@@ -39,7 +39,7 @@ export default function ObsidianStelePage() {
                                 : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                         >
-                            链上投票中
+                            {t.council.stele_tab_active}
                             {activeProposals && activeProposals.length > 0 && (
                                 <span className="ml-2 px-2 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold rounded-full">
                                     {activeProposals.length}
@@ -53,7 +53,7 @@ export default function ObsidianStelePage() {
                                 : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                         >
-                            历史决议
+                            {t.council.stele_tab_history}
                         </button>
                     </div>
                 </div>
@@ -79,8 +79,8 @@ export default function ObsidianStelePage() {
                                         <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
                                             <span className="material-symbols-outlined !text-[40px] text-slate-300 dark:text-slate-600">how_to_vote</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">暂无进行中的投票</h3>
-                                        <p className="text-sm text-slate-400 dark:text-slate-600">当提案在星火广场达到 1% VCP 阈值后，将自动进入链上表决</p>
+                                        <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">{t.council.stele_no_active}</h3>
+                                        <p className="text-sm text-slate-400 dark:text-slate-600">{t.council.stele_no_active_desc}</p>
                                     </div>
                                 )}
                             </motion.div>
@@ -161,8 +161,8 @@ export default function ObsidianStelePage() {
                                         <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
                                             <span className="material-symbols-outlined !text-[40px] text-slate-300 dark:text-slate-600">history_edu</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">暂无历史决议</h3>
-                                        <p className="text-sm text-slate-400 dark:text-slate-600">已完成的链上投票将记录于此</p>
+                                        <h3 className="text-lg font-bold text-slate-400 dark:text-slate-500 mb-2">{t.council.stele_no_history}</h3>
+                                        <p className="text-sm text-slate-400 dark:text-slate-600">{t.council.stele_no_history_desc}</p>
                                     </div>
                                 )}
                             </motion.div>

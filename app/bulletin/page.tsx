@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useT } from '@/lib/i18n';
 import { useBulletins, type Bulletin } from '@/hooks/useBulletins';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePioneerGate } from '@/hooks/usePioneerGate';
@@ -101,13 +102,13 @@ export default function BulletinPage() {
                         }}
                         disabled={btnState.disabled && !('retry' in btnState && btnState.retry)}
                         title={btnState.label}
-                        className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold shadow-lg transition-colors transition-transform ${
+                        className={`sg-take-btn sg-take-btn-amber gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${
                             btnState.disabled
-                                ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
-                                : 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600 hover:-translate-y-0.5'
+                                ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-50'
+                                : 'text-amber-600 dark:text-amber-400'
                         }`}
                     >
-                        <span className={`material-symbols-outlined !text-[18px] ${'spin' in btnState && btnState.spin ? 'animate-spin' : ''}`}>
+                        <span className={`material-symbols-outlined !text-[16px] ${'spin' in btnState && btnState.spin ? 'animate-spin' : ''}`}>
                             {btnState.icon}
                         </span>
                         {btnState.label}
@@ -131,9 +132,9 @@ export default function BulletinPage() {
 
                 {/* Bulletin List */}
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-slate-400 gap-4">
-                        <span className="material-symbols-outlined animate-spin shadow-glow !text-[40px] text-primary">progress_activity</span>
-                        <span className="text-xs font-semibold uppercase tracking-wider animate-pulse">{t.common.loading}</span>
+                    <div className="flex flex-col items-center justify-center py-32 gap-6">
+                        <SquareLoader />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-primary/60 animate-pulse">{t.common.loading}</span>
                     </div>
                 ) : bulletins.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-32 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">

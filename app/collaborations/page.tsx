@@ -11,6 +11,7 @@ import { MagneticButton } from '@/components/ui/MagneticButton';
 import { RequireWallet } from '@/components/ui/RequireWallet';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 
 const GRADES = ['S', 'A', 'B', 'C', 'D', 'E'] as const;
 const BUDGET_RANGES = ['all', 'low', 'mid', 'high'] as const;
@@ -216,9 +217,9 @@ export default function CollaborationsPage() {
                         className="flex-grow pb-24"
                     >
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center py-32 text-slate-400 gap-4">
-                                <span className="material-symbols-outlined animate-spin shadow-glow !text-[40px] text-primary">progress_activity</span>
-                                <span className="text-xs font-mono uppercase tracking-widest animate-pulse">Scanning Nexus Nodes...</span>
+                            <div className="flex flex-col items-center justify-center py-32 gap-6">
+                                <SquareLoader />
+                                <span className="text-xs font-mono uppercase tracking-widest text-primary/60 animate-pulse">Scanning Nexus Nodes...</span>
                             </div>
                         ) : filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-32 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
@@ -242,7 +243,7 @@ export default function CollaborationsPage() {
                                     >
                                         <Link
                                             href={`/collaborations/${c.id}`}
-                                            className="group relative flex flex-col h-full bg-white/70 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden hover:border-primary/30 dark:hover:border-primary/20 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
+                                            className="sg-task-card group relative flex flex-col h-full bg-white/70 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden hover:border-slate-900/60 dark:hover:border-slate-600/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300"
                                         >
                                             {/* Top accent bar — color per status */}
                                             <div className={`h-0.5 w-full ${
@@ -271,25 +272,25 @@ export default function CollaborationsPage() {
                                                 </div>
 
                                                 {/* Title */}
-                                                <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-2 tracking-tight">
+                                                <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-white transition-colors duration-300 line-clamp-2 leading-snug mb-2 tracking-tight">
                                                     {c.title}
                                                 </h4>
 
                                                 {/* Description */}
-                                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium line-clamp-2 leading-relaxed flex-grow mb-4">
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-white/70 transition-colors duration-300 font-medium line-clamp-2 leading-relaxed flex-grow mb-4">
                                                     {c.description || t.quests.noDescription}
                                                 </p>
 
                                                 {/* Footer */}
-                                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2">
+                                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 group-hover:border-white/20 transition-colors duration-300 flex items-center justify-between gap-2">
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">{t.quests.budget}</span>
-                                                        <span className="text-base font-black text-slate-900 dark:text-white flex items-baseline gap-1 leading-none">
+                                                        <span className="text-[9px] text-slate-400 group-hover:text-white/50 transition-colors duration-300 uppercase tracking-wider font-bold">{t.quests.budget}</span>
+                                                        <span className="text-base font-black text-slate-900 dark:text-white group-hover:text-white transition-colors duration-300 flex items-baseline gap-1 leading-none">
                                                             {c.total_budget || '0'}
-                                                            <span className="text-[10px] text-primary font-bold">USDC</span>
+                                                            <span className="text-[10px] text-primary group-hover:text-cyan-300 transition-colors duration-300 font-bold">USDC</span>
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 text-slate-400">
+                                                    <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-white/50 transition-colors duration-300">
                                                         <span className="material-symbols-outlined !text-[14px]">schedule</span>
                                                         <span className="text-[10px] font-medium">
                                                             {new Date(c.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}

@@ -225,6 +225,138 @@
   border-color: #1e293b;
 }
 
+/* ════════════════════════════════════════════════════════
+   SG UI Library — converted from UI-for test/ prototypes
+   ════════════════════════════════════════════════════════ */
+
+/* ── loading.txt: orbiting-squares loader ── */
+@keyframes sg-square-move {
+  0%,  10.5% { left: 0;    top: 0;    }
+  12.5%, 23% { left: 32px; top: 0;    }
+  25%, 35.5% { left: 64px; top: 0;    }
+  37.5%, 48% { left: 64px; top: 32px; }
+  50%, 60.5% { left: 32px; top: 32px; }
+  62.5%, 73% { left: 32px; top: 64px; }
+  75%, 85.5% { left: 0;    top: 64px; }
+  87.5%, 98% { left: 0;    top: 32px; }
+  100%        { left: 0;    top: 0;    }
+}
+.sg-loader {
+  position: relative;
+  width: 96px; height: 96px;
+  transform: rotate(45deg);
+}
+.sg-loader-sq {
+  position: absolute; top: 0; left: 0;
+  width: 28px; height: 28px; margin: 2px;
+  background: #137fec;
+  animation: sg-square-move 10s ease-in-out infinite both;
+}
+.sg-loader-sq:nth-child(1) { animation-delay: 0s; }
+.sg-loader-sq:nth-child(2) { animation-delay: -1.4285714286s; }
+.sg-loader-sq:nth-child(3) { animation-delay: -2.8571428571s; }
+.sg-loader-sq:nth-child(4) { animation-delay: -4.2857142857s; }
+.sg-loader-sq:nth-child(5) { animation-delay: -5.7142857143s; }
+.sg-loader-sq:nth-child(6) { animation-delay: -7.1428571429s; }
+.sg-loader-sq:nth-child(7) { animation-delay: -8.5714285714s; }
+
+/* ── pay.txt: circle-wipe reveal button ── */
+.sg-pay-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+.sg-pay-btn::before {
+  content: "";
+  position: absolute;
+  width: 140%; height: 200%;
+  background: white;
+  border-radius: 50%;
+  left: -140%; top: 0;
+  transition: transform 0.3s, border-radius 0.3s;
+  mix-blend-mode: difference;
+}
+.sg-pay-btn:hover::before {
+  transform: translate(100%, -25%);
+  border-radius: 0;
+}
+.sg-pay-btn:active { transform: translate(3px, 3px); }
+
+/* ── professional page.txt: 3D tilt card ── */
+.sg-3d-wrap { perspective: 600px; }
+.sg-3d-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.5s;
+}
+.sg-3d-card:hover { transform: translateZ(10px) rotateX(-8deg) rotateY(10deg); }
+.sg-3d-title { transition: transform 0.5s; }
+.sg-3d-card:hover .sg-3d-title { transform: translateZ(40px); }
+
+/* ── task.txt: dark-circle expanding reveal on card hover ── */
+.sg-task-card { position: relative; z-index: 0; }
+.sg-task-card > * { position: relative; z-index: 1; }
+.sg-task-card::before {
+  content: "";
+  position: absolute; z-index: 0;
+  top: -16px; right: -16px;
+  background: linear-gradient(135deg, #0d1520, #0f172a);
+  height: 32px; width: 32px;
+  border-radius: 50%;
+  transform: scale(1);
+  transform-origin: 50% 50%;
+  transition: transform 0.35s ease-out;
+}
+.sg-task-card:hover::before { transform: scale(32); }
+
+/* ── take.txt: border-draw from corners ── */
+.sg-take-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+  transition: box-shadow 0.5s linear;
+  cursor: pointer;
+}
+.sg-take-btn::before {
+  position: absolute; content: '';
+  left: 0; bottom: 0;
+  height: 3px; width: 100%;
+  border-bottom: 2px solid transparent;
+  border-left: 2px solid transparent;
+  box-sizing: border-box;
+  transform: translateX(100%);
+}
+.sg-take-btn::after {
+  position: absolute; content: '';
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  border-top: 2px solid transparent;
+  border-right: 2px solid transparent;
+  box-sizing: border-box;
+  transform: translateX(-100%);
+}
+.sg-take-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+.sg-take-btn:hover::before {
+  border-color: #137fec;
+  height: 100%;
+  transform: translateX(0);
+  transition: 0.3s transform linear, 0.3s height linear 0.3s;
+}
+.sg-take-btn:hover::after {
+  border-color: #137fec;
+  height: 100%;
+  transform: translateX(0);
+  transition: 0.3s transform linear, 0.3s height linear 0.5s;
+}
+/* amber variant — for Post/Pioneer buttons */
+.sg-take-btn-amber:hover::before,
+.sg-take-btn-amber:hover::after {
+  border-color: #f59e0b;
+}
+
 /* ── Material Symbols ── */
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;

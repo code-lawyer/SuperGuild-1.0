@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n';
 import { useServices, type Service } from '@/hooks/useServices';
 import { ServicePageLayout } from '@/components/services/ServicePageLayout';
 import { ServiceModal, ServiceModalHeader } from '@/components/services/ServiceModal';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract, usePublicClient, useReadContract } from 'wagmi';
 import { parseUnits } from 'viem';
@@ -22,15 +23,15 @@ export default function InfrastructurePage() {
     return (
         <ServicePageLayout title={t.services.entry_infra_title} description={t.services.entry_infra_desc}>
             {isLoading ? (
-                <div className="flex items-center justify-center py-32 text-slate-400 gap-4">
-                    <span className="material-symbols-outlined animate-spin !text-[40px] text-primary">progress_activity</span>
+                <div className="flex items-center justify-center py-32">
+                    <SquareLoader />
                 </div>
             ) : services.length === 0 ? (
                 <div className="py-20 text-center text-slate-400 font-mono text-xs uppercase tracking-widest">
                     [ {t.services.noServices} ]
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px mt-8 bg-slate-200 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                     {services.map((s, i) => {
                         const isUnlocked = unlockedIds.includes(s.id);
                         const serviceId = `S-${String(i + 1).padStart(3, '0')}`;
@@ -40,40 +41,67 @@ export default function InfrastructurePage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: i * 0.04 }}
-                                onClick={() => setSelectedService(s)}
-                                className="cursor-pointer group bg-white dark:bg-zinc-950 p-6 hover:bg-slate-50 dark:hover:bg-zinc-900/80 transition-all relative overflow-hidden border border-transparent hover:border-cyan-500/30"
+                                className="group h-[240px] [perspective:1000px]"
                             >
-                                {/* Left accent bar on hover */}
-                                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-top" />
+                                {/* Flip inner */}
+                                <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-[999ms] group-hover:[transform:rotateY(180deg)]">
 
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"
-                                            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}>
-                                            <span className="material-symbols-outlined !text-[18px] text-cyan-400">{s.icon || 'settings_input_component'}</span>
+                                    {/* ── FRONT FACE — light blue ── */}
+                                    <div className="absolute inset-0 rounded-[17px] p-6 flex flex-col [backface-visibility:hidden] border border-sky-200 shadow-xl"
+                                        style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)' }}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-sky-500/15 border border-sky-400/30 rounded-lg flex items-center justify-center">
+                                                    <span className="material-symbols-outlined !text-[18px] text-sky-600">{s.icon || 'settings_input_component'}</span>
+                                                </div>
+                                                <span className="text-[9px] font-mono font-bold text-sky-500 uppercase tracking-widest">{serviceId}</span>
+                                            </div>
+                                            {isUnlocked && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            )}
                                         </div>
-                                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-600 uppercase">{serviceId}</span>
+
+                                        <div className="flex-1 flex items-center mt-4">
+                                            <h3 className="text-base font-black text-slate-800 font-mono leading-snug">{s.title}</h3>
+                                        </div>
+
+                                        <div className="mt-auto pt-3 border-t border-sky-300/60">
+                                            <span className="text-xs font-black text-slate-600 font-mono">
+                                                {s.price_usdc != null ? `${s.price_usdc} USDC` : s.price > 0 ? `${s.price} USDC` : 'Free'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    {isUnlocked ? (
-                                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[9px] font-bold border border-emerald-500/20 uppercase tracking-wider flex items-center gap-1">
-                                            <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                                            {t.services.infra_activated}
-                                        </span>
-                                    ) : (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 group-hover:bg-cyan-400 transition-colors" />
-                                    )}
-                                </div>
 
-                                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono mb-2 leading-snug">{s.title}</h3>
-                                <p className="text-xs text-slate-500 dark:text-zinc-500 leading-relaxed line-clamp-2">{s.description}</p>
+                                    {/* ── BACK FACE — dark grey ── */}
+                                    <div
+                                        className="absolute inset-0 rounded-[17px] p-6 flex flex-col [backface-visibility:hidden] [transform:rotateY(180deg)] bg-zinc-800 border border-zinc-700 cursor-pointer shadow-xl"
+                                        onClick={() => setSelectedService(s)}
+                                    >
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="material-symbols-outlined !text-[15px] text-sky-400">{s.icon || 'settings_input_component'}</span>
+                                            <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest">{serviceId}</span>
+                                        </div>
 
-                                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
-                                    <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
-                                        {s.price_usdc != null ? `${s.price_usdc} USDC` : s.price > 0 ? `${s.price} USDC` : 'Free'}
-                                    </span>
-                                    <span className="text-[9px] text-cyan-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                        {t.services.view_detail} <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
-                                    </span>
+                                        <p className="text-xs text-zinc-300 leading-relaxed flex-1 line-clamp-4">{s.description}</p>
+
+                                        <div className="mt-3 pt-3 border-t border-zinc-700 flex items-center justify-between">
+                                            <span className="text-xs font-black text-white font-mono">
+                                                {s.price_usdc != null ? `${s.price_usdc} USDC` : s.price > 0 ? `${s.price} USDC` : 'Free'}
+                                            </span>
+                                            {isUnlocked ? (
+                                                <span className="text-[9px] text-emerald-400 font-bold uppercase flex items-center gap-1">
+                                                    <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                                                    {t.services.infra_activated}
+                                                </span>
+                                            ) : (
+                                                <span className="text-[9px] text-sky-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                                    {t.services.view_detail}
+                                                    <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </motion.div>
                         );
@@ -212,7 +240,7 @@ function InfraModal({ service: s, isUnlocked, onClose }: {
                         <button
                             onClick={handleActivate}
                             disabled={step === 'approving' || step === 'paying'}
-                            className="w-full py-3 bg-primary text-white text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                            className="sg-pay-btn w-full py-3 bg-zinc-900 text-white text-xs font-black uppercase tracking-widest disabled:opacity-50"
                             style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
                         >
                             {step === 'error' ? t.services.retry : activateLabel}

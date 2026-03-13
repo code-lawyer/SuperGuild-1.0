@@ -49,18 +49,18 @@ export default function ServicesPage() {
 
     return (
         <ServicePageLayout title={t.services.entry_title} description={t.services.entry_subtitle}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px mt-8 bg-slate-200 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 {channels.map((ch, i) => (
                     <motion.div
                         key={ch.href}
                         initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
-                        className="bg-white dark:bg-zinc-950"
+                        className="sg-3d-wrap"
                     >
                         <Link
                             href={ch.href}
-                            className={`relative flex flex-col h-full p-8 border border-transparent transition-all duration-300 group overflow-hidden ${ch.glowClass}`}
+                            className={`sg-3d-card relative flex flex-col h-full p-8 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-300 group overflow-hidden rounded-xl ${ch.glowClass}`}
                         >
                             {/* Top gradient accent bar — appears on hover */}
                             <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${ch.topBarClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
@@ -85,7 +85,7 @@ export default function ServicesPage() {
                                 </div>
 
                                 {/* Title */}
-                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono mb-3 leading-tight">
+                                <h3 className="sg-3d-title text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono mb-3 leading-tight">
                                     {t.services[ch.titleKey]}
                                 </h3>
 
@@ -108,6 +108,7 @@ export default function ServicesPage() {
                     </motion.div>
                 ))}
             </div>
+
         </ServicePageLayout>
     );
 }

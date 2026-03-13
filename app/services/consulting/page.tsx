@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useServices, type Service } from '@/hooks/useServices';
 import { ServicePageLayout } from '@/components/services/ServicePageLayout';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 import { ServiceModal, ServiceModalHeader } from '@/components/services/ServiceModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
@@ -29,7 +30,7 @@ export default function ConsultingPage() {
         <ServicePageLayout title={t.services.entry_consulting_title} description={t.services.entry_consulting_desc}>
             {isLoading ? (
                 <div className="flex items-center justify-center py-32">
-                    <span className="material-symbols-outlined animate-spin !text-[40px] text-primary">progress_activity</span>
+                    <SquareLoader />
                 </div>
             ) : categories.length === 0 ? (
                 <div className="py-20 text-center text-slate-400 font-mono text-xs uppercase tracking-widest mt-8">

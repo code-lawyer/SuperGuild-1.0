@@ -7,6 +7,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useState, useEffect } from 'react';
 import { useI18n, useT } from '@/lib/i18n';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
+import { useUnreadCount } from '@/hooks/useNotifications';
 import { useNFTGate } from '@/hooks/useNFTGate';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
@@ -17,6 +18,7 @@ export default function Header() {
     const [notifOpen, setNotifOpen] = useState(false);
     const { locale, setLocale } = useI18n();
     const t = useT();
+    const { data: unreadCount } = useUnreadCount();
     const { hasNFT: isAdmin } = useNFTGate({
         contractAddress: PRIVILEGE_NFT.address,
         tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
@@ -132,11 +134,16 @@ export default function Header() {
                         {mounted && isConnected && (
                             <button
                                 onClick={() => setNotifOpen(true)}
-                                className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-colors transition-transform"
+                                className="relative flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-colors transition-transform"
                                 aria-label="Open notifications"
                                 title="Notifications"
                             >
                                 <span className="material-symbols-outlined !text-[20px] pointer-events-none">notifications</span>
+                                {(unreadCount ?? 0) > 0 && (
+                                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold px-1 shadow-sm">
+                                        {unreadCount! > 99 ? '99+' : unreadCount}
+                                    </span>
+                                )}
                             </button>
                         )}
 

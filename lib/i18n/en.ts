@@ -324,6 +324,30 @@ const en = {
         days: 'd',
         hours: 'h',
         minutes: 'm',
+        // Lobby filters
+        filterGrade: 'Grade',
+        filterBudget: 'Budget',
+        filterStatus: 'Status',
+        filterAll: 'All',
+        budgetLow: '< 500 USDC',
+        budgetMid: '500–2000 USDC',
+        budgetHigh: '> 2000 USDC',
+        // My Desk
+        myDesk: 'My Desk',
+        myDeskDesc: 'Manage all your published and accepted quests.',
+        publishedByMe: 'Published',
+        acceptedByMe: 'Accepted',
+        noMyQuests: 'No quests yet',
+        noMyQuestsDesc: 'You haven\'t published or accepted any quests yet.',
+        questCancelled: 'Cancelled',
+        questCancelledDesc: 'This quest has been cancelled. No further actions available.',
+        milestoneProgress: 'Milestone Progress',
+        viewDetail: 'View Detail',
+        // Milestone actions
+        holdMilestone: 'Hold',
+        holdMilestoneDesc: 'Request revisions — reward will not be released.',
+        milestoneHeld: 'Revision Required',
+        milestoneHeldDesc: 'The initiator has requested revisions. Please resubmit.',
     },
 
     // ── Profile ──

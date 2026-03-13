@@ -124,12 +124,6 @@ export default function NotificationDrawer({ open, onClose }: Props) {
                     )}
                 </div>
 
-                {/* Footer */}
-                <div className="p-4 border-t border-border-light dark:border-border-dark">
-                    <button className="w-full py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors border border-border-light dark:border-border-dark rounded-xl hover:border-primary/30">
-                        {t.notifications.viewSettings}
-                    </button>
-                </div>
             </div>
 
             <style jsx>{`

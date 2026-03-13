@@ -13,6 +13,7 @@ import {
     useAbandonCollaboration,
     useCancelCollaboration,
     useConfirmMilestone,
+    useHoldMilestone,
     useDisputeCollaboration,
     CollabStatus,
     CollabApplication,
@@ -57,6 +58,7 @@ export default function CollaborationDetailPage() {
     const abandonCollab = useAbandonCollaboration();
     const cancelCollab = useCancelCollaboration();
     const confirmMs = useConfirmMilestone();
+    const holdMs = useHoldMilestone();
     const disputeCollab = useDisputeCollaboration();
     const escrow = useGuildEscrow();
     const directPay = useDirectPay();
@@ -385,6 +387,9 @@ export default function CollaborationDetailPage() {
                                 escrow.reset();
                                 directPay.reset();
                             }}
+                            onHold={isInitiator ? async (msId: string) => {
+                                await holdMs.mutateAsync({ milestoneId: msId, collabId: collab.id });
+                            } : undefined}
                             onDispute={isGuildManaged ? async (msId: string, sortOrder: number) => {
                                 await escrow.disputeMilestoneOnChain(collab.id, sortOrder - 1);
                                 await disputeCollab.mutateAsync(collab.id);

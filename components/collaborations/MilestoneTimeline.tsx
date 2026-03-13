@@ -16,6 +16,7 @@ interface MilestoneTimelineProps {
     onSubmitProof: (milestoneId: string, sortOrder: number) => void;
     onConfirm: (milestoneId: string, sortOrder: number) => void;
     onDispute?: (milestoneId: string, sortOrder: number) => void;
+    onHold?: (milestoneId: string, sortOrder: number) => void;
 }
 
 const statusConfig: Record<string, { label: string; badgeClass: string }> = {
@@ -35,6 +36,7 @@ export default function MilestoneTimeline({
     onSubmitProof,
     onConfirm,
     onDispute,
+    onHold,
 }: MilestoneTimelineProps) {
     const t = useT();
     // Determine which milestone is "active" (first non-CONFIRMED)
@@ -128,6 +130,17 @@ export default function MilestoneTimeline({
                                         </div>
                                     )}
 
+                                    {/* Held notice — milestone was sent back for revisions */}
+                                    {isProvider && ms.status === 'INCOMPLETE' && msProofs.length > 0 && (
+                                        <div className="mt-4 bg-amber-50 border border-amber-200/60 rounded-lg p-4 flex items-start gap-3">
+                                            <span className="material-symbols-outlined text-[18px] text-amber-500 mt-0.5">info</span>
+                                            <div>
+                                                <p className="text-[13px] font-bold text-amber-700">{t.quests.milestoneHeld}</p>
+                                                <p className="text-[12px] text-amber-600 mt-0.5">{t.quests.milestoneHeldDesc}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Action Area: Provider submits proof */}
                                     {isProvider && ms.status === 'INCOMPLETE' && (
                                         <div className="mt-6 bg-[#F0F1F5]/50 rounded-lg p-5 border border-dashed border-slate-300">
@@ -142,9 +155,9 @@ export default function MilestoneTimeline({
                                         </div>
                                     )}
 
-                                    {/* Action Area: Initiator confirms or disputes */}
+                                    {/* Action Area: Initiator confirms, holds, or disputes */}
                                     {isInitiator && ms.status === 'SUBMITTED' && (
-                                        <div className="mt-6 flex gap-3">
+                                        <div className="mt-6 flex flex-wrap gap-3">
                                             <button
                                                 onClick={() => onConfirm(ms.id, ms.sort_order)}
                                                 disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
@@ -153,6 +166,17 @@ export default function MilestoneTimeline({
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                                                 {t.quests.confirmAndRelease} {amount} USDC
                                             </button>
+                                            {onHold && (
+                                                <button
+                                                    onClick={() => onHold(ms.id, ms.sort_order)}
+                                                    disabled={escrowStep !== 'idle' && escrowStep !== 'done' && escrowStep !== 'error'}
+                                                    className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-5 rounded-lg transition-colors transition-transform flex items-center gap-2 disabled:opacity-50"
+                                                    title={t.quests.holdMilestoneDesc}
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">pause_circle</span>
+                                                    {t.quests.holdMilestone}
+                                                </button>
+                                            )}
                                             {onDispute && (
                                                 <button
                                                     onClick={() => onDispute(ms.id, ms.sort_order)}

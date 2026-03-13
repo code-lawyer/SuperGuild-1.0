@@ -320,6 +320,30 @@ const zh: TranslationKeys = {
         days: '天',
         hours: '时',
         minutes: '分',
+        // Lobby filters
+        filterGrade: '任务等级',
+        filterBudget: '报酬范围',
+        filterStatus: '任务状态',
+        filterAll: '全部',
+        budgetLow: '< 500 USDC',
+        budgetMid: '500–2000 USDC',
+        budgetHigh: '> 2000 USDC',
+        // My Desk
+        myDesk: '我的工作台',
+        myDeskDesc: '管理你发布和承接的所有任务。',
+        publishedByMe: '我发布的',
+        acceptedByMe: '我承接的',
+        noMyQuests: '暂无相关任务',
+        noMyQuestsDesc: '你还没有发布或承接任何任务。',
+        questCancelled: '已撤销',
+        questCancelledDesc: '此任务已被撤销，不可编辑或操作。',
+        milestoneProgress: '里程碑进度',
+        viewDetail: '查看详情',
+        // Milestone actions
+        holdMilestone: '暂缓',
+        holdMilestoneDesc: '标记此里程碑需要修改，不释放报酬。',
+        milestoneHeld: '已暂缓',
+        milestoneHeldDesc: '发布人要求修改交付物，请重新提交。',
     },
 
     profile: {

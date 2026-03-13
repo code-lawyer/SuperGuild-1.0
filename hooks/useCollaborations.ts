@@ -64,7 +64,6 @@ export function useMyCollaborations() {
                 .from('collaborations')
                 .select('*')
                 .or(`initiator_id.eq.${address},initiator_id.eq.${addrLower},provider_id.eq.${address},provider_id.eq.${addrLower},pending_provider_id.eq.${address},pending_provider_id.eq.${addrLower}`)
-                .neq('status', 'CANCELLED')
                 .order('created_at', { ascending: false });
             if (error) throw error;
             return data as Collaboration[];
@@ -82,6 +81,22 @@ export function useOpenCollaborations() {
                 .from('collaborations')
                 .select('*')
                 .eq('status', 'OPEN')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return data as Collaboration[];
+        },
+    });
+}
+
+// ── List all collaborations for lobby (all except SETTLED) ──
+export function useLobbyCollaborations() {
+    return useQuery({
+        queryKey: ['collaborations', 'lobby'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('collaborations')
+                .select('*')
+                .neq('status', 'SETTLED')
                 .order('created_at', { ascending: false });
             if (error) throw error;
             return data as Collaboration[];
@@ -474,6 +489,22 @@ export function useSubmitProofMutation() {
                     .update({ status: 'ACTIVE' })
                     .eq('id', ms.collab_id)
                     .eq('status', 'LOCKED');
+
+                // Notify initiator that proof was submitted
+                const { data: collab } = await supabase
+                    .from('collaborations')
+                    .select('initiator_id, title')
+                    .eq('id', ms.collab_id)
+                    .single();
+                if (collab) {
+                    await createNotification({
+                        user_address: collab.initiator_id,
+                        type: 'MILESTONE_SUBMITTED',
+                        title: '里程碑交付物已提交',
+                        body: `「${collab.title}」有新的里程碑等待你验收。`,
+                        metadata: { collab_id: ms.collab_id, milestone_id: milestoneId },
+                    });
+                }
             }
         },
         onSuccess: () => {
@@ -506,6 +537,44 @@ export function useConfirmMilestone() {
                     .from('collaborations')
                     .update({ status: 'SETTLED' })
                     .eq('id', collabId);
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+        },
+    });
+}
+
+// ── Hold a milestone (initiator requests revisions, reverts to INCOMPLETE) ──
+export function useHoldMilestone() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ milestoneId, collabId }: { milestoneId: string; collabId: string }) => {
+            // Revert milestone status back to INCOMPLETE so provider can resubmit
+            const { error } = await supabase
+                .from('milestones')
+                .update({ status: 'INCOMPLETE' })
+                .eq('id', milestoneId)
+                .eq('status', 'SUBMITTED');
+            if (error) throw error;
+
+            // Get collab info for notification
+            const { data: collab } = await supabase
+                .from('collaborations')
+                .select('provider_id, title')
+                .eq('id', collabId)
+                .single();
+
+            if (collab?.provider_id) {
+                await createNotification({
+                    user_address: collab.provider_id,
+                    type: 'MILESTONE_HELD',
+                    title: '里程碑需要修改',
+                    body: `「${collab.title}」的发布人要求修改交付物，请重新提交。`,
+                    metadata: { collab_id: collabId, milestone_id: milestoneId },
+                });
             }
         },
         onSuccess: () => {

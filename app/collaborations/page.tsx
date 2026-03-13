@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
-import { useMyCollaborations, useOpenCollaborations, type Collaboration } from '@/hooks/useCollaborations';
+import { useLobbyCollaborations, type Collaboration } from '@/hooks/useCollaborations';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { PerspectiveTransition } from '@/components/ui/PerspectiveTransition';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
@@ -12,51 +12,73 @@ import { RequireWallet } from '@/components/ui/RequireWallet';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
+const GRADES = ['S', 'A', 'B', 'C', 'D', 'E'] as const;
+const BUDGET_RANGES = ['all', 'low', 'mid', 'high'] as const;
+
 export default function CollaborationsPage() {
     const t = useT();
     const router = useRouter();
-    const { data: myCollabs, isLoading: myLoading } = useMyCollaborations();
-    const { data: openCollabs, isLoading: openLoading } = useOpenCollaborations();
-    const [view, setView] = useState<'marketplace' | 'mine'>('marketplace');
-    const [activeTab, setActiveTab] = useState('all');
+    const { data: lobbyCollabs, isLoading } = useLobbyCollaborations();
 
-    const tabs = [
-        { key: 'all', label: t.quests.allQuests },
-        { key: 'active', label: t.quests.activeQuests, statuses: ['ACTIVE', 'LOCKED'] },
-        { key: 'pending', label: t.quests.pendingQuests, statuses: ['OPEN', 'PENDING_APPROVAL'] },
-        { key: 'completed', label: t.quests.completedQuests, statuses: ['SETTLED'] },
-        { key: 'cancelled', label: t.quests.cancelledQuests, statuses: ['CANCELLED', 'DISPUTED'] },
-    ];
-
-    const isMarketplace = view === 'marketplace';
-    const isLoading = isMarketplace ? openLoading : myLoading;
-    const items = isMarketplace ? (openCollabs ?? []) : (myCollabs ?? []);
-    const currentTab = tabs.find(tab => tab.key === activeTab);
-    const filtered = isMarketplace
-        ? items
-        : activeTab === 'all'
-            ? items
-            : items.filter((c: Collaboration) => currentTab?.statuses?.includes(c.status));
+    const [filterGrade, setFilterGrade] = useState<string>('all');
+    const [filterBudget, setFilterBudget] = useState<string>('all');
+    const [filterStatus, setFilterStatus] = useState<string>('all');
 
     const statusStyle: Record<string, string> = {
         OPEN: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
         PENDING_APPROVAL: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
         ACTIVE: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
         LOCKED: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
-        SETTLED: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
         CANCELLED: 'bg-red-500/10 text-red-500 border-red-500/20',
         DISPUTED: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
     };
 
     const statusLabel: Record<string, string> = {
-        OPEN: t.quests.pendingQuests,
-        PENDING_APPROVAL: t.quests.pendingQuests,
+        OPEN: t.common.open,
+        PENDING_APPROVAL: t.common.pendingApproval,
         ACTIVE: t.quests.activeQuests,
         LOCKED: t.common.locked,
-        SETTLED: t.quests.completedQuests,
         CANCELLED: t.quests.cancelledQuests,
         DISPUTED: t.common.disputed,
     };
+
+    const statusFilters = [
+        { key: 'all', label: t.quests.filterAll },
+        { key: 'OPEN', label: t.common.open },
+        { key: 'ACTIVE', label: t.quests.activeQuests },
+        { key: 'PENDING_APPROVAL', label: t.common.pendingApproval },
+        { key: 'CANCELLED', label: t.quests.cancelledQuests },
+    ];
+
+    const budgetLabel: Record<string, string> = {
+        all: t.quests.filterAll,
+        low: t.quests.budgetLow,
+        mid: t.quests.budgetMid,
+        high: t.quests.budgetHigh,
+    };
+
+    const filtered = useMemo(() => {
+        let items = lobbyCollabs ?? [];
+
+        if (filterGrade !== 'all') {
+            items = items.filter(c => c.grade === filterGrade);
+        }
+
+        if (filterBudget !== 'all') {
+            items = items.filter(c => {
+                if (filterBudget === 'low') return c.total_budget < 500;
+                if (filterBudget === 'mid') return c.total_budget >= 500 && c.total_budget <= 2000;
+                if (filterBudget === 'high') return c.total_budget > 2000;
+                return true;
+            });
+        }
+
+        if (filterStatus !== 'all') {
+            items = items.filter(c => c.status === filterStatus);
+        }
+
+        return items;
+    }, [lobbyCollabs, filterGrade, filterBudget, filterStatus]);
 
     return (
         <WalletGatePage>
@@ -85,52 +107,79 @@ export default function CollaborationsPage() {
                         }
                     />
 
-                    {/* View Toggle: Marketplace vs My Quests */}
-                    <div className="flex items-center gap-1 mb-6 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-lg w-fit">
-                        <button
-                            onClick={() => { setView('marketplace'); setActiveTab('all'); }}
-                            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${isMarketplace
-                                ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                            }`}
-                        >
-                            <span className="material-symbols-outlined !text-[14px] align-middle mr-1">storefront</span>
-                            {t.quests.marketplace}
-                        </button>
-                        <button
-                            onClick={() => { setView('mine'); setActiveTab('all'); }}
-                            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${!isMarketplace
-                                ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                            }`}
-                        >
-                            <span className="material-symbols-outlined !text-[14px] align-middle mr-1">person</span>
-                            {t.quests.myQuests}
-                        </button>
-                    </div>
+                    {/* Filter Bar */}
+                    <div className="flex flex-wrap items-center gap-4 mb-8">
+                        {/* Status Filter */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterStatus}</span>
+                            <div className="flex gap-1">
+                                {statusFilters.map(sf => (
+                                    <button
+                                        key={sf.key}
+                                        onClick={() => setFilterStatus(sf.key)}
+                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterStatus === sf.key
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                                        }`}
+                                    >
+                                        {sf.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                    {/* Status Tabs (only for My Quests view) */}
-                    {!isMarketplace && (
-                        <div className="flex flex-wrap gap-2 mb-10">
-                            {tabs.map(tab => (
+                        {/* Grade Filter */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterGrade}</span>
+                            <div className="flex gap-1">
                                 <button
-                                    key={tab.key}
-                                    onClick={() => setActiveTab(tab.key)}
-                                    className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeTab === tab.key
-                                        ? 'bg-primary text-white shadow-md'
+                                    onClick={() => setFilterGrade('all')}
+                                    className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterGrade === 'all'
+                                        ? 'bg-primary text-white shadow-sm'
                                         : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
                                     }`}
                                 >
-                                    <span className="relative z-10">{tab.label}</span>
+                                    {t.quests.filterAll}
                                 </button>
-                            ))}
+                                {GRADES.map(g => (
+                                    <button
+                                        key={g}
+                                        onClick={() => setFilterGrade(g)}
+                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterGrade === g
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                                        }`}
+                                    >
+                                        {g}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    )}
+
+                        {/* Budget Filter */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quests.filterBudget}</span>
+                            <div className="flex gap-1">
+                                {BUDGET_RANGES.map(b => (
+                                    <button
+                                        key={b}
+                                        onClick={() => setFilterBudget(b)}
+                                        className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${filterBudget === b
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                                        }`}
+                                    >
+                                        {budgetLabel[b]}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Content Grid */}
                     <PerspectiveTransition
-                        id={`${view}-${activeTab}`}
-                        direction={isMarketplace ? 0 : tabs.findIndex(t => t.key === activeTab)}
+                        id={`lobby-${filterGrade}-${filterBudget}-${filterStatus}`}
+                        direction={0}
                         className="flex-grow pb-24"
                     >
                         {isLoading ? (
@@ -142,12 +191,10 @@ export default function CollaborationsPage() {
                             <div className="flex flex-col items-center justify-center py-32 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
                                 <span className="material-symbols-outlined !text-[48px] text-slate-300 mb-4">dataset_linked</span>
                                 <p className="text-sm font-semibold text-slate-500">
-                                    {isMarketplace ? t.quests.noOpenQuests : t.quests.noQuests}
+                                    {t.quests.noOpenQuests}
                                 </p>
                                 <p className="text-xs text-slate-400 mt-2">
-                                    {isMarketplace
-                                        ? t.quests.noOpenQuestsDesc
-                                        : activeTab === 'all' ? t.quests.noQuestsDesc : t.quests.noQuestsFilterDesc}
+                                    {t.quests.noOpenQuestsDesc}
                                 </p>
                             </div>
                         ) : (
@@ -170,8 +217,15 @@ export default function CollaborationsPage() {
 
                                                 <div className="flex items-start justify-between mb-4 gap-4">
                                                     <div className="space-y-1 overflow-hidden">
-                                                        <div className="text-[9px] font-mono text-primary font-bold tracking-widest uppercase mb-1">
-                                                            {`NODE_ID: ${c.id.split('-')[0].toUpperCase()}`}
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-[9px] font-mono text-primary font-bold tracking-widest uppercase">
+                                                                {`NODE_ID: ${c.id.split('-')[0].toUpperCase()}`}
+                                                            </span>
+                                                            {c.grade && (
+                                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                                                    {c.grade}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <h4 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 md:h-[3.5rem] leading-[1.2] tracking-tight">
                                                             {c.title}

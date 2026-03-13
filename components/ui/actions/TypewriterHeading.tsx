@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/components/ui/MagneticButton";
 
@@ -7,7 +8,7 @@ interface TypewriterHeadingProps {
     text: string;
     className?: string;
     delay?: number;
-    element?: keyof JSX.IntrinsicElements;
+    element?: React.ElementType;
 }
 
 export function TypewriterHeading({
@@ -32,7 +33,7 @@ export function TypewriterHeading({
             opacity: 1,
             y: 0,
             transition: {
-                type: "spring",
+                type: "spring" as const,
                 damping: 12,
                 stiffness: 100,
             },
@@ -43,8 +44,9 @@ export function TypewriterHeading({
         },
     };
 
+    const Tag = Wrapper as React.FC<{ className?: string; children: React.ReactNode }>;
     return (
-        <Wrapper className={cn("inline-flex flex-wrap items-center justify-center", className)}>
+        <Tag className={cn("inline-flex flex-wrap items-center justify-center", className)}>
             <motion.span
                 variants={container}
                 initial="hidden"
@@ -61,6 +63,6 @@ export function TypewriterHeading({
                     </span>
                 ))}
             </motion.span>
-        </Wrapper>
+        </Tag>
     );
 }

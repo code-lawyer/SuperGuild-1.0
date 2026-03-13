@@ -35,7 +35,7 @@ export function PerspectiveTransition({
             scale: 1,
             z: 0,
             transition: {
-                type: "spring",
+                type: "spring" as const,
                 stiffness: 300,
                 damping: 30,
                 mass: 1,
@@ -49,7 +49,7 @@ export function PerspectiveTransition({
             scale: 0.95,
             z: -100,
             transition: {
-                type: "spring",
+                type: "spring" as const,
                 stiffness: 300,
                 damping: 30,
                 mass: 1,

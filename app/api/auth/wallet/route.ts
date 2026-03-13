@@ -2,19 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyMessage } from 'viem';
 import { SignJWT } from 'jose';
 import { createRateLimiter } from '@/utils/rate-limit';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 const limiter = createRateLimiter({ windowMs: 60_000, max: 20 });
-
-// Nonce store — prevents replay attacks. In production, use Redis.
-const nonceStore = new Map<string, number>();
-
-// Cleanup expired nonces every 5 minutes
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, exp] of nonceStore) {
-        if (now > exp) nonceStore.delete(key);
-    }
-}, 5 * 60_000);
 
 /**
  * POST /api/auth/wallet
@@ -54,8 +44,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Nonce expired' }, { status: 400 });
         }
 
-        // Nonce must not have been used before
-        if (nonceStore.has(nonce)) {
+        // Nonce must not have been used before (persistent check across serverless instances)
+        const { data: usedNonce } = await supabaseAdmin
+            .from('auth_nonces')
+            .select('nonce')
+            .eq('nonce', nonce)
+            .maybeSingle();
+        if (usedNonce) {
             return NextResponse.json({ error: 'Nonce already used' }, { status: 400 });
         }
 
@@ -73,8 +68,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        // Mark nonce as used (expires in 5 minutes)
-        nonceStore.set(nonce, now + 5 * 60_000);
+        // Mark nonce as used — persisted in Supabase, survives serverless cold starts
+        await supabaseAdmin
+            .from('auth_nonces')
+            .insert({ nonce, expires_at: new Date(now + 5 * 60_000).toISOString() });
+
+        // Cleanup expired nonces (best-effort, non-blocking)
+        void supabaseAdmin
+            .from('auth_nonces')
+            .delete()
+            .lt('expires_at', new Date(now).toISOString());
 
         // Sign a Supabase-compatible JWT
         const jwtSecret = process.env.SUPABASE_JWT_SECRET;

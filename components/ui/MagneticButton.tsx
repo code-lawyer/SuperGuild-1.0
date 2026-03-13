@@ -60,7 +60,7 @@ export function MagneticButton({
             style={{ x, y }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}
             className={cn(
                 "relative inline-flex items-center justify-center isolation-auto z-10",
                 "transition-colors duration-300",

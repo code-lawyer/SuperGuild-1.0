@@ -6,6 +6,7 @@ import Providers from '@/providers/Web3Providers';
 import Header from '@/components/layout/Header';
 import { I18nProvider } from '@/lib/i18n';
 import { NoiseOverlay } from '@/components/ui/NoiseOverlay';
+import { Toaster } from '@/components/ui/toaster';
 
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-display' });
 
@@ -38,6 +39,7 @@ export default function RootLayout({
               </main>
             </div>
           </Providers>
+          <Toaster />
         </I18nProvider>
       </body>
     </html>

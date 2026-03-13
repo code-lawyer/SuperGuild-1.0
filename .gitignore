@@ -54,3 +54,7 @@ vercel-import.env
 
 # Agent config (may contain secrets)
 .agents/
+
+# Local design references and test notes (not source code)
+/stitch_superguild.md/
+/test/

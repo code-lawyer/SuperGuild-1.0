@@ -88,7 +88,7 @@ export function useOpenCollaborations() {
     });
 }
 
-// ── List all collaborations for lobby (all except SETTLED) ──
+// ── List all collaborations for lobby (all except SETTLED and CANCELLED) ──
 export function useLobbyCollaborations() {
     return useQuery({
         queryKey: ['collaborations', 'lobby'],
@@ -97,6 +97,7 @@ export function useLobbyCollaborations() {
                 .from('collaborations')
                 .select('*')
                 .neq('status', 'SETTLED')
+                .neq('status', 'CANCELLED')
                 .order('created_at', { ascending: false });
             if (error) throw error;
             return data as Collaboration[];

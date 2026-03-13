@@ -47,7 +47,6 @@ export default function CollaborationsPage() {
         { key: 'OPEN', label: t.common.open },
         { key: 'ACTIVE', label: t.quests.activeQuests },
         { key: 'PENDING_APPROVAL', label: t.common.pendingApproval },
-        { key: 'CANCELLED', label: t.quests.cancelledQuests },
     ];
 
     const budgetLabel: Record<string, string> = {

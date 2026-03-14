@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
 import { useGLTF, Float } from '@react-three/drei';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 
@@ -11,47 +10,6 @@ interface BadgeModelProps {
     glowColor: string;
     isThumbnail?: boolean;
 }
-
-/**
- * Fresnel edge-glow shader injected in modal (non-thumbnail) mode only.
- * Adds an animated pulse at silhouette edges using the badge's glowColor.
- */
-const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
-    shader.uniforms.glowColor = { value: glowColor };
-    shader.uniforms.time = { value: 0 };
-
-    shader.vertexShader = shader.vertexShader.replace(
-        '#include <common>',
-        `#include <common>
-    varying vec3 vViewDirection;
-    varying vec3 vWorldNormal;`
-    );
-    shader.vertexShader = shader.vertexShader.replace(
-        '#include <worldpos_vertex>',
-        `#include <worldpos_vertex>
-    vWorldNormal = normalize(normalMatrix * normal);
-    vViewDirection = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);`
-    );
-
-    shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <common>',
-        `#include <common>
-    varying vec3 vViewDirection;
-    varying vec3 vWorldNormal;
-    uniform vec3 glowColor;
-    uniform float time;`
-    );
-    shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <dithering_fragment>',
-        `#include <dithering_fragment>
-    float dotProduct = dot(vViewDirection, vWorldNormal);
-    float fresnel = pow(clamp(1.0 - abs(dotProduct), 0.0, 1.0), 3.0) * 0.55;
-    float pulse = (sin(time * 2.0) * 0.5 + 0.5) * 0.3 + 0.7;
-    gl_FragColor = vec4(mix(gl_FragColor.rgb, glowColor * pulse, fresnel), gl_FragColor.a);`
-    );
-
-    return shader;
-};
 
 function computeNormalizedScale(scene: THREE.Object3D, targetSize: number): number {
     const box = new THREE.Box3().setFromObject(scene);
@@ -62,57 +20,28 @@ function computeNormalizedScale(scene: THREE.Object3D, targetSize: number): numb
     return targetSize / maxDim;
 }
 
-export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: BadgeModelProps) {
+export default function BadgeModel({ glbPath, isThumbnail = false }: BadgeModelProps) {
     const { scene } = useGLTF(glbPath);
     const clonedScene = useMemo(() => scene.clone(true), [scene]);
-    const materialsRef = useRef<THREE.Material[]>([]);
-    const color = useMemo(() => new THREE.Color(glowColor), [glowColor]);
 
     const normalizedScale = useMemo(
         () => computeNormalizedScale(clonedScene, isThumbnail ? 1.8 : 2.8),
         [clonedScene, isThumbnail],
     );
 
+    // Clone each mesh's material so we never mutate the shared GLB cache.
+    // All original material properties — textures, PBR values, emissive maps — are preserved.
     useEffect(() => {
-        materialsRef.current = [];
         clonedScene.traverse((child) => {
             if (!(child as THREE.Mesh).isMesh) return;
             const mesh = child as THREE.Mesh;
-
-            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-            const newMats = mats.map((srcMat) => {
-                if (!srcMat) return srcMat;
-
-                // Clone the GLB's original material to preserve artist-designed colors,
-                // textures and PBR properties. glowColor is used ONLY for the Fresnel
-                // edge-glow shader — it does NOT repaint the model surface.
-                const mat = srcMat.clone() as THREE.MeshStandardMaterial;
-
-                if (!isThumbnail) {
-                    mat.onBeforeCompile = (shader: any) => {
-                        injectGlowShader(shader, color);
-                        mat.userData.shader = shader;
-                    };
-                    mat.needsUpdate = true;
-                }
-
-                materialsRef.current.push(mat);
-                return mat;
-            });
-
-            mesh.material = Array.isArray(mesh.material) ? newMats : newMats[0];
+            if (Array.isArray(mesh.material)) {
+                mesh.material = mesh.material.map(m => m?.clone() ?? m);
+            } else if (mesh.material) {
+                mesh.material = (mesh.material as THREE.Material).clone();
+            }
         });
-    }, [clonedScene, isThumbnail, color]);
-
-    useFrame((state) => {
-        if (!isThumbnail) {
-            materialsRef.current.forEach((mat) => {
-                if (mat.userData.shader) {
-                    mat.userData.shader.uniforms.time.value = state.clock.elapsedTime;
-                }
-            });
-        }
-    });
+    }, [clonedScene]);
 
     return (
         <Float

@@ -63,17 +63,16 @@ export default function BadgeShowcaseModal({
                         >
                             <Suspense fallback={null}>
                                 {/*
-                                 * Lighting: neutral white directional lights + warehouse IBL.
-                                 * "warehouse" preset is near-grey (no warm/cool color cast),
-                                 * providing just enough environment reflection for metallic depth.
-                                 * envMapIntensity is kept low (0.2) so glowColor still dominates.
+                                 * apartment preset: neutral indoor HDRI — no color cast,
+                                 * provides soft IBL that matches studio render conditions.
+                                 * glowColor point light adds subtle identity tint from front.
                                  */}
-                                <Environment background={false} preset="warehouse" />
-                                <ambientLight intensity={0.4} color="#ffffff" />
-                                <directionalLight position={[4, 6, 5]} intensity={0.8} color="#ffffff" />
-                                <directionalLight position={[-3, -2, 3]} intensity={0.2} color="#ffffff" />
-                                {/* Soft colored fill from front — gives badge identity without repainting the surface */}
-                                <pointLight position={[0, 0, 5]} intensity={0.6} color={glowColor} distance={12} decay={2} />
+                                <Environment background={false} preset="apartment" />
+                                <ambientLight intensity={0.4} />
+                                <directionalLight position={[4, 6, 4]} intensity={1.2} />
+                                <directionalLight position={[-3, 1, -2]} intensity={0.3} />
+                                {/* Badge identity: soft colored fill from front */}
+                                <pointLight position={[0, 0, 5]} intensity={0.5} color={glowColor} distance={14} decay={2} />
                                 <Center>
                                     <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>

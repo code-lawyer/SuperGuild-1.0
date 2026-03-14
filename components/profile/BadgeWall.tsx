@@ -147,12 +147,12 @@ export default function BadgeWall() {
                                                 <Canvas
                                                     camera={{ position: [0, 0, 4], fov: 40 }}
                                                     gl={{ antialias: true, alpha: true }}
-                                                    frameloop="demand"
+                                                    frameloop="always"
                                                 >
                                                     <Suspense fallback={null}>
-                                                        <Environment background={false} preset="warehouse" />
-                                                        <ambientLight intensity={0.35} color="#ffffff" />
-                                                        <directionalLight position={[4, 6, 5]} intensity={0.9} color="#ffffff" />
+                                                        <Environment background={false} preset="apartment" />
+                                                        <ambientLight intensity={0.4} />
+                                                        <directionalLight position={[4, 6, 5]} intensity={1.2} />
                                                         <Center>
                                                             <BadgeModel
                                                                 glbPath={badge.token.glbPath}

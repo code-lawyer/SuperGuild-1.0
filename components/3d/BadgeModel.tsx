@@ -92,14 +92,17 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
                 if (mesh.material) {
                     const mat = (mesh.material as THREE.Material).clone();
 
-                    // Apply glowColor as a base tint so the model isn't pure white.
-                    // We blend: 20% glowColor + 80% white for a subtle metallic tint.
+                    // Apply glowColor as a strong base tint (60% color, 40% white).
+                    // The lerp target is a light grey rather than pure white so the
+                    // tint remains visible even under bright lighting.
                     if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
                         const std = mat as THREE.MeshStandardMaterial;
-                        const tint = color.clone().lerp(new THREE.Color(0xffffff), 0.75);
+                        const lightGrey = new THREE.Color(0xd0d0d0);
+                        const tint = color.clone().lerp(lightGrey, 0.4);
                         std.color.set(tint);
-                        std.metalness = Math.max(std.metalness, 0.3);
-                        std.roughness = Math.min(std.roughness, 0.6);
+                        std.metalness = 0.4;
+                        std.roughness = 0.45;
+                        std.envMapIntensity = 0.6;
                     }
 
                     if (!isThumbnail) {

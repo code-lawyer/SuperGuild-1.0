@@ -150,9 +150,10 @@ export default function BadgeWall() {
                                                     frameloop="demand"
                                                 >
                                                     <Suspense fallback={null}>
-                                                        <ambientLight intensity={1.2} />
-                                                        <spotLight position={[5, 10, 5]} intensity={2.5} castShadow={false} />
-                                                        <Environment preset="city" />
+                                                        <ambientLight intensity={0.3} />
+                                                        <pointLight position={[3, 5, 4]} intensity={1.0} color={badge.token.glowColor} />
+                                                        <pointLight position={[-2, -2, 3]} intensity={0.3} color="#ffffff" />
+                                                        <Environment preset="night" />
                                                         <Center>
                                                             <BadgeModel
                                                                 glbPath={badge.token.glbPath}

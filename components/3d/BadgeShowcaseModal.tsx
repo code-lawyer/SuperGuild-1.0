@@ -62,11 +62,21 @@ export default function BadgeShowcaseModal({
                             gl={{ antialias: true, alpha: true }}
                         >
                             <Suspense fallback={null}>
-                                <ambientLight intensity={1.0} />
-                                <directionalLight position={[5, 8, 5]} intensity={1.5} />
-                                <directionalLight position={[-3, -2, 4]} intensity={0.5} />
-                                <spotLight position={[10, 10, 10]} intensity={1.5} angle={0.3} penumbra={1} castShadow />
-                                <Environment preset="studio" />
+                                {/* Dim ambient so the glowColor tint on the material is visible */}
+                                <ambientLight intensity={0.25} />
+                                <directionalLight position={[5, 8, 5]} intensity={0.6} />
+                                <directionalLight position={[-3, -2, 4]} intensity={0.2} />
+                                {/* Colored key light from the badge's own glowColor */}
+                                <pointLight
+                                    position={[3, 4, 4]}
+                                    intensity={1.2}
+                                    color={glowColor ?? '#ffffff'}
+                                    distance={20}
+                                    decay={2}
+                                />
+                                {/* Soft fill from opposite side */}
+                                <pointLight position={[-4, -2, 3]} intensity={0.4} color="#ffffff" />
+                                <Environment preset="night" />
                                 <Center>
                                     <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>

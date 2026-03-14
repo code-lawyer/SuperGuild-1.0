@@ -88,9 +88,9 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
                 // geometry with no meaningful embedded color anyway.
                 const mat = new THREE.MeshStandardMaterial({
                     color: color.clone(),   // exact glowColor — source of truth for appearance
-                    metalness: 0.55,
-                    roughness: 0.35,
-                    envMapIntensity: 0,     // CRITICAL: disable IBL so no env preset can override color
+                    metalness: 0.6,
+                    roughness: 0.3,
+                    envMapIntensity: 0.2,   // Subtle neutral IBL for metallic depth (warehouse preset = no color cast)
                 });
 
                 if (!isThumbnail) {

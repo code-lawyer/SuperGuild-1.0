@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Center } from '@react-three/drei';
+import { OrbitControls, Center, Environment } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import BadgeModel from '@/components/3d/BadgeModel';
@@ -63,16 +63,15 @@ export default function BadgeShowcaseModal({
                         >
                             <Suspense fallback={null}>
                                 {/*
-                                 * Lighting strategy: neutral white lights only.
-                                 * No <Environment> — HDRI presets introduce unpredictable
-                                 * color casts ("night" = blue, "studio" = white blowout).
-                                 * Model color identity comes entirely from the material
-                                 * color set in BadgeModel (= glowColor). Lights are white
-                                 * and only control brightness/shadow depth.
+                                 * Lighting: neutral white directional lights + warehouse IBL.
+                                 * "warehouse" preset is near-grey (no warm/cool color cast),
+                                 * providing just enough environment reflection for metallic depth.
+                                 * envMapIntensity is kept low (0.2) so glowColor still dominates.
                                  */}
-                                <ambientLight intensity={0.5} color="#ffffff" />
-                                <directionalLight position={[4, 6, 5]} intensity={1.0} color="#ffffff" />
-                                <directionalLight position={[-3, -2, 3]} intensity={0.35} color="#ffffff" />
+                                <Environment background={false} preset="warehouse" />
+                                <ambientLight intensity={0.35} color="#ffffff" />
+                                <directionalLight position={[4, 6, 5]} intensity={0.9} color="#ffffff" />
+                                <directionalLight position={[-3, -2, 3]} intensity={0.25} color="#ffffff" />
                                 <Center>
                                     <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>

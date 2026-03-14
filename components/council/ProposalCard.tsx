@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAccount } from 'wagmi';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { RequireWallet } from '@/components/ui/RequireWallet';
 import { useT } from '@/lib/i18n';
@@ -8,6 +10,7 @@ import {
     useProposalOnchain,
     useUserProposalState,
     useCosign,
+    useWithdrawProposal,
     ProposalData,
     StatusLabels,
     ProposalStatus,
@@ -21,9 +24,12 @@ interface ProposalCardProps {
 
 export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardProps) {
     const t = useT();
+    const { address } = useAccount();
     const { totalVCPSignaled, status: onchainStatus, cosignerCount } = useProposalOnchain(proposal.onchain_id);
     const { hasCosigned } = useUserProposalState(proposal.onchain_id);
     const cosignMutation = useCosign();
+    const withdrawMutation = useWithdrawProposal();
+    const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
 
     const effectiveStatus = onchainStatus ?? 0;
     const isSignaling = effectiveStatus === ProposalStatus.Signaling;
@@ -145,6 +151,15 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
 
                 {/* Actions */}
                 <div className="mt-6 flex justify-end gap-3">
+                    {isSignaling && !thresholdMet && address?.toLowerCase() === proposal.proposer_address.toLowerCase() && (
+                        <button
+                            onClick={() => setShowWithdrawConfirm(true)}
+                            disabled={withdrawMutation.isPending}
+                            className="px-4 py-2 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-400 border border-slate-200 dark:border-slate-700 hover:text-red-500 hover:border-red-300 transition-colors disabled:opacity-50"
+                        >
+                            {withdrawMutation.isPending ? t.council.withdrawing : t.council.withdrawProposal}
+                        </button>
+                    )}
                     {isSignaling && !thresholdMet && (
                         <RequireWallet onAuthorized={handleCosign}>
                             {(handleClick) => (
@@ -170,6 +185,34 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
                         </div>
                     )}
                 </div>
+
+                {/* Withdraw confirm inline */}
+                {showWithdrawConfirm && (
+                    <div className="mt-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/40 rounded-xl p-4 flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-bold text-red-700 dark:text-red-400">{t.council.withdrawProposalConfirmTitle}</p>
+                            <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">{t.council.withdrawProposalConfirmBody}</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <button
+                                onClick={() => setShowWithdrawConfirm(false)}
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            >
+                                {t.common.cancel}
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    await withdrawMutation.mutateAsync(proposal.id);
+                                    setShowWithdrawConfirm(false);
+                                }}
+                                disabled={withdrawMutation.isPending}
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                            >
+                                {withdrawMutation.isPending ? t.council.withdrawing : t.council.withdrawProposal}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </GlassCard>
     );

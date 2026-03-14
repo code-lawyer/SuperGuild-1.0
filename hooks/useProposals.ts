@@ -423,6 +423,31 @@ export function useCastVote() {
     });
 }
 
+/** 撤回提案（仅提案发起人，仅在联署阶段且未达阈值时可用） */
+export function useWithdrawProposal() {
+    const { address } = useAccount();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (proposalDbId: string) => {
+            if (!address) throw new Error('请先连接钱包');
+            const { error } = await supabase
+                .from('proposals')
+                .update({ status: 'CANCELLED' })
+                .eq('id', proposalDbId)
+                .eq('proposer_address', address.toLowerCase());
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: '✅ 提案已撤回' });
+            queryClient.invalidateQueries({ queryKey: ['proposals'] });
+        },
+        onError: (error: any) => {
+            toast({ title: '❌ 撤回失败', description: error?.message });
+        },
+    });
+}
+
 /** 结算提案（同步 Supabase 状态） */
 export function useFinalizeProposal() {
     const queryClient = useQueryClient();

@@ -593,6 +593,10 @@ const en = {
         proposalOnchainNote: 'Proposal will be created on-chain and requires a two-step signature.',
         submitting: 'Processing…',
         submitProposal: 'Submit Proposal (1 USDC)',
+        withdrawProposal: 'Withdraw Proposal',
+        withdrawProposalConfirmTitle: 'Confirm Withdrawal',
+        withdrawProposalConfirmBody: 'This will close the proposal permanently. Are you sure you want to withdraw it?',
+        withdrawing: 'Withdrawing…',
     },
 
     // ── Admin Panel ──

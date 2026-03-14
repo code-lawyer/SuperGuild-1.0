@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
+import { toast } from '@/components/ui/use-toast';
 
 // TODO: contact_email and contact_telegram are stored in plaintext.
 // Before mainnet, encrypt at-rest or move to a separate encrypted table.
@@ -186,8 +187,7 @@ export function useUploadAvatar() {
 
             const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('wallet_address', address.toLowerCase());
+                .upsert({ wallet_address: address.toLowerCase(), avatar_url: publicUrl }, { onConflict: 'wallet_address' });
             if (updateError) throw updateError;
 
             return publicUrl;
@@ -195,6 +195,10 @@ export function useUploadAvatar() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile', address?.toLowerCase()] });
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
+            toast({ title: '✅ 头像已更新' });
+        },
+        onError: (error: any) => {
+            toast({ title: '❌ 上传失败', description: error?.message || '请稍后重试' });
         },
     });
 }

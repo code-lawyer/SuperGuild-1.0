@@ -583,6 +583,10 @@ const zh: TranslationKeys = {
         proposalOnchainNote: '提案将在链上创建，需要两步签名',
         submitting: '处理中...',
         submitProposal: '提交提案 (1 USDC)',
+        withdrawProposal: '撤回提案',
+        withdrawProposalConfirmTitle: '确认撤回提案',
+        withdrawProposalConfirmBody: '撤回后提案将关闭，不可恢复。确定要撤回吗？',
+        withdrawing: '撤回中…',
     },
 
     // ── 管理面板 ──

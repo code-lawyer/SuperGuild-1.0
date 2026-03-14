@@ -139,12 +139,20 @@ export default function CollaborationDetailPage() {
 
                     {/* Action buttons */}
                     <div className="flex gap-3 shrink-0 flex-wrap justify-end">
-                        {collab.status === 'OPEN' && !isInitiator && address && (
-                            <button onClick={() => setShowApplyForm(true)} className="ag-btn-primary">
-                                <span className="material-symbols-outlined !text-[18px]">handshake</span>
-                                {t.quests.pendingQuests}
-                            </button>
-                        )}
+                        {collab.status === 'OPEN' && !isInitiator && address && (() => {
+                            const myApp = applications?.find(a => a.applicant_id.toLowerCase() === address.toLowerCase());
+                            const hasApplied = !!myApp;
+                            return (
+                                <button
+                                    onClick={() => { if (!hasApplied) setShowApplyForm(true); }}
+                                    disabled={hasApplied}
+                                    className={hasApplied ? 'ag-btn-secondary opacity-50 cursor-not-allowed' : 'ag-btn-primary'}
+                                >
+                                    <span className="material-symbols-outlined !text-[18px]">{hasApplied ? 'schedule' : 'handshake'}</span>
+                                    {hasApplied ? t.common.pending : t.quests.pendingQuests}
+                                </button>
+                            );
+                        })()}
                         {isInitiator && !['SETTLED', 'CANCELLED'].includes(collab.status) && (
                             <button onClick={() => setShowCancelConfirm(true)} className="ag-btn-secondary text-red-500 hover:bg-red-50 hover:border-red-200">
                                 <span className="material-symbols-outlined !text-[18px]">cancel</span>

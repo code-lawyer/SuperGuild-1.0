@@ -377,6 +377,11 @@ const en = {
         bioPlaceholder: 'Tell us about yourself and your skills...',
         topContributor: 'Top Contributor',
         anonymous: 'Anonymous',
+        portfolio: 'Portfolio',
+        uploadAvatar: 'Change Avatar',
+        avatarUploading: 'Uploading...',
+        publicProfileOf: '{name}\'s Profile',
+        noPortfolio: 'No portfolio link provided',
     },
 
     // ── Notifications ──

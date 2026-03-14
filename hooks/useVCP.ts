@@ -57,7 +57,7 @@ export function useVCP() {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('vcp_cache')
-                .eq('wallet_address', address)
+                .eq('wallet_address', address.toLowerCase())
                 .single()
 
             if (data && !error) {

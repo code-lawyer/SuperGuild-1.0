@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient } from 'wagmi';
-import { keccak256, toBytes, parseUnits } from 'viem';
+import { keccak256, toBytes, parseUnits, getAddress } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
 import sparkGovernorAbi from '@/constants/SparkGovernor.json';
@@ -259,17 +259,17 @@ export function useCreateProposal() {
             // 2. Approve USDC
             toast({ title: '步骤 1/2: 授权 USDC...' });
             await writeContractAsync({
-                address: MOCK_USDC.address,
+                address: getAddress(MOCK_USDC.address),
                 abi: erc20ApproveAbi,
                 functionName: 'approve',
-                args: [SPARK_GOVERNOR.address, parseUnits('1', 6)],
+                args: [getAddress(SPARK_GOVERNOR.address), parseUnits('1', 6)],
                 chainId: SPARK_GOVERNOR.chainId,
             });
 
             // 3. Create proposal on-chain
             toast({ title: '步骤 2/2: 创建提案...' });
             const createTx = await writeContractAsync({
-                address: SPARK_GOVERNOR.address,
+                address: getAddress(SPARK_GOVERNOR.address),
                 abi: sparkGovernorAbi,
                 functionName: 'createProposal',
                 args: [contentHash],
@@ -332,7 +332,7 @@ export function useCosign() {
             }
 
             const tx = await writeContractAsync({
-                address: SPARK_GOVERNOR.address,
+                address: getAddress(SPARK_GOVERNOR.address),
                 abi: sparkGovernorAbi,
                 functionName: 'cosign',
                 args: [BigInt(params.onchainId)],

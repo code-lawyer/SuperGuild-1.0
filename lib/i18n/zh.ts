@@ -372,6 +372,11 @@ const zh: TranslationKeys = {
         bioPlaceholder: '介绍一下你自己和你的技能...',
         topContributor: '核心贡献者',
         anonymous: '匿名用户',
+        portfolio: '作品集',
+        uploadAvatar: '更换头像',
+        avatarUploading: '上传中...',
+        publicProfileOf: '{name} 的公开档案',
+        noPortfolio: '未提供作品集链接',
     },
 
     notifications: {

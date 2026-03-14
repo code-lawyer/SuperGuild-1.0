@@ -15,6 +15,7 @@ export interface Profile {
     portfolio: string | null;
     profile_completed: boolean;
     vcp_cache: number;
+    avatar_url: string | null;
     created_at: string;
 }
 
@@ -38,7 +39,7 @@ export function useMyProfile() {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('wallet_address', address)
+                .eq('wallet_address', address.toLowerCase())
                 .single();
 
             if (error && error.code === 'PGRST116') {
@@ -62,23 +63,24 @@ export function useMyProfile() {
     });
 }
 
-// ── Get profile by wallet address (for display names) ──
+// ── Get profile by wallet address (for display names + public view) ──
 export function useProfileByAddress(addr: string | null | undefined) {
+    const addrLower = addr?.toLowerCase();
     return useQuery({
-        queryKey: ['profile', addr],
+        queryKey: ['profile', addrLower],
         queryFn: async () => {
-            if (!addr) return null;
+            if (!addrLower) return null;
 
             const { data, error } = await supabase
                 .from('profiles')
-                .select('wallet_address, username, bio, portfolio, profile_completed')
-                .eq('wallet_address', addr)
+                .select('wallet_address, username, bio, portfolio, profile_completed, vcp_cache, avatar_url')
+                .eq('wallet_address', addrLower)
                 .single();
 
             if (error) return null;
-            return data as Pick<Profile, 'wallet_address' | 'username' | 'bio' | 'portfolio' | 'profile_completed'>;
+            return data as Pick<Profile, 'wallet_address' | 'username' | 'bio' | 'portfolio' | 'profile_completed' | 'vcp_cache' | 'avatar_url'>;
         },
-        enabled: !!addr,
+        enabled: !!addrLower,
     });
 }
 
@@ -133,6 +135,7 @@ export function useUpdateMyProfile() {
             contact_email?: string;
             contact_telegram?: string;
             portfolio?: string;
+            avatar_url?: string;
         }) => {
             if (!address) throw new Error('请先连接钱包');
 
@@ -145,18 +148,52 @@ export function useUpdateMyProfile() {
             const { error } = await supabase
                 .from('profiles')
                 .upsert({
-                    wallet_address: address,
+                    wallet_address: address.toLowerCase(),
                     username: input.username.trim(),
                     bio: input.bio?.trim() || null,
                     contact_email: input.contact_email?.trim() || null,
                     contact_telegram: input.contact_telegram?.trim() || null,
                     portfolio: input.portfolio?.trim() || null,
                     profile_completed: true,
+                    ...(input.avatar_url !== undefined && { avatar_url: input.avatar_url }),
                 });
 
             if (error) throw error;
         },
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile', address] });
+        },
+    });
+}
+
+// ── Upload avatar to Supabase Storage ──
+export function useUploadAvatar() {
+    const { address } = useAccount();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (file: File) => {
+            if (!address) throw new Error('请先连接钱包');
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const path = `${address.toLowerCase()}/avatar.${ext}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(path, file, { upsert: true, contentType: file.type });
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('wallet_address', address.toLowerCase());
+            if (updateError) throw updateError;
+
+            return publicUrl;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile', address?.toLowerCase()] });
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
         },
     });

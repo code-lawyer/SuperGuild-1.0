@@ -48,7 +48,7 @@ const nextConfig = {
               // Google Fonts CSS is loaded from googleapis.com
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://cdn.img2ipfs.com https://s2.loli.net https://*.supabase.co",
-              "connect-src 'self' https: wss:",
+              "connect-src 'self' blob: https: wss:",
               // Material Symbols / Google Fonts files served from gstatic.com
               "font-src 'self' data: https://fonts.gstatic.com",
               "object-src 'none'",

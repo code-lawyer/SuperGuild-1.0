@@ -344,6 +344,11 @@ const zh: TranslationKeys = {
         holdMilestoneDesc: '标记此里程碑需要修改，不释放报酬。',
         milestoneHeld: '已暂缓',
         milestoneHeldDesc: '发布人要求修改交付物，请重新提交。',
+        // My Desk delete
+        deleteRecord: '删除记录',
+        confirmDeleteQuestTitle: '确认删除此任务？',
+        confirmDeleteQuestBody: '删除后此任务记录将从工作台永久移除，无法恢复。',
+        confirmDelete: '确认删除',
     },
 
     profile: {
@@ -380,7 +385,7 @@ const zh: TranslationKeys = {
         financial: '财务',
         project: '项目',
         reputation: '信誉',
-        viewSettings: '查看通知设置',
+        deleteNotif: '删除通知',
     },
 
     pioneer: {

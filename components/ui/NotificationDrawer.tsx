@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '@/lib/i18n';
-import { useMyNotifications, useMarkAllRead, type Notification } from '@/hooks/useNotifications';
+import { useMyNotifications, useMarkAllRead, useMarkNotificationRead, useDeleteNotification, type Notification } from '@/hooks/useNotifications';
 
 interface Props {
     open: boolean;
@@ -11,14 +11,26 @@ interface Props {
 
 const tabKeys = ['all', 'financial', 'project', 'reputation'] as const;
 
+function getNotifCategory(type: string): 'financial' | 'project' | 'reputation' {
+    if (type === 'PAYMENT_RECEIVED') return 'financial';
+    if (['BADGE_EARNED', 'PROPOSAL_PASSED'].includes(type)) return 'reputation';
+    return 'project';
+}
+
 function getNotifIcon(type: string) {
     switch (type) {
         case 'PAYMENT_RECEIVED': return { icon: 'account_balance_wallet', bg: 'bg-blue-50 dark:bg-blue-950/40', color: 'text-blue-600 dark:text-blue-400' };
-        case 'MILESTONE_REACHED': return { icon: 'rocket_launch', bg: 'bg-purple-50 dark:bg-purple-950/40', color: 'text-purple-600 dark:text-purple-400' };
+        case 'MILESTONE_REACHED':
+        case 'MILESTONE_SUBMITTED': return { icon: 'rocket_launch', bg: 'bg-purple-50 dark:bg-purple-950/40', color: 'text-purple-600 dark:text-purple-400' };
         case 'ACCEPT_APPROVED': return { icon: 'check_circle', bg: 'bg-emerald-50 dark:bg-emerald-950/40', color: 'text-emerald-600 dark:text-emerald-400' };
         case 'BADGE_EARNED': return { icon: 'military_tech', bg: 'bg-amber-50 dark:bg-amber-950/40', color: 'text-amber-600 dark:text-amber-400' };
         case 'PROPOSAL_PASSED': return { icon: 'how_to_vote', bg: 'bg-emerald-50 dark:bg-emerald-950/40', color: 'text-emerald-600 dark:text-emerald-400' };
         case 'DISPUTE_OPENED': return { icon: 'gavel', bg: 'bg-red-50 dark:bg-red-950/40', color: 'text-red-500 dark:text-red-400' };
+        case 'ACCEPT_REQUEST': return { icon: 'person_add', bg: 'bg-indigo-50 dark:bg-indigo-950/40', color: 'text-indigo-600 dark:text-indigo-400' };
+        case 'ACCEPT_REJECTED': return { icon: 'cancel', bg: 'bg-red-50 dark:bg-red-950/40', color: 'text-red-500 dark:text-red-400' };
+        case 'TASK_CANCELLED': return { icon: 'block', bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-500 dark:text-slate-400' };
+        case 'MILESTONE_HELD': return { icon: 'edit_note', bg: 'bg-amber-50 dark:bg-amber-950/40', color: 'text-amber-600 dark:text-amber-400' };
+        case 'PROVIDER_ABANDONED': return { icon: 'person_off', bg: 'bg-orange-50 dark:bg-orange-950/40', color: 'text-orange-600 dark:text-orange-400' };
         default: return { icon: 'notifications', bg: 'bg-slate-50 dark:bg-slate-800', color: 'text-slate-500 dark:text-slate-400' };
     }
 }
@@ -39,8 +51,16 @@ export default function NotificationDrawer({ open, onClose }: Props) {
     const overlayRef = useRef<HTMLDivElement>(null);
     const { data: notifications, isLoading } = useMyNotifications();
     const markAllRead = useMarkAllRead();
+    const markRead = useMarkNotificationRead();
+    const deleteNotif = useDeleteNotification();
 
-    const items = notifications ?? [];
+    const allItems = notifications ?? [];
+
+    // Filter by category tab
+    const items = activeTab === 'all'
+        ? allItems
+        : allItems.filter(n => getNotifCategory(n.type) === activeTab);
+
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
 
@@ -51,6 +71,10 @@ export default function NotificationDrawer({ open, onClose }: Props) {
         return acc;
     }, {});
 
+    // Group order
+    const orderedLabels = [t.notifications.today, t.notifications.yesterday, t.notifications.earlier]
+        .filter(label => grouped[label]);
+
     useEffect(() => {
         if (open) document.body.style.overflow = 'hidden';
         else document.body.style.overflow = '';
@@ -58,6 +82,8 @@ export default function NotificationDrawer({ open, onClose }: Props) {
     }, [open]);
 
     if (!open) return null;
+
+    const unreadCount = allItems.filter(n => !n.is_read).length;
 
     return (
         <div className="fixed inset-0 z-[100]">
@@ -74,12 +100,14 @@ export default function NotificationDrawer({ open, onClose }: Props) {
                         <p className="text-xs text-slate-500 font-medium mt-0.5">{t.notifications.subtitle}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => markAllRead.mutate()}
-                            className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                        >
-                            {t.notifications.markAllRead}
-                        </button>
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={() => markAllRead.mutate()}
+                                className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                            >
+                                {t.notifications.markAllRead}
+                            </button>
+                        )}
                         <button
                             onClick={onClose}
                             className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-400 transition-colors"
@@ -91,19 +119,31 @@ export default function NotificationDrawer({ open, onClose }: Props) {
 
                 {/* Category Tabs */}
                 <div className="px-6 py-3 flex gap-2 overflow-x-auto no-scrollbar border-b border-slate-100/60 dark:border-slate-800/60">
-                    {tabKeys.map(key => (
-                        <button
-                            key={key}
-                            onClick={() => setActiveTab(key)}
-                            className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                                activeTab === key
-                                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                                    : 'bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary'
-                            }`}
-                        >
-                            {key === 'all' ? t.common.all : (t.notifications as Record<string, string>)[key]}
-                        </button>
-                    ))}
+                    {tabKeys.map(key => {
+                        const count = key === 'all'
+                            ? allItems.filter(n => !n.is_read).length
+                            : allItems.filter(n => !n.is_read && getNotifCategory(n.type) === key).length;
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setActiveTab(key)}
+                                className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                                    activeTab === key
+                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                                        : 'bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary'
+                                }`}
+                            >
+                                {key === 'all' ? t.common.all : (t.notifications as Record<string, string>)[key]}
+                                {count > 0 && (
+                                    <span className={`inline-flex items-center justify-center min-w-[16px] h-4 rounded-full text-[10px] font-bold px-1 ${
+                                        activeTab === key ? 'bg-white/20 text-white dark:bg-black/20 dark:text-slate-900' : 'bg-primary/10 text-primary'
+                                    }`}>
+                                        {count}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Notifications List */}
@@ -121,23 +161,35 @@ export default function NotificationDrawer({ open, onClose }: Props) {
                             <p className="text-sm font-semibold">{t.notifications.noNotifications}</p>
                         </div>
                     ) : (
-                        Object.entries(grouped).map(([label, notifs]) => (
+                        orderedLabels.map(label => (
                             <div key={label}>
                                 {/* Time Group Header */}
                                 <div className="px-2 pt-3 pb-2">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
                                 </div>
                                 <div className="space-y-2">
-                                    {notifs.map(n => {
+                                    {grouped[label].map(n => {
                                         const { icon, bg, color } = getNotifIcon(n.type);
                                         return (
                                             <div
                                                 key={n.id}
-                                                className="group relative bg-white/60 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-100 dark:hover:border-slate-700/60 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                                                className="group relative bg-white/60 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-100 dark:hover:border-slate-700/60 rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                                                onClick={() => { if (!n.is_read) markRead.mutate(n.id); }}
                                             >
                                                 {/* Unread dot */}
                                                 {!n.is_read && (
                                                     <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-primary ring-4 ring-primary/10" />
+                                                )}
+
+                                                {/* Delete button — only on read notifications, hover-reveal */}
+                                                {n.is_read && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); deleteNotif.mutate(n.id); }}
+                                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-6 h-6 rounded-md hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-300 hover:text-red-400 dark:hover:text-red-400"
+                                                        title={t.notifications.deleteNotif}
+                                                    >
+                                                        <span className="material-symbols-outlined !text-[14px]">delete</span>
+                                                    </button>
                                                 )}
 
                                                 <div className="flex gap-3.5">
@@ -162,13 +214,6 @@ export default function NotificationDrawer({ open, onClose }: Props) {
                             </div>
                         ))
                     )}
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 border-t border-slate-100/60 dark:border-slate-800/60 bg-white/40 dark:bg-slate-900/20">
-                    <button className="w-full py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary transition-colors">
-                        {t.notifications.viewSettings}
-                    </button>
                 </div>
             </div>
 

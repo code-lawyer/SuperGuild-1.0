@@ -100,6 +100,28 @@ export function useMarkAllRead() {
     });
 }
 
+// ── Delete a notification (only allowed for own read notifications) ──
+export function useDeleteNotification() {
+    const queryClient = useQueryClient();
+    const { address } = useAccount();
+
+    return useMutation({
+        mutationFn: async (notificationId: string) => {
+            if (!address) throw new Error('请先连接钱包');
+            const { error } = await supabase
+                .from('notifications')
+                .delete()
+                .eq('id', notificationId)
+                .eq('user_address', address);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notifications', address] });
+            queryClient.invalidateQueries({ queryKey: ['notifications-unread', address] });
+        },
+    });
+}
+
 // ── Helper: create a notification (used by other hooks) ──
 export async function createNotification(input: {
     user_address: string;

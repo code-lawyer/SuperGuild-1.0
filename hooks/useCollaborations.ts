@@ -787,5 +787,27 @@ export function useRejectApplication() {
     });
 }
 
+// ── Delete a cancelled collaboration (initiator only) ──
+export function useDeleteCancelledCollab() {
+    const { address } = useAccount();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (collabId: string) => {
+            if (!address) throw new Error('请先连接钱包');
+            const { error } = await supabase
+                .from('collaborations')
+                .delete()
+                .eq('id', collabId)
+                .eq('initiator_id', address)
+                .eq('status', 'CANCELLED');
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+        },
+    });
+}
+
 // ── Keep legacy export for backward compat ──
 export const useAcceptCollaboration = useApplyToAccept;

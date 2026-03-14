@@ -348,6 +348,11 @@ const en = {
         holdMilestoneDesc: 'Request revisions — reward will not be released.',
         milestoneHeld: 'Revision Required',
         milestoneHeldDesc: 'The initiator has requested revisions. Please resubmit.',
+        // My Desk delete
+        deleteRecord: 'Delete Record',
+        confirmDeleteQuestTitle: 'Delete this quest?',
+        confirmDeleteQuestBody: 'This quest record will be permanently removed from your desk and cannot be recovered.',
+        confirmDelete: 'Delete',
     },
 
     // ── Profile ──
@@ -386,7 +391,7 @@ const en = {
         financial: 'Financial',
         project: 'Project',
         reputation: 'Reputation',
-        viewSettings: 'View Notification Settings',
+        deleteNotif: 'Delete',
     },
 
     // ── Pioneer ──

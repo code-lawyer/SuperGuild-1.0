@@ -382,6 +382,8 @@ const en = {
         avatarUploading: 'Uploading...',
         publicProfileOf: '{name}\'s Profile',
         noPortfolio: 'No portfolio link provided',
+        avatarUpdated: 'Avatar updated',
+        avatarUploadFailed: 'Upload failed',
     },
 
     // ── Notifications ──
@@ -597,6 +599,21 @@ const en = {
         withdrawProposalConfirmTitle: 'Confirm Withdrawal',
         withdrawProposalConfirmBody: 'This will close the proposal permanently. Are you sure you want to withdraw it?',
         withdrawing: 'Withdrawing…',
+        // Toast messages (used by hooks)
+        proposalStep1: 'Step 1/2: Approving USDC...',
+        proposalStep2: 'Step 2/2: Creating proposal...',
+        proposalCreated: 'Proposal created successfully',
+        proposalCreateFailed: 'Failed to create proposal',
+        cosignSuccess: 'Cosigned successfully',
+        cosignFailed: 'Cosign failed',
+        activatingVotePower: 'Activating voting power for first-time vote...',
+        submittingVote: 'Submitting vote...',
+        voteSuccess: 'Vote submitted successfully',
+        voteFailed: 'Vote failed',
+        proposalWithdrawn: 'Proposal withdrawn',
+        withdrawFailed: 'Withdrawal failed',
+        proposalFinalized: 'Proposal finalized',
+        finalizeFailed: 'Finalization failed',
     },
 
     // ── Admin Panel ──
@@ -733,6 +750,35 @@ const en = {
         expertTagsLabel: 'Expertise Tags (comma-separated)',
         expertTagsPlaceholder: 'Contract Law, IP, Cross-border',
         childItem: 'Child',
+    },
+
+    // ── Profile Gate Modal ──
+    profileGate: {
+        title: 'Complete Your Profile',
+        subtitle: 'Fill in the following details so other members can learn about you.',
+        usernameLabel: 'Handle',
+        contactHint: 'At least one contact method required',
+        bioLabel: 'Bio',
+        portfolioLabel: 'Portfolio Link',
+        optional: 'Optional',
+        usernamePlaceholder: 'Your public nickname',
+        bioPlaceholder: 'Briefly introduce yourself…',
+        saving: 'Saving…',
+        saveAndContinue: 'Save & Continue',
+        contactNote: 'Contact info is only visible to your collaboration partners after a quest is accepted.',
+        errorNoUsername: 'Please enter a handle',
+        errorNoContact: 'Please provide at least one contact method',
+        errorSaveFailed: 'Failed to save',
+    },
+
+    // ── Common Errors ──
+    errors: {
+        connectWallet: 'Please connect your wallet first',
+        walletRequired: 'Please connect your wallet to use this feature',
+        usernameRequired: 'Handle is required',
+        contactRequired: 'Please provide at least one contact method (Email or Telegram)',
+        dbWriteFailed: 'Database write failed',
+        retryLater: 'Please try again later',
     },
 
     // ── Payment / Settlement ──

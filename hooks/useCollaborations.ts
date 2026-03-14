@@ -5,6 +5,7 @@ import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
 import { useAuth } from '@/providers/AuthProvider';
 import { createNotification } from './useNotifications';
+import { useT } from '@/lib/i18n';
 
 export type CollabStatus = 'OPEN' | 'PENDING_APPROVAL' | 'LOCKED' | 'ACTIVE' | 'PENDING' | 'SETTLED' | 'DISPUTED' | 'CANCELLED';
 export type MilestoneStatus = 'INCOMPLETE' | 'SUBMITTED' | 'CONFIRMED';
@@ -158,10 +159,11 @@ export function useCreateCollaboration() {
     const { address } = useAccount();
     const { isAuthenticated, signIn } = useAuth();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (input: CreateCollabInput) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             // Ensure authenticated before writing (RLS requires auth)
             if (!isAuthenticated) {
@@ -216,10 +218,11 @@ export function useCreateCollaboration() {
 export function useApplyToAccept() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             // Get collab to find initiator
             const { data: collab } = await supabase
@@ -271,10 +274,11 @@ export function useApplyToAccept() {
 export function useApproveProvider() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             // Get pending provider and verify caller is initiator
             const { data: collab } = await supabase
@@ -371,10 +375,11 @@ export function useRejectProvider() {
 export function useAbandonCollaboration() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             const { data: collab } = await supabase
                 .from('collaborations')
@@ -411,10 +416,11 @@ export function useAbandonCollaboration() {
 export function useCancelCollaboration() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             const { data: collab } = await supabase
                 .from('collaborations')
@@ -453,6 +459,7 @@ export function useCancelCollaboration() {
 export function useSubmitProofMutation() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async ({ milestoneId, contentUrl, contentHash }: {
@@ -460,7 +467,7 @@ export function useSubmitProofMutation() {
             contentUrl: string;
             contentHash: string;
         }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             const { error: proofErr } = await supabase
                 .from('proofs')
@@ -628,10 +635,11 @@ export function useApplyToCollab() {
     const { address } = useAccount();
     const { isAuthenticated, signIn } = useAuth();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async ({ collabId, message }: { collabId: string; message: string }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             if (!isAuthenticated) {
                 const ok = await signIn();
@@ -791,10 +799,11 @@ export function useRejectApplication() {
 export function useDeleteCancelledCollab() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (collabId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             const { error } = await supabase
                 .from('collaborations')
                 .delete()

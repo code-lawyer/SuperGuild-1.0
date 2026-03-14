@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
+import { useT } from '@/lib/i18n';
 
 export interface Notification {
     id: string;
@@ -104,10 +105,11 @@ export function useMarkAllRead() {
 export function useDeleteNotification() {
     const queryClient = useQueryClient();
     const { address } = useAccount();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (notificationId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             const { error } = await supabase
                 .from('notifications')
                 .delete()

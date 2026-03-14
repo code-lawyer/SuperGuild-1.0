@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import { useAccount } from 'wagmi';
 import { toast } from '@/components/ui/use-toast';
+import { useT } from '@/lib/i18n';
 
 // TODO: contact_email and contact_telegram are stored in plaintext.
 // Before mainnet, encrypt at-rest or move to a separate encrypted table.
@@ -128,6 +129,7 @@ export function useUserMedals() {
 export function useUpdateMyProfile() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (input: {
@@ -138,12 +140,12 @@ export function useUpdateMyProfile() {
             portfolio?: string;
             avatar_url?: string;
         }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
 
             // Must have username and at least one contact method
-            if (!input.username?.trim()) throw new Error('代号为必填项');
+            if (!input.username?.trim()) throw new Error(t.errors.usernameRequired);
             if (!input.contact_email?.trim() && !input.contact_telegram?.trim()) {
-                throw new Error('请至少填写一种联系方式（Email 或 Telegram）');
+                throw new Error(t.errors.contactRequired);
             }
 
             const { error } = await supabase
@@ -171,10 +173,11 @@ export function useUpdateMyProfile() {
 export function useUploadAvatar() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (file: File) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
             const path = `${address.toLowerCase()}/avatar.${ext}`;
 
@@ -195,10 +198,10 @@ export function useUploadAvatar() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile', address?.toLowerCase()] });
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
-            toast({ title: '✅ 头像已更新' });
+            toast({ title: t.profile.avatarUpdated });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 上传失败', description: error?.message || '请稍后重试' });
+            toast({ title: t.profile.avatarUploadFailed, description: error?.message || t.errors.retryLater });
         },
     });
 }

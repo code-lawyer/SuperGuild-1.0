@@ -377,6 +377,8 @@ const zh: TranslationKeys = {
         avatarUploading: '上传中...',
         publicProfileOf: '{name} 的公开档案',
         noPortfolio: '未提供作品集链接',
+        avatarUpdated: '头像已更新',
+        avatarUploadFailed: '上传失败',
     },
 
     notifications: {
@@ -587,6 +589,21 @@ const zh: TranslationKeys = {
         withdrawProposalConfirmTitle: '确认撤回提案',
         withdrawProposalConfirmBody: '撤回后提案将关闭，不可恢复。确定要撤回吗？',
         withdrawing: '撤回中…',
+        // Toast 消息（hooks 使用）
+        proposalStep1: '步骤 1/2：授权 USDC...',
+        proposalStep2: '步骤 2/2：创建提案...',
+        proposalCreated: '提案创建成功',
+        proposalCreateFailed: '提案创建失败',
+        cosignSuccess: '联署成功',
+        cosignFailed: '联署失败',
+        activatingVotePower: '首次投票需激活投票权...',
+        submittingVote: '提交投票中...',
+        voteSuccess: '投票成功',
+        voteFailed: '投票失败',
+        proposalWithdrawn: '提案已撤回',
+        withdrawFailed: '撤回失败',
+        proposalFinalized: '提案已结算',
+        finalizeFailed: '结算失败',
     },
 
     // ── 管理面板 ──
@@ -723,6 +740,35 @@ const zh: TranslationKeys = {
         expertTagsLabel: '专长标签（逗号分隔）',
         expertTagsPlaceholder: '合同法, 知识产权, 跨境合规',
         childItem: '子项',
+    },
+
+    // ── 档案门控弹窗 ──
+    profileGate: {
+        title: '完善个人档案',
+        subtitle: '请先填写以下信息，以便其他成员了解你',
+        usernameLabel: '代号',
+        contactHint: '至少填一个联系方式',
+        bioLabel: '个人简介',
+        portfolioLabel: '作品集链接',
+        optional: '选填',
+        usernamePlaceholder: '你的公开昵称',
+        bioPlaceholder: '简单介绍下你自己…',
+        saving: '保存中…',
+        saveAndContinue: '保存并继续',
+        contactNote: '联系方式仅在协作建立后对协作对象可见',
+        errorNoUsername: '请填写代号',
+        errorNoContact: '请至少填写一种联系方式',
+        errorSaveFailed: '保存失败',
+    },
+
+    // ── 通用错误消息 ──
+    errors: {
+        connectWallet: '请先连接钱包',
+        walletRequired: '请先连接钱包以使用此功能',
+        usernameRequired: '代号为必填项',
+        contactRequired: '请至少填写一种联系方式（Email 或 Telegram）',
+        dbWriteFailed: '数据库写入失败',
+        retryLater: '请稍后重试',
     },
 
     // ── 支付 / 结算 ──

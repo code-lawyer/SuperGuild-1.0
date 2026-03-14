@@ -8,6 +8,7 @@ import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
 import sparkGovernorAbi from '@/constants/SparkGovernor.json';
 import vcpAbi from '@/constants/VCPTokenV2.json';
 import { toast } from '@/components/ui/use-toast';
+import { useT } from '@/lib/i18n';
 
 // ── ERC-20 approve ABI (minimal) ──
 const erc20ApproveAbi = [
@@ -231,10 +232,11 @@ export function useCreateProposal() {
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
+    const t = useT();
 
     return useMutation({
         mutationFn: async (params: { title: string; body: string; attachmentUrls: string[] }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
             if (!MOCK_USDC.address) throw new Error('USDC 合约未配置');
 
@@ -251,13 +253,13 @@ export function useCreateProposal() {
                 .select('id')
                 .single();
 
-            if (dbError || !dbRecord) throw new Error('数据库写入失败');
+            if (dbError || !dbRecord) throw new Error(t.errors.dbWriteFailed);
 
             const proposalId = dbRecord.id;
             const contentHash = keccak256(toBytes(proposalId));
 
             // 2. Approve USDC
-            toast({ title: '步骤 1/2: 授权 USDC...' });
+            toast({ title: t.council.proposalStep1 });
             await writeContractAsync({
                 address: getAddress(MOCK_USDC.address),
                 abi: erc20ApproveAbi,
@@ -267,7 +269,7 @@ export function useCreateProposal() {
             });
 
             // 3. Create proposal on-chain
-            toast({ title: '步骤 2/2: 创建提案...' });
+            toast({ title: t.council.proposalStep2 });
             const createTx = await writeContractAsync({
                 address: getAddress(SPARK_GOVERNOR.address),
                 abi: sparkGovernorAbi,
@@ -298,11 +300,11 @@ export function useCreateProposal() {
             return { proposalId, txHash: createTx };
         },
         onSuccess: () => {
-            toast({ title: '✅ 提案创建成功！' });
+            toast({ title: t.council.proposalCreated });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 提案创建失败', description: error?.shortMessage || error?.message });
+            toast({ title: t.council.proposalCreateFailed, description: error?.shortMessage || error?.message });
         },
     });
 }
@@ -313,10 +315,11 @@ export function useCosign() {
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
+    const t = useT();
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
 
             // 读取联署人的 VCP 余额
@@ -350,12 +353,12 @@ export function useCosign() {
             return { txHash: tx };
         },
         onSuccess: () => {
-            toast({ title: '✅ 联署成功！' });
+            toast({ title: t.council.cosignSuccess });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
             queryClient.invalidateQueries({ queryKey: ['proposal-cosigners'] });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 联署失败', description: error?.shortMessage || error?.message });
+            toast({ title: t.council.cosignFailed, description: error?.shortMessage || error?.message });
         },
     });
 }
@@ -366,10 +369,11 @@ export function useCastVote() {
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
+    const t = useT();
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number; support: boolean }) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
 
             // 检查投票权重，如果为 0 则自动 delegate 给自己
@@ -381,7 +385,7 @@ export function useCastVote() {
                     args: [address],
                 });
                 if (Number(votes) === 0) {
-                    toast({ title: '⚡ 首次投票需激活投票权...' });
+                    toast({ title: t.council.activatingVotePower });
                     const delegateTx = await writeContractAsync({
                         address: VCP_TOKEN.address,
                         abi: vcpAbi,
@@ -393,7 +397,7 @@ export function useCastVote() {
                 }
             }
 
-            toast({ title: '🗳️ 提交投票中...' });
+            toast({ title: t.council.submittingVote });
             const tx = await writeContractAsync({
                 address: SPARK_GOVERNOR.address,
                 abi: sparkGovernorAbi,
@@ -414,11 +418,11 @@ export function useCastVote() {
             return { txHash: tx };
         },
         onSuccess: () => {
-            toast({ title: '✅ 投票成功！' });
+            toast({ title: t.council.voteSuccess });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 投票失败', description: error?.shortMessage || error?.message });
+            toast({ title: t.council.voteFailed, description: error?.shortMessage || error?.message });
         },
     });
 }
@@ -427,10 +431,11 @@ export function useCastVote() {
 export function useWithdrawProposal() {
     const { address } = useAccount();
     const queryClient = useQueryClient();
+    const t = useT();
 
     return useMutation({
         mutationFn: async (proposalDbId: string) => {
-            if (!address) throw new Error('请先连接钱包');
+            if (!address) throw new Error(t.errors.connectWallet);
             const { error } = await supabase
                 .from('proposals')
                 .update({ status: 'CANCELLED' })
@@ -439,11 +444,11 @@ export function useWithdrawProposal() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: '✅ 提案已撤回' });
+            toast({ title: t.council.proposalWithdrawn });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 撤回失败', description: error?.message });
+            toast({ title: t.council.withdrawFailed, description: error?.message });
         },
     });
 }
@@ -453,6 +458,7 @@ export function useFinalizeProposal() {
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
+    const t = useT();
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
@@ -486,11 +492,11 @@ export function useFinalizeProposal() {
             return { txHash: tx };
         },
         onSuccess: () => {
-            toast({ title: '✅ 提案已结算！' });
+            toast({ title: t.council.proposalFinalized });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
         onError: (error: any) => {
-            toast({ title: '❌ 结算失败', description: error?.shortMessage || error?.message });
+            toast({ title: t.council.finalizeFailed, description: error?.shortMessage || error?.message });
         },
     });
 }

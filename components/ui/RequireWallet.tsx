@@ -58,7 +58,7 @@ function WalletPromptModal({ onClose }: { onClose: () => void }) {
                     {t.common.connectWallet}
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                    请先连接钱包以使用此功能
+                    {t.errors.walletRequired}
                 </p>
                 <button
                     onClick={onClose}

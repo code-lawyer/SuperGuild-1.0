@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useMyProfile, useUpdateMyProfile } from '@/hooks/useProfile';
+import { useT } from '@/lib/i18n';
 
 export default function ProfileGateModal() {
     const { isConnected } = useAccount();
     const { data: profile, isLoading } = useMyProfile();
     const updateProfile = useUpdateMyProfile();
+    const t = useT();
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -41,8 +43,8 @@ export default function ProfileGateModal() {
 
     const handleSubmit = async () => {
         setError('');
-        if (!username.trim()) { setError('请填写代号'); return; }
-        if (!hasContact) { setError('请至少填写一种联系方式'); return; }
+        if (!username.trim()) { setError(t.profileGate.errorNoUsername); return; }
+        if (!hasContact) { setError(t.profileGate.errorNoContact); return; }
 
         try {
             await updateProfile.mutateAsync({
@@ -53,7 +55,7 @@ export default function ProfileGateModal() {
                 portfolio: portfolio.trim(),
             });
         } catch (e: any) {
-            setError(e.message || '保存失败');
+            setError(e.message || t.profileGate.errorSaveFailed);
         }
     };
 
@@ -69,8 +71,8 @@ export default function ProfileGateModal() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mx-auto mb-4">
                         <span className="material-symbols-outlined !text-[32px] text-primary">person_add</span>
                     </div>
-                    <h2 className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">完善个人档案</h2>
-                    <p className="text-[14px] text-slate-400 dark:text-slate-500 mt-1.5">请先填写以下信息，以便其他成员了解你</p>
+                    <h2 className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">{t.profileGate.title}</h2>
+                    <p className="text-[14px] text-slate-400 dark:text-slate-500 mt-1.5">{t.profileGate.subtitle}</p>
                 </div>
 
                 {/* Form */}
@@ -78,13 +80,13 @@ export default function ProfileGateModal() {
                     {/* Username (required) */}
                     <div>
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
-                            代号 <span className="text-red-500">*</span>
+                            {t.profileGate.usernameLabel} <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="你的公开昵称"
+                            placeholder={t.profileGate.usernamePlaceholder}
                             className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
@@ -92,7 +94,7 @@ export default function ProfileGateModal() {
                     {/* Contact: Email */}
                     <div>
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
-                            Email <span className="text-[#B8BACA]">(至少填一个联系方式)</span>
+                            Email <span className="text-[#B8BACA]">({t.profileGate.contactHint})</span>
                         </label>
                         <input
                             type="email"
@@ -120,12 +122,12 @@ export default function ProfileGateModal() {
                     {/* Bio (optional) */}
                     <div>
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
-                            个人简介 <span className="text-[#B8BACA]">(选填)</span>
+                            {t.profileGate.bioLabel} <span className="text-[#B8BACA]">({t.profileGate.optional})</span>
                         </label>
                         <textarea
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
-                            placeholder="简单介绍下你自己…"
+                            placeholder={t.profileGate.bioPlaceholder}
                             rows={2}
                             className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
                         />
@@ -134,7 +136,7 @@ export default function ProfileGateModal() {
                     {/* Portfolio (optional) */}
                     <div>
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
-                            作品集链接 <span className="text-[#B8BACA]">(选填)</span>
+                            {t.profileGate.portfolioLabel} <span className="text-[#B8BACA]">({t.profileGate.optional})</span>
                         </label>
                         <input
                             type="url"
@@ -160,15 +162,15 @@ export default function ProfileGateModal() {
                     {updateProfile.isPending ? (
                         <>
                             <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
-                            保存中…
+                            {t.profileGate.saving}
                         </>
                     ) : (
-                        '保存并继续'
+                        t.profileGate.saveAndContinue
                     )}
                 </button>
 
                 <p className="text-[11px] text-[#B8BACA] text-center">
-                    联系方式仅在协作建立后对协作对象可见
+                    {t.profileGate.contactNote}
                 </p>
             </div>
         </div>

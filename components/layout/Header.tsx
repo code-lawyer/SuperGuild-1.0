@@ -36,7 +36,7 @@ export default function Header() {
             href: '/bulletin',
             subItems: [
                 { label: t.nav.sub_docs_announcements, href: '/bulletin' },
-                { label: t.nav.sub_docs_pioneers, href: '/bulletin' },
+                { label: t.nav.sub_docs_pioneers, href: '/bulletin/pioneer' },
             ]
         },
         {

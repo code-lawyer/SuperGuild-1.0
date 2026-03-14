@@ -43,7 +43,7 @@ const zh: TranslationKeys = {
         services: '自治商办',
         bounties: '冒险者大厅',
         governance: '提灯议会',
-        docs: '先行者信标',
+        docs: '公告板',
         profile: '个体主页',
 
         // Navigation Sub-items
@@ -418,6 +418,8 @@ const zh: TranslationKeys = {
         pioneerTitle: '先行者信标',
         pioneerSubtitle: '先行者勋章持有者的专属发布频道。',
         postButton: '发布公告',
+        postBeacon: '发布信标',
+        noPioneerBeacons: '暂无信标',
         modalTitle: '先行者播报',
         titleLabel: '标题',
         contentLabel: '内容',

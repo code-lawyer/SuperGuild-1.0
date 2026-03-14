@@ -23,9 +23,14 @@ export interface Bulletin {
     bulletin_attachments?: BulletinAttachment[];
 }
 
-export function useBulletins(category?: string) {
+// filter:
+//   'pioneer'       → only pioneer beacons
+//   'guild'         → all except pioneer (admin-published)
+//   'general' | 'update' | 'event' → exact category match
+//   undefined | 'all' → no filter
+export function useBulletins(filter?: string) {
     const { data, isLoading, error } = useQuery({
-        queryKey: ['bulletins', category],
+        queryKey: ['bulletins', filter],
         queryFn: async () => {
             let query = supabase
                 .from('bulletins')
@@ -36,8 +41,10 @@ export function useBulletins(category?: string) {
                 .order('is_pinned', { ascending: false })
                 .order('created_at', { ascending: false });
 
-            if (category && category !== 'all') {
-                query = query.eq('category', category);
+            if (filter === 'guild') {
+                query = query.neq('category', 'pioneer');
+            } else if (filter && filter !== 'all') {
+                query = query.eq('category', filter);
             }
 
             const { data, error } = await query;

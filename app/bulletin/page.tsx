@@ -1,65 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useBulletins, type Bulletin } from '@/hooks/useBulletins';
 import { SquareLoader } from '@/components/ui/SquareLoader';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePioneerGate } from '@/hooks/usePioneerGate';
-import PioneerPostModal from '@/components/bulletin/PioneerPostModal';
 import Markdown from '@/components/ui/Markdown';
 
-export default function BulletinPage() {
+const categoryStyle: Record<string, string> = {
+    general: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    update: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    event: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+};
+
+export default function GuildBulletinPage() {
     const t = useT();
-    const [activeCategory, setActiveCategory] = useState('all');
+    const [activeCategory, setActiveCategory] = useState('guild');
     const { bulletins, isLoading } = useBulletins(activeCategory);
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const { isPioneer, isConnected, isLoading: nftLoading, isError: nftError, address, refetch } = usePioneerGate();
-
-    // Cooldown state
-    const [cooldown, setCooldown] = useState<{ canPost: boolean; daysRemaining: number } | null>(null);
-
-    useEffect(() => {
-        if (!address || !isPioneer) return;
-        fetch(`/api/bulletin/pioneer/status?address=${address}`)
-            .then(res => res.json())
-            .then(data => setCooldown(data))
-            .catch(() => setCooldown(null));
-    }, [address, isPioneer]);
 
     const categories = [
-        { key: 'all', label: t.common.all },
-        { key: 'pioneer', label: t.bulletin.pioneer },
+        { key: 'guild', label: t.common.all },
         { key: 'general', label: t.bulletin.general },
         { key: 'update', label: t.bulletin.update },
         { key: 'event', label: t.bulletin.event },
     ];
-
-    const categoryStyle: Record<string, string> = {
-        pioneer: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-        general: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-        update: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-        event: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-    };
-
-    // Determine button state
-    const getPostButtonState = () => {
-        if (!isConnected) return { disabled: true, label: t.bulletin.connectWalletToPost, icon: 'wallet' };
-        if (nftLoading) return { disabled: true, label: t.bulletin.nftChecking, icon: 'progress_activity', spin: true };
-        if (nftError) return { disabled: true, label: t.bulletin.nftCheckFailed, icon: 'error', retry: true };
-        if (!isPioneer) return { disabled: true, label: t.bulletin.nftRequired, icon: 'lock' };
-        if (cooldown && !cooldown.canPost) return {
-            disabled: true,
-            label: t.bulletin.cooldownRemaining.replace('{days}', String(cooldown.daysRemaining)),
-            icon: 'schedule'
-        };
-        return { disabled: false, label: t.bulletin.postButton, icon: 'campaign' };
-    };
-
-    const btnState = getPostButtonState();
 
     return (
         <div className="relative min-h-screen selection:bg-primary/20">
@@ -74,61 +40,21 @@ export default function BulletinPage() {
                     description={t.bulletin.subtitle}
                 />
 
-                {/* Filter Tabs & Action */}
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
-                    <div className="flex flex-wrap gap-2">
-                        {categories.map(cat => (
-                            <button
-                                key={cat.key}
-                                onClick={() => setActiveCategory(cat.key)}
-                                className={`px-5 py-2 text-xs font-bold transition-colors transition-transform rounded-lg ${activeCategory === cat.key
-                                    ? 'bg-primary text-white shadow-md'
-                                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
-                                    }`}
-                            >
-                                <span className="relative z-10">{cat.label}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Pioneer Post Button — always visible */}
-                    <button
-                        onClick={() => {
-                            if ('retry' in btnState && btnState.retry) {
-                                refetch();
-                            } else if (!btnState.disabled) {
-                                setIsModalOpen(true);
-                            }
-                        }}
-                        disabled={btnState.disabled && !('retry' in btnState && btnState.retry)}
-                        title={btnState.label}
-                        className={`sg-take-btn sg-take-btn-amber gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${
-                            btnState.disabled
-                                ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-50'
-                                : 'text-amber-600 dark:text-amber-400'
-                        }`}
-                    >
-                        <span className={`material-symbols-outlined !text-[16px] ${'spin' in btnState && btnState.spin ? 'animate-spin' : ''}`}>
-                            {btnState.icon}
-                        </span>
-                        {btnState.label}
-                    </button>
+                {/* Filter Tabs */}
+                <div className="flex flex-wrap gap-2 mb-10">
+                    {categories.map(cat => (
+                        <button
+                            key={cat.key}
+                            onClick={() => setActiveCategory(cat.key)}
+                            className={`px-5 py-2 text-xs font-bold transition-colors rounded-lg ${activeCategory === cat.key
+                                ? 'bg-primary text-white shadow-md'
+                                : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                                }`}
+                        >
+                            {cat.label}
+                        </button>
+                    ))}
                 </div>
-
-                <PioneerPostModal
-                    isOpen={isModalOpen}
-                    onClose={() => {
-                        setIsModalOpen(false);
-                        // Refresh cooldown after posting
-                        if (address && isPioneer) {
-                            fetch(`/api/bulletin/pioneer/status?address=${address}`)
-                                .then(res => res.json())
-                                .then(data => setCooldown(data))
-                                .catch(() => {});
-                        }
-                    }}
-                    authorAddress={address || ''}
-                />
 
                 {/* Bulletin List */}
                 {isLoading ? (
@@ -146,14 +72,13 @@ export default function BulletinPage() {
                         {bulletins.map((b: Bulletin) => {
                             const isExpanded = expandedId === b.id;
                             const hasAttachments = b.bulletin_attachments && b.bulletin_attachments.length > 0;
-                            const isPioneerPost = b.category === 'pioneer';
                             return (
                                 <motion.div
                                     layout
                                     key={b.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className={`group border transition-colors transition-transform duration-300 relative overflow-hidden ${isExpanded
+                                    className={`group border transition-colors duration-300 relative overflow-hidden ${isExpanded
                                         ? 'border-primary/40 bg-white dark:bg-bg-dark shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]'
                                         : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 hover:border-primary/30 hover:translate-x-1'
                                         }`}
@@ -181,15 +106,9 @@ export default function BulletinPage() {
                                             </h3>
                                             <div className="flex items-center gap-4 text-[10px] font-mono text-slate-400 uppercase tracking-[0.1em]">
                                                 <span className="flex items-center gap-1">
-                                                    <span className="material-symbols-outlined !text-[14px]">face</span>
-                                                    {b.author}
+                                                    <span className="material-symbols-outlined !text-[14px]">corporate_fare</span>
+                                                    SuperGuild
                                                 </span>
-                                                {isPioneerPost && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-black">
-                                                        <span className="material-symbols-outlined !text-[12px]">stars</span>
-                                                        {t.bulletin.pioneerBadge}
-                                                    </span>
-                                                )}
                                                 <span className="flex items-center gap-1">
                                                     <span className="material-symbols-outlined !text-[14px]">schedule</span>
                                                     {new Date(b.created_at).toLocaleDateString()}
@@ -197,7 +116,7 @@ export default function BulletinPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-4 h-full">
-                                            <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors transition-transform ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
+                                            <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${isExpanded ? 'bg-primary text-white border-primary rotate-180' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}>
                                                 <span className="material-symbols-outlined !text-[20px]">expand_more</span>
                                             </div>
                                         </div>
@@ -231,7 +150,7 @@ export default function BulletinPage() {
                                                                         href={att.file_url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="flex items-center gap-3 px-4 py-3 rounded border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-primary/40 hover:bg-primary/5 transition-colors transition-transform group/att"
+                                                                        className="flex items-center gap-3 px-4 py-3 rounded border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-primary/40 hover:bg-primary/5 transition-colors group/att"
                                                                     >
                                                                         <span className="material-symbols-outlined !text-[20px] text-primary opacity-60">description</span>
                                                                         <div className="flex-1 min-w-0">

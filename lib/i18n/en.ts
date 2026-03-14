@@ -43,7 +43,7 @@ const en = {
         services: 'Autonomous Office',
         bounties: 'Adventurer Hall',
         governance: 'Lantern Council',
-        docs: 'Pioneer Beacon',
+        docs: 'Bulletin',
         profile: 'Individual Profile',
 
         // Navigation Sub-items
@@ -426,6 +426,8 @@ const en = {
         pioneerTitle: 'Pioneer Beacon',
         pioneerSubtitle: 'Exclusive broadcast channel for Pioneer Medal holders.',
         postButton: 'New Announcement',
+        postBeacon: 'Broadcast Beacon',
+        noPioneerBeacons: 'No beacons yet',
         modalTitle: 'Pioneer Broadcast',
         titleLabel: 'Title',
         contentLabel: 'Content',

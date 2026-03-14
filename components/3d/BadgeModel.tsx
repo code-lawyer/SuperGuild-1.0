@@ -79,26 +79,20 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
             if (!(child as THREE.Mesh).isMesh) return;
             const mesh = child as THREE.Mesh;
 
-            // Handle both single material and material arrays
             const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
             const newMats = mats.map((srcMat) => {
                 if (!srcMat) return srcMat;
-                // Replace with MeshStandardMaterial so we have full control.
-                // Original material type is discarded — GLB models are plain white
-                // geometry with no meaningful embedded color anyway.
-                const mat = new THREE.MeshStandardMaterial({
-                    color: color.clone(),   // exact glowColor — source of truth for appearance
-                    metalness: 0.6,
-                    roughness: 0.3,
-                    envMapIntensity: 0.2,   // Subtle neutral IBL for metallic depth (warehouse preset = no color cast)
-                });
+
+                // Clone the GLB's original material to preserve artist-designed colors,
+                // textures and PBR properties. glowColor is used ONLY for the Fresnel
+                // edge-glow shader — it does NOT repaint the model surface.
+                const mat = srcMat.clone() as THREE.MeshStandardMaterial;
 
                 if (!isThumbnail) {
                     mat.onBeforeCompile = (shader: any) => {
                         injectGlowShader(shader, color);
                         mat.userData.shader = shader;
                     };
-                    // needsUpdate so onBeforeCompile fires on next render
                     mat.needsUpdate = true;
                 }
 

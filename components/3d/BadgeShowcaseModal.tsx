@@ -69,9 +69,11 @@ export default function BadgeShowcaseModal({
                                  * envMapIntensity is kept low (0.2) so glowColor still dominates.
                                  */}
                                 <Environment background={false} preset="warehouse" />
-                                <ambientLight intensity={0.35} color="#ffffff" />
-                                <directionalLight position={[4, 6, 5]} intensity={0.9} color="#ffffff" />
-                                <directionalLight position={[-3, -2, 3]} intensity={0.25} color="#ffffff" />
+                                <ambientLight intensity={0.4} color="#ffffff" />
+                                <directionalLight position={[4, 6, 5]} intensity={0.8} color="#ffffff" />
+                                <directionalLight position={[-3, -2, 3]} intensity={0.2} color="#ffffff" />
+                                {/* Soft colored fill from front — gives badge identity without repainting the surface */}
+                                <pointLight position={[0, 0, 5]} intensity={0.6} color={glowColor} distance={12} decay={2} />
                                 <Center>
                                     <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>

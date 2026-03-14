@@ -1,19 +1,21 @@
 /**
  * SuperGuild Resolver Bot
  *
- * Unified backend bot that handles three duties:
- * 1. autoRelease — Poll on-chain milestones past 7-day deadline, call autoRelease()
- * 2. resolveDispute — Watch dispute_votes tally, call resolveDispute() when threshold met
- * 3. VCP mint — Watch MilestoneSettled events and call VCP mint(to, amount, reason)
+ * Unified backend bot that handles four duties:
+ * 1. autoRelease      — Poll on-chain milestones past 7-day deadline, call autoRelease()
+ * 2. resolveDispute   — Watch dispute_votes tally, call resolveDispute() when threshold met
+ * 3. VCP mint (guild) — Watch GuildEscrow MilestoneSettled events → mint 1.0x VCP
+ * 4. VCP mint (direct)— Watch DirectPay Paid events → mint 0.5x VCP (self_managed mode)
  *
  * Environment variables required:
- *   RESOLVER_PRIVATE_KEY — Private key of the resolver/minter hot wallet
- *   SUPABASE_URL — Supabase project URL
+ *   RESOLVER_PRIVATE_KEY     — Private key of the resolver/minter hot wallet
+ *   SUPABASE_URL             — Supabase project URL
  *   SUPABASE_SERVICE_ROLE_KEY — Supabase service role key (bypasses RLS)
- *   CHAIN_ID — (optional) 421614 for testnet (default), 42161 for mainnet
- *   RPC_URL — (optional) Custom RPC URL
- *   GUILD_ESCROW_ADDRESS — (optional) Override GuildEscrow contract address
- *   VCP_TOKEN_ADDRESS — (optional) Override VCPTokenV2 contract address
+ *   CHAIN_ID                 — (optional) 421614 for testnet (default), 42161 for mainnet
+ *   RPC_URL                  — (optional) Custom RPC URL
+ *   GUILD_ESCROW_ADDRESS     — (optional) Override GuildEscrow contract address
+ *   DIRECT_PAY_ADDRESS       — (optional) Override DirectPay contract address
+ *   VCP_TOKEN_ADDRESS        — (optional) Override VCPTokenV2 contract address
  *
  * Usage:
  *   npx tsx scripts/resolver-bot.ts
@@ -32,8 +34,17 @@ const chain = CHAIN_ID === 42161 ? arbitrum : arbitrumSepolia;
 const GUILD_ESCROW_ADDRESS = (process.env.GUILD_ESCROW_ADDRESS ||
     '0x8828c3fe2f579a70057714e4034d8c8f91232a60') as `0x${string}`;
 
+const DIRECT_PAY_ADDRESS = (process.env.DIRECT_PAY_ADDRESS ||
+    (CHAIN_ID === 42161
+        ? '0x0000000000000000000000000000000000000000' // TODO: mainnet address
+        : '0xDc0f7BF5c7C026f8000e00a40d0f93a28c04bf65')  // Arbitrum Sepolia
+) as `0x${string}`;
+
 const VCP_TOKEN_ADDRESS = (process.env.VCP_TOKEN_ADDRESS ||
     '0xcDD2b15fEFC2071339234Ee2D72104F8E702f63C') as `0x${string}`;
+
+// 0.5x multiplier for self_managed (DirectPay) settlements
+const DIRECT_PAY_VCP_MULTIPLIER = 0.5;
 
 const DEFAULT_RPC: Record<number, string> = {
     421614: 'https://sepolia-rollup.arbitrum.io/rpc',
@@ -58,6 +69,10 @@ const escrowAbi = parseAbi([
     'function getCollab(bytes32 collabId) external view returns (address publisher, address worker, uint256 milestoneCount, bool cancelled)',
     'function isAllSettled(bytes32 collabId) external view returns (bool)',
     'event MilestoneSettled(bytes32 indexed collabId, uint256 milestoneIdx, address indexed worker, uint256 amount)',
+]);
+
+const directPayAbi = parseAbi([
+    'event Paid(bytes32 indexed collabId, address indexed publisher, address indexed worker, uint256 amount)',
 ]);
 
 const vcpAbi = parseAbi([
@@ -380,6 +395,7 @@ async function checkFastConfirmFreeze(address: string): Promise<string | null> {
 // ── 3. VCP Mint on MilestoneSettled events ──────────────────────────────────
 
 let lastProcessedBlock = BigInt(0);
+let lastProcessedBlockDP = BigInt(0); // DirectPay watcher cursor
 
 async function runVCPMintWatcher() {
     console.log('[vcpMint] Checking for new MilestoneSettled events...');
@@ -418,9 +434,28 @@ async function runVCPMintWatcher() {
                 continue;
             }
 
+            // Get on-chain timestamps for anti-cheat tracking
+            // submittedAt = when submitProof() was called (on-chain)
+            // confirmedAt = block timestamp of this MilestoneSettled event
+            let submittedAt: string | null = null;
+            let confirmedAt: string | null = null;
+            try {
+                const [, , submittedAtOnChain] = await publicClient.readContract({
+                    address: GUILD_ESCROW_ADDRESS,
+                    abi: escrowAbi,
+                    functionName: 'getMilestone',
+                    args: [collabId as `0x${string}`, BigInt(milestoneIdx as bigint)],
+                });
+                if (Number(submittedAtOnChain) > 0) {
+                    submittedAt = new Date(Number(submittedAtOnChain) * 1000).toISOString();
+                }
+                const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
+                confirmedAt = new Date(Number(block.timestamp) * 1000).toISOString();
+            } catch (tsErr: any) {
+                console.warn(`[vcpMint] Could not fetch timestamps for ${settlementKey}:`, tsErr.message);
+            }
+
             // Find the collaboration in Supabase to get grade + publisher
-            // We must hash each UUID client-side (keccak256 not available in Supabase),
-            // so paginate through all collaborations
             let collabUUID = '';
             let collabGrade = 'E';
             let publisher = '';
@@ -474,7 +509,7 @@ async function runVCPMintWatcher() {
                 if (skipReason) console.log(`[vcpMint] SKIP (${skipReason}): worker=${worker.slice(0, 8)}... hit monthly cap`);
             }
 
-            // Record settlement (with or without mint)
+            // Record settlement (with or without mint) — include timestamps for anti-cheat
             const settlementRecord: Record<string, any> = {
                 settlement_key: settlementKey,
                 worker_address: worker.toLowerCase(),
@@ -483,15 +518,16 @@ async function runVCPMintWatcher() {
                 vcp_amount: skipReason ? 0 : vcpForGrade,
                 anti_cheat_passed: !skipReason,
                 skip_reason: skipReason || null,
+                submitted_at: submittedAt,
+                confirmed_at: confirmedAt,
             };
 
             if (skipReason) {
-                // Record but don't mint
                 await supabase.from('vcp_settlements').insert(settlementRecord);
                 continue;
             }
 
-            // Mint VCP
+            // Mint VCP (1.0x for guild_managed)
             const vcpAmount = BigInt(vcpForGrade) * BigInt(10) ** BigInt(18);
             const reason = `Grade ${collabGrade} settled: ${(collabId as string).slice(0, 10)}...[${milestoneIdx}]`;
 
@@ -520,6 +556,157 @@ async function runVCPMintWatcher() {
         lastProcessedBlock = currentBlock;
     } catch (err: any) {
         console.error('[vcpMint] Event fetch error:', err.message);
+    }
+}
+
+// ── 4. DirectPay VCP Mint (self_managed, 0.5x) ──────────────────────────────
+
+async function runDirectPayVCPWatcher() {
+    // Skip if DirectPay address is zero (mainnet not yet deployed)
+    if (DIRECT_PAY_ADDRESS === '0x0000000000000000000000000000000000000000') return;
+
+    console.log('[directPay] Checking for new Paid events...');
+
+    const currentBlock = await publicClient.getBlockNumber();
+    const fromBlock = lastProcessedBlockDP > BigInt(0) ? lastProcessedBlockDP + BigInt(1) : currentBlock - BigInt(1000);
+
+    if (fromBlock > currentBlock) return;
+
+    try {
+        const logs = await publicClient.getContractEvents({
+            address: DIRECT_PAY_ADDRESS,
+            abi: directPayAbi,
+            eventName: 'Paid',
+            fromBlock,
+            toBlock: currentBlock,
+        });
+
+        for (const log of logs) {
+            const { collabId, publisher, worker, amount } = log.args;
+            if (!collabId || !publisher || !worker || amount === undefined) continue;
+
+            const amountFormatted = formatUnits(amount, 6);
+            console.log(`[directPay] Paid: worker=${worker} publisher=${publisher} amount=${amountFormatted} USDC`);
+
+            // Unique key per payment event (collab can have multiple milestone payments)
+            const settlementKey = `direct-${log.transactionHash}-${log.logIndex}`;
+            const { data: existing } = await supabase
+                .from('vcp_settlements')
+                .select('id')
+                .eq('settlement_key', settlementKey)
+                .maybeSingle();
+
+            if (existing) {
+                console.log(`[directPay] Already processed ${settlementKey}, skipping`);
+                continue;
+            }
+
+            // For DirectPay, payment is instant — confirmed_at = submitted_at = block timestamp
+            let confirmedAt: string | null = null;
+            try {
+                const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
+                confirmedAt = new Date(Number(block.timestamp) * 1000).toISOString();
+            } catch (tsErr: any) {
+                console.warn(`[directPay] Could not fetch block timestamp:`, tsErr.message);
+            }
+
+            // Find collab in Supabase for grade
+            let collabGrade = 'E';
+            let page = 0;
+            const PAGE_SIZE = 500;
+            let found = false;
+            while (!found) {
+                const { data: collabs } = await supabase
+                    .from('collaborations')
+                    .select('id, grade')
+                    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+                if (!collabs || collabs.length === 0) break;
+
+                for (const c of collabs) {
+                    if (toCollabId(c.id) === collabId) {
+                        collabGrade = c.grade || 'E';
+                        found = true;
+                        break;
+                    }
+                }
+                if (collabs.length < PAGE_SIZE) break;
+                page++;
+            }
+
+            if (!found) {
+                console.warn(`[directPay] Could not find collaboration for collabId ${collabId}, defaulting to grade E`);
+            }
+
+            // 0.5x VCP for self_managed
+            const vcpForGrade = Math.floor((GRADE_VCP[collabGrade] || GRADE_VCP.E) * DIRECT_PAY_VCP_MULTIPLIER);
+
+            // ── Anti-cheat checks (same rules) ──
+            let skipReason: string | null = null;
+
+            skipReason = await checkCooldown(publisher, worker);
+            if (skipReason) console.log(`[directPay] SKIP (${skipReason}): publisher=${publisher.slice(0, 8)}... worker=${worker.slice(0, 8)}...`);
+
+            if (!skipReason) {
+                skipReason = await checkFastConfirmFreeze(worker);
+                if (skipReason) console.log(`[directPay] SKIP (${skipReason}): worker=${worker.slice(0, 8)}... is frozen`);
+            }
+            if (!skipReason) {
+                skipReason = await checkFastConfirmFreeze(publisher);
+                if (skipReason) console.log(`[directPay] SKIP (${skipReason}): publisher=${publisher.slice(0, 8)}... is frozen`);
+            }
+            if (!skipReason) {
+                skipReason = await checkMonthlyCapReached(worker);
+                if (skipReason) console.log(`[directPay] SKIP (${skipReason}): worker=${worker.slice(0, 8)}... hit monthly cap`);
+            }
+
+            const settlementRecord: Record<string, any> = {
+                settlement_key: settlementKey,
+                worker_address: worker.toLowerCase(),
+                publisher_address: publisher.toLowerCase(),
+                grade: collabGrade,
+                vcp_amount: skipReason ? 0 : vcpForGrade,
+                anti_cheat_passed: !skipReason,
+                skip_reason: skipReason || null,
+                // DirectPay is instant — no submission window, confirmed_at = submitted_at
+                submitted_at: confirmedAt,
+                confirmed_at: confirmedAt,
+            };
+
+            if (skipReason) {
+                await supabase.from('vcp_settlements').insert(settlementRecord);
+                continue;
+            }
+
+            // Mint VCP (0.5x for self_managed)
+            const vcpAmount = BigInt(vcpForGrade) * BigInt(10) ** BigInt(18);
+            const reason = `DirectPay grade ${collabGrade} (0.5x): ${(collabId as string).slice(0, 10)}...`;
+
+            try {
+                const hash = await walletClient.writeContract({
+                    address: VCP_TOKEN_ADDRESS,
+                    abi: vcpAbi,
+                    functionName: 'mint',
+                    args: [worker, vcpAmount, reason],
+                });
+                const receipt = await publicClient.waitForTransactionReceipt({ hash });
+                console.log(`[directPay] Minted ${vcpForGrade} VCP (grade ${collabGrade}, 0.5x) to ${worker}: ${receipt.transactionHash}`);
+
+                await supabase.from('vcp_settlements').insert({
+                    ...settlementRecord,
+                    tx_hash: receipt.transactionHash,
+                });
+            } catch (mintErr: any) {
+                console.error(`[directPay] Mint failed for ${worker}:`, mintErr.shortMessage || mintErr.message);
+                if (mintErr.message?.includes('AccessControl')) {
+                    console.error('[directPay] CRITICAL: Resolver wallet does not have MINTER_ROLE on VCPTokenV2.');
+                }
+            }
+        }
+
+        lastProcessedBlockDP = currentBlock;
+    } catch (err: any) {
+        console.error('[directPay] Event fetch error:', err.message);
     }
 }
 
@@ -586,6 +773,7 @@ async function main() {
     console.log('╚══════════════════════════════════════╝');
     console.log(`Chain: ${chain.name} (${chain.id})`);
     console.log(`Escrow: ${GUILD_ESCROW_ADDRESS}`);
+    console.log(`DirectPay: ${DIRECT_PAY_ADDRESS}`);
     console.log(`VCP: ${VCP_TOKEN_ADDRESS}`);
     console.log(`RPC: ${RPC_URL}`);
     console.log(`Poll interval: ${POLL_INTERVAL / 1000}s`);
@@ -600,6 +788,7 @@ async function main() {
             await runAutoRelease();
             await runResolveDispute();
             await runVCPMintWatcher();
+            await runDirectPayVCPWatcher();
         } catch (err: any) {
             console.error('[main] Unhandled error in poll cycle:', err.message);
         }

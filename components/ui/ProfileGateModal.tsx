@@ -69,15 +69,15 @@ export default function ProfileGateModal() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mx-auto mb-4">
                         <span className="material-symbols-outlined !text-[32px] text-primary">person_add</span>
                     </div>
-                    <h2 className="text-[22px] font-bold text-[#121317] tracking-tight">完善个人档案</h2>
-                    <p className="text-[14px] text-[#6A6A71] mt-1.5">请先填写以下信息，以便其他成员了解你</p>
+                    <h2 className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">完善个人档案</h2>
+                    <p className="text-[14px] text-slate-400 dark:text-slate-500 mt-1.5">请先填写以下信息，以便其他成员了解你</p>
                 </div>
 
                 {/* Form */}
                 <div className="space-y-4">
                     {/* Username (required) */}
                     <div>
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
                             代号 <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -85,13 +85,13 @@ export default function ProfileGateModal() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="你的公开昵称"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
                     {/* Contact: Email */}
                     <div>
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
                             Email <span className="text-[#B8BACA]">(至少填一个联系方式)</span>
                         </label>
                         <input
@@ -99,13 +99,13 @@ export default function ProfileGateModal() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="your@email.com"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
                     {/* Contact: Telegram */}
                     <div>
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
                             Telegram
                         </label>
                         <input
@@ -113,13 +113,13 @@ export default function ProfileGateModal() {
                             value={telegram}
                             onChange={(e) => setTelegram(e.target.value)}
                             placeholder="@username"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
 
                     {/* Bio (optional) */}
                     <div>
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
                             个人简介 <span className="text-[#B8BACA]">(选填)</span>
                         </label>
                         <textarea
@@ -127,13 +127,13 @@ export default function ProfileGateModal() {
                             onChange={(e) => setBio(e.target.value)}
                             placeholder="简单介绍下你自己…"
                             rows={2}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
                         />
                     </div>
 
                     {/* Portfolio (optional) */}
                     <div>
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">
                             作品集链接 <span className="text-[#B8BACA]">(选填)</span>
                         </label>
                         <input
@@ -141,7 +141,7 @@ export default function ProfileGateModal() {
                             value={portfolio}
                             onChange={(e) => setPortfolio(e.target.value)}
                             placeholder="https://your-portfolio.com"
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-4 py-3 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform"
                         />
                     </div>
                 </div>

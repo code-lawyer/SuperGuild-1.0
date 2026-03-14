@@ -129,7 +129,7 @@ export default function PioneerPostModal({ isOpen, onClose, authorAddress }: Pio
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-2xl bg-white dark:bg-[#0a0f18] rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+                    className="relative w-full max-w-2xl bg-white dark:bg-bg-dark rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
                 >
                     <div className="p-8">
                         <div className="flex items-center justify-between mb-8">

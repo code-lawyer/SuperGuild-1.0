@@ -33,7 +33,7 @@ export default function HandOfJusticePage() {
 
                 {!isConnected ? (
                     /* Connect Wallet Gate */
-                    <div className="mt-12 overflow-hidden relative rounded-3xl border border-slate-800 bg-[#0a0f18] flex flex-col items-center justify-center py-40 shadow-2xl">
+                    <div className="mt-12 overflow-hidden relative rounded-3xl border border-slate-800 bg-bg-dark flex flex-col items-center justify-center py-40 shadow-2xl">
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/10 via-transparent to-transparent pointer-events-none" />
                         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
                         <motion.div
@@ -68,7 +68,7 @@ export default function HandOfJusticePage() {
                     />
                 ) : !hasJustice ? (
                     /* NFT Gate */
-                    <div className="mt-12 overflow-hidden relative rounded-3xl border border-slate-800 bg-[#0a0f18] flex flex-col items-center justify-center py-40 shadow-2xl">
+                    <div className="mt-12 overflow-hidden relative rounded-3xl border border-slate-800 bg-bg-dark flex flex-col items-center justify-center py-40 shadow-2xl">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-transparent to-transparent pointer-events-none" />
                         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
                         <motion.div

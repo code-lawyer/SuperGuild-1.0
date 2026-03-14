@@ -54,7 +54,7 @@ export default function MintTestUSDC() {
 
     return (
         <div className="flex items-center gap-3 mt-3">
-            <span className="text-xs text-[#6A6A71] font-mono">
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                 {t.quests.budget}: {Number(formattedBalance).toLocaleString()} USDC
             </span>
             <button

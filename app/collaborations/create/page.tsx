@@ -134,7 +134,7 @@ export default function CreateCollaborationPage() {
     return (
         <WalletGatePage>
             <div className="max-w-[640px] mx-auto px-6 py-16">
-                <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-[#6A6A71] hover:text-[#121317] transition-colors duration-200 mb-10 font-medium">
+                <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:text-white transition-colors duration-200 mb-10 font-medium">
                     <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
                     {t.quests.backToList}
                 </Link>
@@ -142,14 +142,14 @@ export default function CreateCollaborationPage() {
                 <div className="space-y-10">
                     {/* Header */}
                     <div className="fade-up">
-                        <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-[#121317] tracking-[-0.02em] mb-2">
+                        <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-slate-900 dark:text-white tracking-[-0.02em] mb-2">
                             {t.quests.createNewQuest}
                         </h1>
-                        <p className="text-[#6A6A71] text-[15px] font-medium">{t.quests.createNewQuestDesc}</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-[15px] font-medium">{t.quests.createNewQuestDesc}</p>
                     </div>
 
                     <div className="fade-up">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.grade} <span className="text-red-500">*</span>
                         </label>
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -168,7 +168,7 @@ export default function CreateCollaborationPage() {
                                         onClick={() => setGrade(g.key)}
                                         className={`p-3 rounded-2xl border transition-all duration-200 flex flex-col items-center gap-0.5 ${grade === g.key
                                             ? `ring-2 ring-primary border-primary ${conf.bg}`
-                                            : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                            : 'bg-white border-slate-200 dark:border-slate-700 hover:border-primary/40'
                                             }`}
                                     >
                                         <span className={`text-[16px] font-black ${conf.color}`}>{g.label}</span>
@@ -178,7 +178,7 @@ export default function CreateCollaborationPage() {
                             })}
                         </div>
                         {gradeConf.minBudget > 0 && (
-                            <p className="text-[12px] text-[#6A6A71] mt-2">
+                            <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-2">
                                 {t.quests.gradeMinBudget}: {gradeConf.minBudget} USDC
                                 {gradeConf.minMilestones > 1 && <> · {t.quests.gradeMinMilestones}: {gradeConf.minMilestones}</>}
                             </p>
@@ -193,7 +193,7 @@ export default function CreateCollaborationPage() {
 
                     {/* Title */}
                     <div className="fade-up fade-up-delay-1">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.questTitleLabel} <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -201,13 +201,13 @@ export default function CreateCollaborationPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder={t.quests.questTitlePlaceholder}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                         />
                     </div>
 
                     {/* Description */}
                     <div className="fade-up fade-up-delay-2">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.questDescLabel} <span className="text-red-500">*</span>
                         </label>
                         <textarea
@@ -215,14 +215,14 @@ export default function CreateCollaborationPage() {
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder={t.quests.questDescPlaceholder}
                             rows={5}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
                     </div>
 
                     {/* Reference Links */}
                     <div className="fade-up">
                         <div className="flex items-center justify-between mb-2.5">
-                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.referenceLinks}</label>
+                            <label className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.quests.referenceLinks}</label>
                             <button onClick={addRef} className="text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                                 <span className="material-symbols-outlined !text-[14px]">add</span>
                                 {t.quests.addLink}
@@ -239,14 +239,14 @@ export default function CreateCollaborationPage() {
                                         value={ref.label}
                                         onChange={(e) => updateRef(i, 'label', e.target.value)}
                                         placeholder={t.quests.linkLabel}
-                                        className="w-1/3 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-colors transition-transform"
+                                        className="w-1/3 bg-white border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary transition-colors transition-transform"
                                     />
                                     <input
                                         type="url"
                                         value={ref.url}
                                         onChange={(e) => updateRef(i, 'url', e.target.value)}
                                         placeholder="https://..."
-                                        className="flex-1 bg-white border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[13px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary transition-colors transition-transform"
+                                        className="flex-1 bg-white border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary transition-colors transition-transform"
                                     />
                                     <button onClick={() => removeRef(i)} className="text-[#D1D5E0] hover:text-red-500 transition-colors">
                                         <span className="material-symbols-outlined !text-[18px]">close</span>
@@ -258,20 +258,20 @@ export default function CreateCollaborationPage() {
 
                     {/* Deadline */}
                     <div className="fade-up">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.deadlineLabel} <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="date"
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
-                            className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
+                            className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                         />
                     </div>
 
                     {/* Delivery Standard */}
                     <div className="fade-up">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.deliveryStandardLabel} <span className="text-red-500">*</span>
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3">
@@ -281,7 +281,7 @@ export default function CreateCollaborationPage() {
                                     onClick={() => { setDeliveryStandard(p.value); setCustomDelivery(''); }}
                                     className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-colors transition-transform duration-200 ${deliveryStandard === p.value
                                         ? 'bg-primary text-white border-primary shadow-sm'
-                                        : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
+                                        : 'bg-white text-[#45474D] border-slate-200 dark:border-slate-700 hover:border-primary/30 hover:text-primary'
                                         }`}
                                 >
                                     {p.label}
@@ -291,7 +291,7 @@ export default function CreateCollaborationPage() {
                                 onClick={() => setDeliveryStandard('custom')}
                                 className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-colors transition-transform duration-200 ${deliveryStandard === 'custom'
                                     ? 'bg-primary text-white border-primary shadow-sm'
-                                    : 'bg-white text-[#45474D] border-[#E8EAF0] hover:border-primary/30 hover:text-primary'
+                                    : 'bg-white text-[#45474D] border-slate-200 dark:border-slate-700 hover:border-primary/30 hover:text-primary'
                                     }`}
                             >
                                 {t.quests.customLabel}
@@ -303,14 +303,14 @@ export default function CreateCollaborationPage() {
                                 value={customDelivery}
                                 onChange={(e) => setCustomDelivery(e.target.value)}
                                 placeholder={t.quests.customDeliveryPlaceholder}
-                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
+                                className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm"
                             />
                         )}
                     </div>
 
                     {/* Budget */}
                     <div className="fade-up">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.rewardAmount} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
@@ -320,7 +320,7 @@ export default function CreateCollaborationPage() {
                                 onChange={(e) => setTotalBudget(e.target.value)}
                                 placeholder="500"
                                 min="0"
-                                className="w-full bg-white border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 tabular-nums shadow-sm"
+                                className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 tabular-nums shadow-sm"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                 <span className="text-[14px] font-black text-slate-400">USDC</span>
@@ -331,7 +331,7 @@ export default function CreateCollaborationPage() {
                     {/* Secret Details */}
                     <div className="fade-up">
                         <div className="flex items-center gap-2 mb-2.5">
-                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">
+                            <label className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 {t.quests.secretDetails}
                             </label>
                             <span className="material-symbols-outlined !text-[16px] text-primary" title={t.quests.secretDetailsDesc}>lock</span>
@@ -342,16 +342,16 @@ export default function CreateCollaborationPage() {
                             onChange={(e) => setSecretContent(e.target.value)}
                             placeholder={t.quests.secretPlaceholder}
                             rows={4}
-                            className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
+                            className="w-full bg-slate-50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 shadow-sm resize-none"
                         />
                     </div>
 
                     {/* Payment Mode */}
                     <div className="fade-up">
-                        <label className="block text-[12px] font-bold text-[#6A6A71] mb-2.5 uppercase tracking-wider">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.payment.modeTitle} <span className="text-red-500">*</span>
                         </label>
-                        <p className="text-[13px] text-[#6A6A71] mb-3">{t.payment.modeSectionDesc}</p>
+                        <p className="text-[13px] text-slate-400 dark:text-slate-500 mb-3">{t.payment.modeSectionDesc}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {/* Self-Managed — selectable */}
                             <button
@@ -360,26 +360,26 @@ export default function CreateCollaborationPage() {
                                 className={`p-4 rounded-2xl border text-left transition-all duration-200 ${
                                     paymentMode === 'self_managed'
                                         ? 'ring-2 ring-primary border-primary bg-primary/5'
-                                        : 'bg-white border-[#E8EAF0] hover:border-primary/40'
+                                        : 'bg-white border-slate-200 dark:border-slate-700 hover:border-primary/40'
                                 }`}
                             >
                                 <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[14px] font-bold text-[#121317]">{t.payment.selfManaged}</span>
+                                    <span className="text-[14px] font-bold text-slate-900 dark:text-white">{t.payment.selfManaged}</span>
                                     <span className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
                                         {t.payment.selfManagedVcp}
                                     </span>
                                 </div>
-                                <p className="text-[12px] text-[#6A6A71]">{t.payment.selfManagedDesc}</p>
+                                <p className="text-[12px] text-slate-400 dark:text-slate-500">{t.payment.selfManagedDesc}</p>
                             </button>
 
                             {/* Guild Managed — disabled (Coming Soon) */}
                             <div
-                                className="p-4 rounded-2xl border border-[#E8EAF0] bg-[#F8F9FC] opacity-50 cursor-not-allowed relative"
+                                className="p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-[#F8F9FC] opacity-50 cursor-not-allowed relative"
                                 title={t.payment.comingSoonTooltip}
                             >
                                 <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[14px] font-bold text-[#6A6A71]">{t.payment.guildManaged}</span>
-                                    <span className="text-[11px] font-bold text-[#6A6A71] bg-[#E8EAF0] px-2 py-0.5 rounded-full">
+                                    <span className="text-[14px] font-bold text-slate-400 dark:text-slate-500">{t.payment.guildManaged}</span>
+                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 bg-[#E8EAF0] px-2 py-0.5 rounded-full">
                                         {t.payment.comingSoon}
                                     </span>
                                 </div>
@@ -400,7 +400,7 @@ export default function CreateCollaborationPage() {
                     {/* Milestones */}
                     <div className="fade-up">
                         <div className="flex items-center justify-between mb-4">
-                            <label className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.milestoneBreakdown}</label>
+                            <label className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.quests.milestoneBreakdown}</label>
                             <span className={`text-[13px] font-bold tabular-nums ${totalPercentage === 100 ? 'text-emerald-500' : 'text-red-500'}`}>
                                 {t.quests.totalLabel}: {totalPercentage}%
                             </span>
@@ -416,7 +416,7 @@ export default function CreateCollaborationPage() {
                                             value={ms.title}
                                             onChange={(e) => updateMilestone(i, 'title', e.target.value)}
                                             placeholder={t.quests.milestoneTitlePlaceholder}
-                                            className="w-full bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-4 py-2.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors transition-transform duration-200"
+                                            className="w-full bg-[#F8F9FC] border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors transition-transform duration-200"
                                         />
                                         <div className="flex items-center gap-2">
                                             <input
@@ -425,11 +425,11 @@ export default function CreateCollaborationPage() {
                                                 onChange={(e) => updateMilestone(i, 'amount_percentage', e.target.value)}
                                                 min="0"
                                                 max="100"
-                                                className="w-24 bg-[#F8F9FC] border border-[#E8EAF0] rounded-xl px-3 py-2.5 text-[14px] text-[#121317] focus:outline-none focus:border-primary tabular-nums"
+                                                className="w-24 bg-[#F8F9FC] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-slate-900 dark:text-white focus:outline-none focus:border-primary tabular-nums"
                                             />
-                                            <span className="text-[12px] text-[#6A6A71] font-bold">%</span>
+                                            <span className="text-[12px] text-slate-400 dark:text-slate-500 font-bold">%</span>
                                             {Number(totalBudget) > 0 && (
-                                                <span className="text-[13px] text-[#6A6A71] ml-2 tabular-nums">
+                                                <span className="text-[13px] text-slate-400 dark:text-slate-500 ml-2 tabular-nums">
                                                     ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
                                                 </span>
                                             )}

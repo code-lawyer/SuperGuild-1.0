@@ -11,6 +11,7 @@ import PioneerCard from '@/components/pioneer/PioneerCard';
 import BadgeWall from '@/components/profile/BadgeWall';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 
 export default function ProfilePage() {
     const t = useT();
@@ -45,8 +46,9 @@ export default function ProfilePage() {
     // SSR 和客户端首帧统一渲染 loading，避免 hydration mismatch
     if (!mounted || isLoading) {
         return (
-            <div className="flex items-center justify-center py-32 text-slate-400">
-                <span className="material-symbols-outlined animate-spin !text-[32px]">progress_activity</span>
+            <div className="flex flex-col items-center justify-center py-32 gap-6 text-slate-400">
+                <SquareLoader />
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary/60 animate-pulse">Loading</span>
             </div>
         );
     }

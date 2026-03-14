@@ -27,19 +27,20 @@ import MilestoneTimeline from '@/components/collaborations/MilestoneTimeline';
 import UploadProofDialog from '@/components/collaborations/UploadProofDialog';
 import MintTestUSDC from '@/components/collaborations/MintTestUSDC';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
+import { SquareLoader } from '@/components/ui/SquareLoader';
 import { safeHref } from '@/lib/utils';
 
 function useStatusConfig() {
     const t = useT();
     return {
-        OPEN: { label: t.common.open, badgeClass: 'bg-blue-50 text-blue-700 ring-blue-700/10' },
-        PENDING_APPROVAL: { label: t.common.pendingApproval, badgeClass: 'bg-amber-50 text-amber-700 ring-amber-700/10' },
-        LOCKED: { label: t.common.locked, badgeClass: 'bg-indigo-50 text-indigo-700 ring-indigo-700/10' },
-        ACTIVE: { label: t.common.inProgress, badgeClass: 'bg-emerald-50 text-emerald-700 ring-emerald-700/10' },
-        PENDING: { label: t.common.pending, badgeClass: 'bg-purple-50 text-purple-700 ring-purple-700/10' },
-        SETTLED: { label: t.common.settled, badgeClass: 'bg-green-50 text-green-700 ring-green-700/10' },
-        DISPUTED: { label: t.common.disputed, badgeClass: 'bg-red-50 text-red-700 ring-red-700/10' },
-        CANCELLED: { label: t.common.cancelled, badgeClass: 'bg-gray-50 text-gray-700 ring-gray-700/10' },
+        OPEN: { label: t.common.open, badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20' },
+        PENDING_APPROVAL: { label: t.common.pendingApproval, badgeClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20' },
+        LOCKED: { label: t.common.locked, badgeClass: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20' },
+        ACTIVE: { label: t.common.inProgress, badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20' },
+        PENDING: { label: t.common.pending, badgeClass: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 ring-1 ring-purple-500/20' },
+        SETTLED: { label: t.common.settled, badgeClass: 'bg-green-500/10 text-green-600 dark:text-green-400 ring-1 ring-green-500/20' },
+        DISPUTED: { label: t.common.disputed, badgeClass: 'bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/20' },
+        CANCELLED: { label: t.common.cancelled, badgeClass: 'bg-slate-500/10 text-slate-500 dark:text-slate-400 ring-1 ring-slate-500/20' },
     } as Record<CollabStatus, { label: string; badgeClass: string }>;
 }
 
@@ -72,16 +73,16 @@ export default function CollaborationDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#6A6A71] space-y-4">
-                <span className="material-symbols-outlined !text-[40px] animate-spin">progress_activity</span>
-                <p className="text-sm font-medium">{t.common.loading}</p>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-slate-400 space-y-6">
+                <SquareLoader />
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary/60 animate-pulse">{t.common.loading}</p>
             </div>
         );
     }
 
     if (error || !data) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#6A6A71] space-y-4">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-slate-400 space-y-4">
                 <span className="material-symbols-outlined !text-[40px]">error</span>
                 <p className="text-sm font-medium">{t.common.noData}</p>
                 <Link href="/collaborations" className="ag-btn-secondary text-xs">{t.quests.backToList}</Link>
@@ -104,10 +105,10 @@ export default function CollaborationDetailPage() {
         <WalletGatePage>
             <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8 flex flex-col gap-8 pb-24">
                 {/* Breadcrumb */}
-                <div className="flex items-center text-sm text-[#6A6A71]">
+                <div className="flex items-center text-sm text-slate-400 dark:text-slate-500">
                     <Link href="/collaborations" className="hover:text-primary transition-colors">{t.quests.questList}</Link>
                     <span className="material-symbols-outlined text-[16px] mx-2">chevron_right</span>
-                    <span className="text-[#121317] font-medium">{collab.title}</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{collab.title}</span>
                 </div>
 
                 {/* Hero */}
@@ -118,14 +119,14 @@ export default function CollaborationDetailPage() {
                                 {status.label}
                             </span>
                             {collab.deadline && (
-                                <span className="text-[12px] text-[#6A6A71] font-medium flex items-center gap-1">
+                                <span className="text-[12px] text-slate-400 font-medium flex items-center gap-1">
                                     <span className="material-symbols-outlined !text-[14px]">schedule</span>
                                     {t.quests.deadlinePrefix} {new Date(collab.deadline).toLocaleDateString()}
                                 </span>
                             )}
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-[#121317] tracking-tight mb-3">{collab.title}</h1>
-                        <div className="flex items-center gap-4 text-sm text-[#6A6A71]">
+                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-3">{collab.title}</h1>
+                        <div className="flex items-center gap-4 text-sm text-slate-400">
                             <UserBadge role="initiator" address={collab.initiator_id!} isSelf={isInitiator} />
                             {collab.provider_id && (
                                 <>
@@ -164,13 +165,13 @@ export default function CollaborationDetailPage() {
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                         <div className="absolute inset-0 bg-[#121317]/30 backdrop-blur-sm" onClick={() => setShowApplyForm(false)} />
                         <div className="relative ag-card p-8 max-w-md w-full space-y-5">
-                            <h3 className="text-[18px] font-bold text-[#121317]">{t.quests.applyPitch}</h3>
+                            <h3 className="text-[18px] font-bold text-slate-900 dark:text-white">{t.quests.applyPitch}</h3>
                             <textarea
                                 value={applyMessage}
                                 onChange={(e) => setApplyMessage(e.target.value)}
                                 placeholder={t.quests.applyPitchPlaceholder}
                                 rows={5}
-                                className="w-full bg-slate-50 border border-[#E8EAF0] rounded-2xl px-5 py-3.5 text-[14px] text-[#121317] placeholder:text-[#B8BACA] focus:outline-none focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
+                                className="w-full bg-slate-50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/8 transition-colors transition-transform resize-none"
                             />
                             <div className="flex gap-3">
                                 <button onClick={() => setShowApplyForm(false)} className="ag-btn-secondary flex-1">{t.common.cancel}</button>
@@ -192,7 +193,7 @@ export default function CollaborationDetailPage() {
                 {/* Applicant Screening */}
                 {isInitiator && collab.status === 'OPEN' && applications && applications.length > 0 && (
                     <div className="space-y-4">
-                        <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.viewApplicants}</h3>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white px-2">{t.quests.viewApplicants}</h3>
                         <div className="grid grid-cols-1 gap-4">
                             {applications.filter(a => a.status === 'PENDING').map((app: CollabApplication) => (
                                 <ApplicantReviewCard
@@ -251,21 +252,21 @@ export default function CollaborationDetailPage() {
                 {/* Task Details */}
                 {(collab.description || collab.delivery_standard || (collab.reference_links && collab.reference_links.length > 0)) && (
                     <div className="ag-card p-8 space-y-6">
-                        <h3 className="text-[16px] font-bold text-[#121317] flex items-center gap-2">
+                        <h3 className="text-[16px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined !text-[20px] text-primary">description</span>
                             {t.quests.questDetails}
                         </h3>
 
                         {collab.description && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.questDescription}</p>
+                                <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t.quests.questDescription}</p>
                                 <p className="text-[14px] text-[#45474D] leading-relaxed whitespace-pre-wrap">{collab.description}</p>
                             </div>
                         )}
 
                         {collab.delivery_standard && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.deliveryStandard}</p>
+                                <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t.quests.deliveryStandard}</p>
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[13px] font-semibold border border-emerald-100/60">
                                     <span className="material-symbols-outlined !text-[16px]">verified</span>
                                     {collab.delivery_standard}
@@ -275,7 +276,7 @@ export default function CollaborationDetailPage() {
 
                         {collab.reference_links && collab.reference_links.length > 0 && (
                             <div>
-                                <p className="text-[12px] font-bold text-[#6A6A71] uppercase tracking-wider mb-2">{t.quests.referenceLinks}</p>
+                                <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t.quests.referenceLinks}</p>
                                 <div className="space-y-2">
                                     {collab.reference_links.map((ref: any, i: number) => (
                                         <a key={i} href={safeHref(ref.url)} target="_blank" rel="noopener noreferrer"
@@ -306,29 +307,29 @@ export default function CollaborationDetailPage() {
                 {/* Escrow Monitor — guild_managed only */}
                 {isGuildManaged && <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500" />
-                    <div className="relative bg-white rounded-xl p-8 border border-[#E8EAF0]/60 shadow-antigravity flex flex-col md:flex-row gap-8 items-center">
+                    <div className="relative bg-white rounded-xl p-8 border border-slate-200 dark:border-slate-700/60 shadow-antigravity flex flex-col md:flex-row gap-8 items-center">
                         <div className="flex-1 w-full">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
                                     <div className="bg-blue-100 p-1.5 rounded-lg text-primary">
                                         <span className="material-symbols-outlined text-[20px]">lock</span>
                                     </div>
-                                    <span className="text-sm font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.escrowMonitor}</span>
+                                    <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.quests.escrowMonitor}</span>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-2 mb-1">
-                                <span className="text-5xl font-black text-[#121317] tracking-tight tabular-nums">
+                                <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums">
                                     {collab.total_budget.toLocaleString()}
                                 </span>
-                                <span className="text-xl font-medium text-[#6A6A71]">USDC</span>
+                                <span className="text-xl font-medium text-slate-400 dark:text-slate-500">USDC</span>
                             </div>
-                            <p className="text-sm text-[#6A6A71]">{t.quests.totalValueLocked}</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500">{t.quests.totalValueLocked}</p>
                             {isInitiator && <MintTestUSDC />}
                         </div>
 
-                        <div className="flex-1 w-full bg-[#F0F1F5]/50 rounded-xl p-6 border border-[#E8EAF0]/60">
+                        <div className="flex-1 w-full bg-[#F0F1F5]/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700/60">
                             <div className="flex justify-between text-sm font-medium mb-3">
-                                <span className="text-[#121317]">{t.quests.fundsReleased}</span>
+                                <span className="text-slate-900 dark:text-white">{t.quests.fundsReleased}</span>
                                 <span className="text-primary">{releasedPct}%</span>
                             </div>
                             <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden mb-3 relative">
@@ -341,7 +342,7 @@ export default function CollaborationDetailPage() {
                                     <div key={i} className="absolute top-0 h-full w-0.5 bg-white/30" style={{ left: `${pos}%` }} />
                                 ))}
                             </div>
-                            <div className="flex justify-between text-xs text-[#6A6A71]">
+                            <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500">
                                 <span>{releasedAmount} USDC {t.quests.paid}</span>
                                 <span>{remainingAmount} USDC {t.quests.remaining}</span>
                             </div>
@@ -351,9 +352,9 @@ export default function CollaborationDetailPage() {
 
                 {/* Milestone Console */}
                 <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-[#121317] px-2">{t.quests.milestoneConsole}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white px-2">{t.quests.milestoneConsole}</h3>
                     {milestones.length === 0 ? (
-                        <div className="bg-white rounded-xl border border-[#E8EAF0]/60 p-12 text-center text-[#6A6A71] text-sm">
+                        <div className="bg-white rounded-xl border border-slate-200 dark:border-slate-700/60 p-12 text-center text-slate-400 dark:text-slate-500 text-sm">
                             <span className="material-symbols-outlined !text-[48px] block mb-4 opacity-20">flag</span>
                             {t.quests.noMilestones}
                         </div>
@@ -503,7 +504,7 @@ function UserBadge({ role, address, isSelf }: { role: 'initiator' | 'provider'; 
             <span className="material-symbols-outlined text-[16px] text-primary">
                 {role === 'initiator' ? 'person' : 'engineering'}
             </span>
-            <span className="font-medium text-[#121317]">{displayName(profile, address)}</span>
+            <span className="font-medium text-slate-900 dark:text-white">{displayName(profile, address)}</span>
             {isSelf && <span className="text-primary text-[10px] ml-0.5">{t.quests.you}</span>}
         </span>
     );
@@ -539,11 +540,11 @@ function ApplicantReviewCard({
                     <div className="min-w-0">
                         <Link
                             href={`/profile?address=${application.applicant_id}`}
-                            className="text-[15px] font-bold text-[#121317] hover:text-primary transition-colors"
+                            className="text-[15px] font-bold text-slate-900 dark:text-white hover:text-primary transition-colors"
                         >
                             {displayName(profile, application.applicant_id)}
                         </Link>
-                        <p className="text-[11px] text-[#6A6A71] font-mono">{application.applicant_id.slice(0, 6)}&hellip;{application.applicant_id.slice(-4)}</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">{application.applicant_id.slice(0, 6)}&hellip;{application.applicant_id.slice(-4)}</p>
                     </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -574,7 +575,7 @@ function ApplicantReviewCard({
                         <p className="text-[13px] text-[#45474D] leading-relaxed line-clamp-3">{profile.bio}</p>
                     )}
                     <div className="bg-[#F8F9FC] rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-[#6A6A71] uppercase tracking-wider mb-1">{t.quests.applyPitch}</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{t.quests.applyPitch}</p>
                         <p className="text-[13px] text-[#45474D] leading-relaxed italic">
                             &ldquo;{application.message || t.quests.noApplicationMessage}&rdquo;
                         </p>
@@ -584,7 +585,7 @@ function ApplicantReviewCard({
                 {/* Right: contact + stats */}
                 <div className="space-y-3">
                     <div className="bg-[#F8F9FC] rounded-xl p-4 space-y-2">
-                        <p className="text-[10px] font-bold text-[#6A6A71] uppercase tracking-wider">{t.quests.contactEmail.replace('Email', 'Contact')}</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.quests.contactEmail.replace('Email', 'Contact')}</p>
                         {profile?.contact_email ? (
                             <div className="flex items-center gap-2 text-[13px] text-[#45474D]">
                                 <span className="material-symbols-outlined !text-[14px] text-primary">mail</span>
@@ -617,7 +618,7 @@ function ApplicantReviewCard({
                         )}
                         <Link
                             href={`/profile?address=${application.applicant_id}`}
-                            className="inline-flex items-center gap-1.5 text-[12px] text-[#6A6A71] font-semibold hover:text-primary transition-colors"
+                            className="inline-flex items-center gap-1.5 text-[12px] text-slate-400 dark:text-slate-500 font-semibold hover:text-primary transition-colors"
                         >
                             <span className="material-symbols-outlined !text-[14px]">person</span>
                             {t.quests.viewProfile}
@@ -634,7 +635,7 @@ function ApplicantReviewCard({
                         <p className="text-[12px] text-red-600 mt-0.5">{t.quests.confirmRejectBody}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                        <button onClick={() => setShowRejectConfirm(false)} className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 text-[#6A6A71] hover:bg-slate-50">{t.common.cancel}</button>
+                        <button onClick={() => setShowRejectConfirm(false)} className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 text-slate-400 dark:text-slate-500 hover:bg-slate-50">{t.common.cancel}</button>
                         <button
                             onClick={async () => { await onReject(); setShowRejectConfirm(false); }}
                             disabled={isRejecting}
@@ -665,8 +666,8 @@ function ConfirmDialog({
         <div className="fixed inset-0 z-[200] flex items-center justify-center">
             <div className="absolute inset-0 bg-[#121317]/30 backdrop-blur-sm" onClick={onCancel} />
             <div className="relative ag-card p-8 max-w-md mx-4 space-y-5">
-                <h3 className="text-[18px] font-bold text-[#121317]">{title}</h3>
-                <p className="text-[14px] text-[#6A6A71] leading-relaxed">{body}</p>
+                <h3 className="text-[18px] font-bold text-slate-900 dark:text-white">{title}</h3>
+                <p className="text-[14px] text-slate-400 dark:text-slate-500 leading-relaxed">{body}</p>
                 <div className="flex gap-3">
                     <button onClick={onCancel} className="ag-btn-secondary flex-1">{t.common.cancel}</button>
                     <button onClick={onConfirm} disabled={isLoading} className={`flex-1 px-5 py-2.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-colors transition-transform ${confirmClass}`}>

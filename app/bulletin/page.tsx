@@ -154,7 +154,7 @@ export default function BulletinPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`group border transition-colors transition-transform duration-300 relative overflow-hidden ${isExpanded
-                                        ? 'border-primary/40 bg-white dark:bg-[#0a0f18] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]'
+                                        ? 'border-primary/40 bg-white dark:bg-bg-dark shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]'
                                         : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 hover:border-primary/30 hover:translate-x-1'
                                         }`}
                                     style={{ clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%)" }}

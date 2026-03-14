@@ -29,13 +29,13 @@ export default function MyDeskPage() {
     ];
 
     const statusStyle: Record<string, string> = {
-        OPEN: 'bg-blue-50 text-blue-700 ring-blue-700/10',
-        PENDING_APPROVAL: 'bg-amber-50 text-amber-700 ring-amber-700/10',
-        ACTIVE: 'bg-emerald-50 text-emerald-700 ring-emerald-700/10',
-        LOCKED: 'bg-indigo-50 text-indigo-700 ring-indigo-700/10',
-        SETTLED: 'bg-green-50 text-green-700 ring-green-700/10',
-        CANCELLED: 'bg-gray-50 text-gray-500 ring-gray-500/10',
-        DISPUTED: 'bg-red-50 text-red-700 ring-red-700/10',
+        OPEN: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20',
+        PENDING_APPROVAL: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20',
+        ACTIVE: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20',
+        LOCKED: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20',
+        SETTLED: 'bg-green-500/10 text-green-600 dark:text-green-400 ring-1 ring-green-500/20',
+        CANCELLED: 'bg-slate-500/10 text-slate-500 dark:text-slate-400 ring-1 ring-slate-500/20',
+        DISPUTED: 'bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/20',
     };
 
     const statusLabel: Record<string, string> = {

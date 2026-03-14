@@ -67,7 +67,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-[#0a0f18]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+            <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-bg-dark/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
                 <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3 group cursor-pointer relative z-10 transition-transform active:scale-95">
@@ -96,7 +96,7 @@ export default function Header() {
 
                                 {/* Dropdown Menu */}
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-colors transition-transform duration-300 z-50">
-                                    <div className="w-64 p-2 rounded-xl bg-white/95 dark:bg-[#0a0f18]/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_0_30px_rgba(var(--primary),0.15)] flex flex-col relative overflow-hidden">
+                                    <div className="w-64 p-2 rounded-xl bg-white/95 dark:bg-bg-dark/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_0_30px_rgba(var(--primary),0.15)] flex flex-col relative overflow-hidden">
                                         {/* Top glowing edge */}
                                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 

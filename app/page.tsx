@@ -211,7 +211,7 @@ function LandingPage() {
 function Footer() {
   const t = useT();
   return (
-    <footer className="border-t border-slate-200 dark:border-slate-800/80 py-12 bg-white dark:bg-[#0a0f18] mt-auto">
+    <footer className="border-t border-slate-200 dark:border-slate-800/80 py-12 bg-white dark:bg-bg-dark mt-auto">
       <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2 text-slate-500 font-mono text-sm tracking-widest uppercase">
           <span className="material-symbols-outlined !text-[18px]">gavel</span>

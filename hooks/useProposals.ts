@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient, useSignMessage } from 'wagmi';
 import { keccak256, toBytes, parseUnits, getAddress } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
@@ -430,18 +430,25 @@ export function useCastVote() {
 /** 撤回提案（仅提案发起人，仅在联署阶段且未达阈值时可用） */
 export function useWithdrawProposal() {
     const { address } = useAccount();
+    const { signMessageAsync } = useSignMessage();
     const queryClient = useQueryClient();
     const t = useT();
 
     return useMutation({
         mutationFn: async (proposalDbId: string) => {
             if (!address) throw new Error(t.errors.connectWallet);
-            const { error } = await supabase
-                .from('proposals')
-                .update({ status: 'CANCELLED' })
-                .eq('id', proposalDbId)
-                .eq('proposer_address', address.toLowerCase());
-            if (error) throw error;
+
+            const message = `SuperGuild Withdraw Proposal\nProposal: ${proposalDbId}\nAddress: ${address}`;
+            const signature = await signMessageAsync({ message });
+
+            const res = await fetch('/api/council/proposals/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ proposalId: proposalDbId, address, signature }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to withdraw proposal');
         },
         onSuccess: () => {
             toast({ title: t.council.proposalWithdrawn });

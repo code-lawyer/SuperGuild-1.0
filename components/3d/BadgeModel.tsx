@@ -12,57 +12,47 @@ interface BadgeModelProps {
     isThumbnail?: boolean;
 }
 
+/**
+ * Fresnel edge-glow shader injected in modal (non-thumbnail) mode only.
+ * Adds an animated pulse at silhouette edges using the badge's glowColor.
+ */
 const injectGlowShader = (shader: any, glowColor: THREE.Color) => {
     shader.uniforms.glowColor = { value: glowColor };
     shader.uniforms.time = { value: 0 };
 
     shader.vertexShader = shader.vertexShader.replace(
         '#include <common>',
-        `
-    #include <common>
+        `#include <common>
     varying vec3 vViewDirection;
-    varying vec3 vWorldNormal;
-    `
+    varying vec3 vWorldNormal;`
     );
     shader.vertexShader = shader.vertexShader.replace(
         '#include <worldpos_vertex>',
-        `
-    #include <worldpos_vertex>
+        `#include <worldpos_vertex>
     vWorldNormal = normalize(normalMatrix * normal);
-    vViewDirection = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);
-    `
+    vViewDirection = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);`
     );
 
     shader.fragmentShader = shader.fragmentShader.replace(
         '#include <common>',
-        `
-    #include <common>
+        `#include <common>
     varying vec3 vViewDirection;
     varying vec3 vWorldNormal;
     uniform vec3 glowColor;
-    uniform float time;
-    `
+    uniform float time;`
     );
     shader.fragmentShader = shader.fragmentShader.replace(
         '#include <dithering_fragment>',
-        `
-    #include <dithering_fragment>
+        `#include <dithering_fragment>
     float dotProduct = dot(vViewDirection, vWorldNormal);
-    float fresnel = pow(clamp(1.0 - abs(dotProduct), 0.0, 1.0), 3.0);
-    fresnel = fresnel * 0.6; // cap glow intensity to preserve original material color
+    float fresnel = pow(clamp(1.0 - abs(dotProduct), 0.0, 1.0), 3.0) * 0.55;
     float pulse = (sin(time * 2.0) * 0.5 + 0.5) * 0.3 + 0.7;
-    gl_FragColor = vec4(mix(gl_FragColor.rgb, glowColor * pulse, fresnel), gl_FragColor.a);
-    `
+    gl_FragColor = vec4(mix(gl_FragColor.rgb, glowColor * pulse, fresnel), gl_FragColor.a);`
     );
 
     return shader;
 };
 
-/**
- * Compute a uniform scale factor that fits any model into a target size.
- * This solves the problem of GLB models having wildly different native sizes
- * (some 10cm, some 5m) — they all get normalized to the same visual size.
- */
 function computeNormalizedScale(scene: THREE.Object3D, targetSize: number): number {
     const box = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
@@ -78,7 +68,6 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
     const materialsRef = useRef<THREE.Material[]>([]);
     const color = useMemo(() => new THREE.Color(glowColor), [glowColor]);
 
-    // Auto-normalize: thumbnail fits in ~1.8 units, modal fits in ~2.8 units
     const normalizedScale = useMemo(
         () => computeNormalizedScale(clonedScene, isThumbnail ? 1.8 : 2.8),
         [clonedScene, isThumbnail],
@@ -87,34 +76,37 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
     useEffect(() => {
         materialsRef.current = [];
         clonedScene.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
-                const mesh = child as THREE.Mesh;
-                if (mesh.material) {
-                    const mat = (mesh.material as THREE.Material).clone();
+            if (!(child as THREE.Mesh).isMesh) return;
+            const mesh = child as THREE.Mesh;
 
-                    // Apply glowColor as a strong base tint (60% color, 40% white).
-                    // The lerp target is a light grey rather than pure white so the
-                    // tint remains visible even under bright lighting.
-                    if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
-                        const std = mat as THREE.MeshStandardMaterial;
-                        const lightGrey = new THREE.Color(0xd0d0d0);
-                        const tint = color.clone().lerp(lightGrey, 0.4);
-                        std.color.set(tint);
-                        std.metalness = 0.4;
-                        std.roughness = 0.45;
-                        std.envMapIntensity = 0.6;
-                    }
+            // Handle both single material and material arrays
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            const newMats = mats.map((srcMat) => {
+                if (!srcMat) return srcMat;
+                // Replace with MeshStandardMaterial so we have full control.
+                // Original material type is discarded — GLB models are plain white
+                // geometry with no meaningful embedded color anyway.
+                const mat = new THREE.MeshStandardMaterial({
+                    color: color.clone(),   // exact glowColor — source of truth for appearance
+                    metalness: 0.55,
+                    roughness: 0.35,
+                    envMapIntensity: 0,     // CRITICAL: disable IBL so no env preset can override color
+                });
 
-                    if (!isThumbnail) {
-                        mat.onBeforeCompile = (shader: any) => {
-                            injectGlowShader(shader, color);
-                            mat.userData.shader = shader;
-                        };
-                    }
-                    mesh.material = mat;
-                    materialsRef.current.push(mat);
+                if (!isThumbnail) {
+                    mat.onBeforeCompile = (shader: any) => {
+                        injectGlowShader(shader, color);
+                        mat.userData.shader = shader;
+                    };
+                    // needsUpdate so onBeforeCompile fires on next render
+                    mat.needsUpdate = true;
                 }
-            }
+
+                materialsRef.current.push(mat);
+                return mat;
+            });
+
+            mesh.material = Array.isArray(mesh.material) ? newMats : newMats[0];
         });
     }, [clonedScene, isThumbnail, color]);
 
@@ -139,7 +131,7 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
     );
 }
 
-// 预加载所有特权 NFT 模型
+// Preload all privilege NFT models
 Object.values(PRIVILEGE_NFT.tokens).forEach(token => {
     useGLTF.preload(token.glbPath);
 });

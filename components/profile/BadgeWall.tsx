@@ -7,7 +7,7 @@ import { usePrivilegeNFTs } from '@/hooks/usePrivilegeNFTs';
 import { useBadgeLore } from '@/hooks/useBadgeLore';
 import BadgeShowcaseModal from '@/components/3d/BadgeShowcaseModal';
 import { Canvas } from '@react-three/fiber';
-import { Center, OrbitControls, Environment } from '@react-three/drei';
+import { Center, OrbitControls } from '@react-three/drei';
 import BadgeModel from '@/components/3d/BadgeModel';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -150,10 +150,9 @@ export default function BadgeWall() {
                                                     frameloop="demand"
                                                 >
                                                     <Suspense fallback={null}>
-                                                        <ambientLight intensity={0.3} />
-                                                        <pointLight position={[3, 5, 4]} intensity={1.0} color={badge.token.glowColor} />
-                                                        <pointLight position={[-2, -2, 3]} intensity={0.3} color="#ffffff" />
-                                                        <Environment preset="night" />
+                                                        {/* Neutral white lights only — no Environment preset */}
+                                                        <ambientLight intensity={0.5} color="#ffffff" />
+                                                        <directionalLight position={[4, 6, 5]} intensity={1.0} color="#ffffff" />
                                                         <Center>
                                                             <BadgeModel
                                                                 glbPath={badge.token.glbPath}

@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, Center } from '@react-three/drei';
+import { OrbitControls, Center } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import BadgeModel from '@/components/3d/BadgeModel';
@@ -57,26 +57,22 @@ export default function BadgeShowcaseModal({
                         </div>
 
                         <Canvas
-                            shadows
+                            shadows={false}
                             camera={{ position: [0, 0, 6], fov: 45 }}
                             gl={{ antialias: true, alpha: true }}
                         >
                             <Suspense fallback={null}>
-                                {/* Dim ambient so the glowColor tint on the material is visible */}
-                                <ambientLight intensity={0.25} />
-                                <directionalLight position={[5, 8, 5]} intensity={0.6} />
-                                <directionalLight position={[-3, -2, 4]} intensity={0.2} />
-                                {/* Colored key light from the badge's own glowColor */}
-                                <pointLight
-                                    position={[3, 4, 4]}
-                                    intensity={1.2}
-                                    color={glowColor ?? '#ffffff'}
-                                    distance={20}
-                                    decay={2}
-                                />
-                                {/* Soft fill from opposite side */}
-                                <pointLight position={[-4, -2, 3]} intensity={0.4} color="#ffffff" />
-                                <Environment preset="night" />
+                                {/*
+                                 * Lighting strategy: neutral white lights only.
+                                 * No <Environment> — HDRI presets introduce unpredictable
+                                 * color casts ("night" = blue, "studio" = white blowout).
+                                 * Model color identity comes entirely from the material
+                                 * color set in BadgeModel (= glowColor). Lights are white
+                                 * and only control brightness/shadow depth.
+                                 */}
+                                <ambientLight intensity={0.5} color="#ffffff" />
+                                <directionalLight position={[4, 6, 5]} intensity={1.0} color="#ffffff" />
+                                <directionalLight position={[-3, -2, 3]} intensity={0.35} color="#ffffff" />
                                 <Center>
                                     <BadgeModel glbPath={glbPath} glowColor={glowColor} />
                                 </Center>

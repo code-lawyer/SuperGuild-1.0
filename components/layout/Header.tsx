@@ -16,6 +16,7 @@ export default function Header() {
     const { isConnected, address } = useAccount();
     const [mounted, setMounted] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const { locale, setLocale } = useI18n();
     const t = useT();
     const { data: unreadCount } = useUnreadCount();
@@ -25,6 +26,9 @@ export default function Header() {
     });
 
     useEffect(() => setMounted(true), []);
+
+    // Close mobile menu on route change
+    useEffect(() => { setMobileOpen(false); }, [pathname]);
 
     const navItems = [
         {
@@ -77,7 +81,7 @@ export default function Header() {
                         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">SuperGuild</h1>
                     </Link>
 
-                    {/* Nav Links */}
+                    {/* Desktop Nav Links */}
                     <nav className="hidden md:flex items-center gap-4 lg:gap-8">
                         {navItems.map((item, idx) => (
                             <div key={idx} className="relative group/nav">
@@ -147,58 +151,127 @@ export default function Header() {
                             </button>
                         )}
 
-                        {/* Wallet */}
-                        {mounted && (
-                            <ConnectButton.Custom>
-                                {({ account, chain, openConnectModal, openAccountModal, mounted: walletMounted }) => {
-                                    if (!walletMounted) return null;
-                                    if (!account) {
+                        {/* Wallet — desktop only */}
+                        <div className="hidden md:block">
+                            {mounted && (
+                                <ConnectButton.Custom>
+                                    {({ account, chain, openConnectModal, openAccountModal, mounted: walletMounted }) => {
+                                        if (!walletMounted) return null;
+                                        if (!account) {
+                                            return (
+                                                <button
+                                                    onClick={openConnectModal}
+                                                    className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-primary/20"
+                                                >
+                                                    {t.common.connectWallet}
+                                                </button>
+                                            );
+                                        }
                                         return (
                                             <button
-                                                onClick={openConnectModal}
-                                                className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-primary/20"
+                                                onClick={openAccountModal}
+                                                className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-full hover:border-primary/50 transition-colors group"
                                             >
-                                                {t.common.connectWallet}
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                                    {account.displayName}
+                                                </span>
+                                                <span className="material-symbols-outlined !text-[18px] text-slate-400 group-hover:text-primary transition-colors">
+                                                    expand_more
+                                                </span>
                                             </button>
                                         );
-                                    }
-                                    return (
-                                        <button
-                                            onClick={openAccountModal}
-                                            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-full hover:border-primary/50 transition-colors group"
-                                        >
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                                                {account.displayName}
-                                            </span>
-                                            <span className="material-symbols-outlined !text-[18px] text-slate-400 group-hover:text-primary transition-colors">
-                                                expand_more
-                                            </span>
-                                        </button>
-                                    );
-                                }}
-                            </ConnectButton.Custom>
-                        )}
+                                    }}
+                                </ConnectButton.Custom>
+                            )}
+                        </div>
 
                         {/* Admin Link */}
                         {isAdmin && (
-                            <Link href="/admin" className="min-w-[44px] min-h-[44px] rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]" title="Admin Panel" aria-label="Admin Panel">
-                                <div className="rounded-full w-full h-full bg-white dark:bg-bg-dark flex items-center justify-center">
-                                    <span className="material-symbols-outlined !text-[18px] text-amber-500 pointer-events-none">admin_panel_settings</span>
-                                </div>
+                            <Link href="/admin" className="min-w-[44px] min-h-[44px] rounded-full ring-2 ring-amber-400/40 bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center hover:ring-amber-400/70 transition-all" title="Admin Panel" aria-label="Admin Panel">
+                                <span className="material-symbols-outlined !text-[18px] text-amber-500 pointer-events-none">admin_panel_settings</span>
                             </Link>
                         )}
 
                         {/* Profile Avatar */}
                         {mounted && isConnected && (
-                            <Link href="/profile" className="min-w-[44px] min-h-[44px] rounded-full bg-gradient-to-tr from-primary to-purple-400 p-[2px]" title="My Profile" aria-label="My Profile">
-                                <div className="rounded-full w-full h-full bg-white dark:bg-bg-dark flex items-center justify-center">
-                                    <span className="material-symbols-outlined !text-[18px] text-primary pointer-events-none">person</span>
-                                </div>
+                            <Link href="/profile" className="min-w-[44px] min-h-[44px] rounded-full ring-2 ring-primary/30 bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:ring-primary/60 transition-all" title="My Profile" aria-label="My Profile">
+                                <span className="material-symbols-outlined !text-[18px] text-primary pointer-events-none">person</span>
                             </Link>
                         )}
+
+                        {/* Hamburger — mobile only */}
+                        <button
+                            onClick={() => setMobileOpen(o => !o)}
+                            className="md:hidden flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-full bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/30 transition-colors"
+                            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                        >
+                            <span className="material-symbols-outlined !text-[22px]">
+                                {mobileOpen ? 'close' : 'menu'}
+                            </span>
+                        </button>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {mobileOpen && (
+                    <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-bg-dark">
+                        <div className="max-w-[1280px] mx-auto px-6 py-4 flex flex-col gap-1">
+                            {navItems.map((item, idx) => (
+                                <div key={idx}>
+                                    <p className="px-3 pt-3 pb-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
+                                        {item.label}
+                                    </p>
+                                    {item.subItems.map((sub, sIdx) => (
+                                        <Link
+                                            key={sIdx}
+                                            href={sub.href}
+                                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                                                pathname === sub.href
+                                                    ? 'text-primary bg-primary/5'
+                                                    : 'text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                            }`}
+                                        >
+                                            <span className="material-symbols-outlined !text-[16px] text-primary/40">arrow_right</span>
+                                            {sub.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            ))}
+
+                            {/* Mobile wallet */}
+                            <div className="pt-4 pb-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+                                {mounted && (
+                                    <ConnectButton.Custom>
+                                        {({ account, openConnectModal, openAccountModal, mounted: walletMounted }) => {
+                                            if (!walletMounted) return null;
+                                            if (!account) {
+                                                return (
+                                                    <button
+                                                        onClick={openConnectModal}
+                                                        className="w-full ag-btn-primary py-3 text-sm"
+                                                    >
+                                                        {t.common.connectWallet}
+                                                    </button>
+                                                );
+                                            }
+                                            return (
+                                                <button
+                                                    onClick={openAccountModal}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl"
+                                                >
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{account.address}</span>
+                                                    <span className="material-symbols-outlined !text-[18px] text-slate-400 ml-auto shrink-0">expand_more</span>
+                                                </button>
+                                            );
+                                        }}
+                                    </ConnectButton.Custom>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </header>
 
             <NotificationDrawer open={notifOpen} onClose={() => setNotifOpen(false)} />

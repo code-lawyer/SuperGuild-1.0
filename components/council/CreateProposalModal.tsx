@@ -167,7 +167,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isPending || !title.trim() || !body.trim()}
-                                    className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-colors transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-orange-500/20 flex items-center gap-2"
+                                    className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
                                     {isPending ? (
                                         <>

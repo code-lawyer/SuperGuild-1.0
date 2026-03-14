@@ -67,19 +67,14 @@ export default function ProfilePage() {
                 </nav>
 
                 {/* Profile Header */}
-                <section className="flex flex-col items-center text-center mb-10 py-10 relative overflow-hidden rounded-2xl bg-gradient-to-b from-primary/5 via-transparent to-transparent border border-slate-100 dark:border-slate-800/60">
-                    {/* Background decoration */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
-
+                <section className="flex flex-col items-center text-center mb-10 py-10 relative overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40">
                     {/* Avatar */}
                     <div className="relative mb-5 z-10">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary via-blue-400 to-purple-400 p-[2.5px] shadow-lg shadow-primary/20">
-                            <div className="w-full h-full rounded-full bg-white dark:bg-[#101922] flex items-center justify-center overflow-hidden">
-                                <span className="material-symbols-outlined !text-[40px] text-primary/50">person</span>
-                            </div>
+                        <div className="w-24 h-24 rounded-full ring-2 ring-primary/30 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                            <span className="material-symbols-outlined !text-[40px] text-primary/50">person</span>
                         </div>
                         {/* Online indicator */}
-                        <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white dark:border-[#101922] shadow-sm" />
+                        <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white dark:border-slate-900 shadow-sm" />
                     </div>
 
                     {/* Name & bio */}

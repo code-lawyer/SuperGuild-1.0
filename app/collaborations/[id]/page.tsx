@@ -305,9 +305,8 @@ export default function CollaborationDetailPage() {
                 )}
 
                 {/* Escrow Monitor — guild_managed only */}
-                {isGuildManaged && <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500" />
-                    <div className="relative bg-white rounded-xl p-8 border border-slate-200 dark:border-slate-700/60 shadow-antigravity flex flex-col md:flex-row gap-8 items-center">
+                {isGuildManaged && <div className="relative">
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-8 border border-slate-200 dark:border-slate-700/60 shadow-antigravity flex flex-col md:flex-row gap-8 items-center">
                         <div className="flex-1 w-full">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">

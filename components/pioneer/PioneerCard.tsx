@@ -82,9 +82,8 @@ export default function PioneerCard() {
     // Already claimed — show status
     if (status?.isPioneer) {
         return (
-            <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500" />
-                <div className="relative bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="relative">
+                <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                             <span className="material-symbols-outlined !text-[28px] text-emerald-500">verified</span>
@@ -119,9 +118,8 @@ export default function PioneerCard() {
     const isSubmitting = phase === 'signing' || phase === 'claiming';
 
     return (
-        <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500" />
-            <div className="relative bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="relative">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-4 mb-2">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <span className="material-symbols-outlined !text-[28px] text-primary">explore</span>

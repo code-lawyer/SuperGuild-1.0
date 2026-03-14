@@ -108,7 +108,7 @@ export default function CollaborationsPage() {
                     />
 
                     {/* ── Filter Panel ── */}
-                    <div className="mb-8 border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-sm"
+                    <div className="mb-8 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950"
                         style={{ clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%)" }}
                     >
                         {/* Panel header */}
@@ -243,7 +243,7 @@ export default function CollaborationsPage() {
                                     >
                                         <Link
                                             href={`/collaborations/${c.id}`}
-                                            className="sg-task-card group relative flex flex-col h-full bg-white/70 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden hover:border-slate-900/60 dark:hover:border-slate-600/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300"
+                                            className="sg-task-card group relative flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-slate-900/60 dark:hover:border-slate-600/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300"
                                         >
                                             {/* Top accent bar — color per status */}
                                             <div className={`h-0.5 w-full ${

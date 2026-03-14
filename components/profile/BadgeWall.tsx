@@ -2,19 +2,15 @@
 
 import { useState, Suspense } from 'react';
 import { useT } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n';
 import { usePrivilegeNFTs } from '@/hooks/usePrivilegeNFTs';
+import { useBadgeLore } from '@/hooks/useBadgeLore';
 import BadgeShowcaseModal from '@/components/3d/BadgeShowcaseModal';
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei';
 import BadgeModel from '@/components/3d/BadgeModel';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface BadgeI18n {
-    name: string;
-    desc: string;
-    how: string;
-}
 
 interface ActiveBadge {
     glbPath: string;
@@ -23,23 +19,11 @@ interface ActiveBadge {
     privilege: string;
 }
 
-// Map token config keys to i18n keys
-function useBadgeI18n() {
-    const t = useT();
-    const map: Record<string, BadgeI18n> = {
-        PIONEER_MEMORIAL: { name: t.badges.pioneerName, desc: t.badges.pioneerDesc, how: t.badges.pioneerHow },
-        LANTERN_KEEPER: { name: t.badges.lanternName, desc: t.badges.lanternDesc, how: t.badges.lanternHow },
-        FIRST_FLAME: { name: t.badges.flameName, desc: t.badges.flameDesc, how: t.badges.flameHow },
-        HAND_OF_JUSTICE: { name: t.badges.justiceName, desc: t.badges.justiceDesc, how: t.badges.justiceHow },
-        BEACON: { name: t.badges.beaconName, desc: t.badges.beaconDesc, how: t.badges.beaconHow },
-    };
-    return map;
-}
-
 export default function BadgeWall() {
     const t = useT();
+    const { locale } = useI18n();
     const { balances, isLoading, isError, refetch } = usePrivilegeNFTs();
-    const badgeI18n = useBadgeI18n();
+    const { data: loreData } = useBadgeLore();
 
     const [modalOpen, setModalOpen] = useState(false);
     const [activeBadge, setActiveBadge] = useState<ActiveBadge | null>(null);
@@ -53,25 +37,34 @@ export default function BadgeWall() {
             key,
             token,
             owned: (balances[index] ?? 0) > 0,
-            i18n: badgeI18n[key],
+            // lore from DB keyed by token_id
+            lore: loreData?.find(l => l.token_id === Number(token.id)),
         }))
         .filter((b) => b.owned);
 
     const handleOpen = (badge: typeof ownedBadges[number]) => {
-        // Trigger glow pulse animation
         setClickedKey(badge.key);
-        // Open modal after brief delay for the glow effect
         setTimeout(() => {
             setActiveBadge({
                 glbPath: badge.token.glbPath,
                 glowColor: badge.token.glowColor,
-                name: badge.i18n.name,
-                privilege: badge.i18n.desc,
+                name: locale === 'zh' ? badge.token.zh : badge.token.name,
+                privilege: locale === 'zh' ? badge.token.privilege : badge.token.privilegeEn,
             });
             setModalOpen(true);
             setClickedKey(null);
         }, 300);
     };
+
+    // Get lore display text: origin + symbolism from DB, or fallback
+    function getLoreText(badge: typeof ownedBadges[number]): string {
+        const l = badge.lore;
+        if (!l) return t.badges.lorePending;
+        const origin = locale === 'zh' ? l.origin_zh : l.origin_en;
+        const symbolism = locale === 'zh' ? l.symbolism_zh : l.symbolism_en;
+        const parts = [origin, symbolism].filter(Boolean);
+        return parts.length > 0 ? parts.join(' · ') : t.badges.lorePending;
+    }
 
     return (
         <>
@@ -108,6 +101,9 @@ export default function BadgeWall() {
                         <AnimatePresence>
                             {ownedBadges.map((badge) => {
                                 const isClicked = clickedKey === badge.key;
+                                const displayName = locale === 'zh' ? badge.token.zh : badge.token.name;
+                                const loreText = getLoreText(badge);
+
                                 return (
                                     <motion.div
                                         key={badge.key}
@@ -139,7 +135,13 @@ export default function BadgeWall() {
                                             )}
                                         </AnimatePresence>
 
-                                        <div className="flex items-center gap-5 p-4">
+                                        {/* Color accent strip left edge */}
+                                        <div
+                                            className="absolute left-0 top-0 bottom-0 w-[3px]"
+                                            style={{ background: badge.token.glowColor }}
+                                        />
+
+                                        <div className="flex items-center gap-5 p-4 pl-5">
                                             {/* 3D Thumbnail */}
                                             <div className="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800/50">
                                                 <Canvas
@@ -172,10 +174,10 @@ export default function BadgeWall() {
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">
-                                                    {badge.i18n.name}
+                                                    {displayName}
                                                 </h4>
-                                                <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed line-clamp-2">
-                                                    {badge.i18n.desc}
+                                                <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed line-clamp-2 italic">
+                                                    {loreText}
                                                 </p>
                                             </div>
 

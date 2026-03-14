@@ -16,6 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: t.admin.navFaucet, href: '/admin/faucet', icon: 'water_drop' },
         { name: t.admin.navPioneer, href: '/admin/pioneer', icon: 'explore' },
         { name: t.admin.navLeaderboard, href: '/admin/leaderboard', icon: 'leaderboard' },
+        { name: t.admin.navBadgeLore, href: '/admin/badges', icon: 'military_tech' },
     ];
 
     return (

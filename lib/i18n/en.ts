@@ -470,6 +470,7 @@ const en = {
         privilegeBadge: 'Super Guild Privilege Badge',
         noBadges: 'No privilege badges yet',
         viewIn3D: 'View 3D',
+        lorePending: 'Lore not yet written.',
     },
 
     // ── Footer ──
@@ -597,6 +598,20 @@ const en = {
         navFaucet: 'Test Faucet',
         navPioneer: 'Pioneer Program',
         navLeaderboard: 'VCP Leaderboard',
+        navBadgeLore: 'Badge Lore',
+
+        // Badge Lore Editor
+        badgeLoreTitle: 'Badge Lore Editor',
+        badgeLoreSubtitle: 'Write the origin stories and symbolism for each Privilege NFT badge.',
+        badgeLoreOrigin: 'Origin Story',
+        badgeLoreSymbolism: 'Design Symbolism',
+        badgeLoreLore: 'World Lore',
+        badgeLoreZh: 'Chinese',
+        badgeLoreEn: 'English',
+        badgeLoreSave: 'Save',
+        badgeLoreSaving: 'Saving…',
+        badgeLoreSaved: 'Saved',
+        badgeLorePrivilege: 'Mechanic',
 
         // Faucet
         faucetTitle: 'Test USDC Faucet',

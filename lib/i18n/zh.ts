@@ -461,6 +461,7 @@ const zh: TranslationKeys = {
         privilegeBadge: 'Super Guild 创世特权',
         noBadges: '尚未持有任何特权勋章',
         viewIn3D: '3D 预览',
+        lorePending: '典藏故事尚未录入。',
     },
 
     footer: {
@@ -587,6 +588,20 @@ const zh: TranslationKeys = {
         navFaucet: '测试水龙头',
         navPioneer: '先行者招募',
         navLeaderboard: 'VCP 排行榜',
+        navBadgeLore: '勋章典藏',
+
+        // 勋章典藏编辑器
+        badgeLoreTitle: '勋章典藏编辑器',
+        badgeLoreSubtitle: '为每枚特权 NFT 撰写起源故事与设计寓意。',
+        badgeLoreOrigin: '起源故事',
+        badgeLoreSymbolism: '设计寓意',
+        badgeLoreLore: '世界观叙述',
+        badgeLoreZh: '中文',
+        badgeLoreEn: '英文',
+        badgeLoreSave: '保存',
+        badgeLoreSaving: '保存中…',
+        badgeLoreSaved: '已保存',
+        badgeLorePrivilege: '链上功能',
 
         // 水龙头
         faucetTitle: '测试 USDC 水龙头',

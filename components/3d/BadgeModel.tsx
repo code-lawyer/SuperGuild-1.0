@@ -89,12 +89,25 @@ export default function BadgeModel({ glbPath, glowColor, isThumbnail = false }: 
         clonedScene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
                 const mesh = child as THREE.Mesh;
-                if (!isThumbnail && mesh.material) {
+                if (mesh.material) {
                     const mat = (mesh.material as THREE.Material).clone();
-                    mat.onBeforeCompile = (shader: any) => {
-                        injectGlowShader(shader, color);
-                        mat.userData.shader = shader;
-                    };
+
+                    // Apply glowColor as a base tint so the model isn't pure white.
+                    // We blend: 20% glowColor + 80% white for a subtle metallic tint.
+                    if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
+                        const std = mat as THREE.MeshStandardMaterial;
+                        const tint = color.clone().lerp(new THREE.Color(0xffffff), 0.75);
+                        std.color.set(tint);
+                        std.metalness = Math.max(std.metalness, 0.3);
+                        std.roughness = Math.min(std.roughness, 0.6);
+                    }
+
+                    if (!isThumbnail) {
+                        mat.onBeforeCompile = (shader: any) => {
+                            injectGlowShader(shader, color);
+                            mat.userData.shader = shader;
+                        };
+                    }
                     mesh.material = mat;
                     materialsRef.current.push(mat);
                 }

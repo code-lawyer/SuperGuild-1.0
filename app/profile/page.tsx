@@ -127,7 +127,7 @@ export default function ProfilePage() {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <span className="text-2xl font-black text-slate-900 dark:text-white">{Math.round(vcpNum)}</span>
-                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{t.profile.vcpPoints}</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.profile.vcpPoints}</span>
                             </div>
                         </div>
 

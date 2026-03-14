@@ -54,7 +54,7 @@ export default function InfrastructurePage() {
                                                 <div className="w-9 h-9 bg-sky-500/15 border border-sky-400/30 rounded-lg flex items-center justify-center">
                                                     <span className="material-symbols-outlined !text-[18px] text-sky-600">{s.icon || 'settings_input_component'}</span>
                                                 </div>
-                                                <span className="text-[9px] font-mono font-bold text-sky-500 uppercase tracking-widest">{serviceId}</span>
+                                                <span className="text-[10px] font-mono font-bold text-sky-500 uppercase tracking-widest">{serviceId}</span>
                                             </div>
                                             {isUnlocked && (
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -79,7 +79,7 @@ export default function InfrastructurePage() {
                                     >
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="material-symbols-outlined !text-[15px] text-sky-400">{s.icon || 'settings_input_component'}</span>
-                                            <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest">{serviceId}</span>
+                                            <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">{serviceId}</span>
                                         </div>
 
                                         <p className="text-xs text-zinc-300 leading-relaxed flex-1 line-clamp-4">{s.description}</p>
@@ -89,12 +89,12 @@ export default function InfrastructurePage() {
                                                 {s.price_usdc != null ? `${s.price_usdc} USDC` : s.price > 0 ? `${s.price} USDC` : 'Free'}
                                             </span>
                                             {isUnlocked ? (
-                                                <span className="text-[9px] text-emerald-400 font-bold uppercase flex items-center gap-1">
+                                                <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
                                                     <span className="w-1 h-1 rounded-full bg-emerald-400" />
                                                     {t.services.infra_activated}
                                                 </span>
                                             ) : (
-                                                <span className="text-[9px] text-sky-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                                <span className="text-[10px] text-sky-400 font-bold uppercase tracking-widest flex items-center gap-1">
                                                     {t.services.view_detail}
                                                     <span className="material-symbols-outlined !text-[12px]">arrow_forward</span>
                                                 </span>

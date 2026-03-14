@@ -218,9 +218,9 @@ function Footer() {
           <span>{t.footer.copyright || 'SUPER GUILD © 2026. CODE IS LAW.'}</span>
         </div>
         <div className="flex flex-wrap gap-8">
-          <a className="text-sm font-mono uppercase tracking-wider text-slate-500 hover:text-primary transition-colors" href="#">{t.footer.privacy || 'Privacy'}</a>
-          <a className="text-sm font-mono uppercase tracking-wider text-slate-500 hover:text-primary transition-colors" href="#">{t.footer.terms || 'Terms'}</a>
-          <a className="text-sm font-mono uppercase tracking-wider text-slate-500 hover:text-primary transition-colors" href="#">{t.footer.documentation || 'Docs'}</a>
+          <span className="text-sm font-mono uppercase tracking-wider text-slate-400 cursor-not-allowed select-none">{t.footer.privacy || 'Privacy'}</span>
+          <span className="text-sm font-mono uppercase tracking-wider text-slate-400 cursor-not-allowed select-none">{t.footer.terms || 'Terms'}</span>
+          <Link href="/bulletin" className="text-sm font-mono uppercase tracking-wider text-slate-500 hover:text-primary transition-colors">{t.footer.documentation || 'Docs'}</Link>
         </div>
       </div>
     </footer>

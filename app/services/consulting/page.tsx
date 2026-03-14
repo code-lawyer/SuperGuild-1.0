@@ -54,7 +54,7 @@ export default function ConsultingPage() {
                                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 to-purple-500" />
                                 )}
                                 {cat.title}
-                                <span className={`ml-2 text-[9px] ${activeCat?.id === cat.id ? 'text-violet-400' : 'text-slate-400 dark:text-zinc-600'}`}>
+                                <span className={`ml-2 text-[10px] ${activeCat?.id === cat.id ? 'text-violet-400' : 'text-slate-400 dark:text-zinc-600'}`}>
                                     [{cat.children?.length ?? 0}]
                                 </span>
                             </button>
@@ -98,7 +98,7 @@ export default function ConsultingPage() {
                                                     )}
                                                     {isUnlocked && (
                                                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center">
-                                                            <span className="material-symbols-outlined !text-[8px] text-white">check</span>
+                                                            <span className="material-symbols-outlined !text-[10px] text-white">check</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -108,7 +108,7 @@ export default function ConsultingPage() {
                                                     {expert.expert_tags && expert.expert_tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1">
                                                             {expert.expert_tags.slice(0, 3).map((tag, ti) => (
-                                                                <span key={ti} className="px-1.5 py-0.5 bg-violet-500/8 text-violet-500 dark:text-violet-400 text-[8px] font-bold border border-violet-500/20 uppercase tracking-wide">
+                                                                <span key={ti} className="px-1.5 py-0.5 bg-violet-500/8 text-violet-500 dark:text-violet-400 text-[10px] font-bold border border-violet-500/20 uppercase tracking-wide">
                                                                     {tag}
                                                                 </span>
                                                             ))}
@@ -130,12 +130,12 @@ export default function ConsultingPage() {
                                                     <span className="text-xs text-slate-400 dark:text-zinc-600 font-mono">{t.services.price_negotiable}</span>
                                                 )}
                                                 {isUnlocked ? (
-                                                    <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                                                    <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider flex items-center gap-1">
                                                         <span className="material-symbols-outlined !text-[11px]">check_circle</span>
                                                         {t.services.infra_activated}
                                                     </span>
                                                 ) : (
-                                                    <span className="text-[9px] text-violet-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                                    <span className="text-[10px] text-violet-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                                         {t.services.consulting_book} <span className="material-symbols-outlined !text-[11px]">arrow_forward</span>
                                                     </span>
                                                 )}

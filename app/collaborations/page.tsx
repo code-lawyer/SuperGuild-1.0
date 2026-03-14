@@ -134,7 +134,7 @@ export default function CollaborationsPage() {
                         <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             {/* Status */}
                             <div className="flex items-center gap-4 px-5 py-3">
-                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                <span className="w-14 shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
                                     {t.quests.filterStatus.replace(':', '')}
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
@@ -156,7 +156,7 @@ export default function CollaborationsPage() {
 
                             {/* Grade */}
                             <div className="flex items-center gap-4 px-5 py-3">
-                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                <span className="w-14 shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
                                     {t.quests.filterGrade.replace(':', '')}
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
@@ -178,7 +178,7 @@ export default function CollaborationsPage() {
 
                             {/* Budget */}
                             <div className="flex items-center gap-4 px-5 py-3">
-                                <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                <span className="w-14 shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
                                     {t.quests.filterBudget.replace(':', '')}
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
@@ -257,11 +257,11 @@ export default function CollaborationsPage() {
                                                 {/* Header row */}
                                                 <div className="flex items-start justify-between mb-3 gap-3">
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="text-[9px] font-mono text-primary/70 font-bold tracking-widest uppercase">
+                                                        <span className="text-[10px] font-mono text-primary/70 font-bold tracking-widest uppercase">
                                                             {c.id.split('-')[0].toUpperCase()}
                                                         </span>
                                                         {c.grade && (
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/10">
+                                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/10">
                                                                 {c.grade}
                                                             </span>
                                                         )}
@@ -284,7 +284,7 @@ export default function CollaborationsPage() {
                                                 {/* Footer */}
                                                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 group-hover:border-white/20 transition-colors duration-300 flex items-center justify-between gap-2">
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[9px] text-slate-400 group-hover:text-white/50 transition-colors duration-300 uppercase tracking-wider font-bold">{t.quests.budget}</span>
+                                                        <span className="text-[10px] text-slate-400 group-hover:text-white/50 transition-colors duration-300 uppercase tracking-wider font-bold">{t.quests.budget}</span>
                                                         <span className="text-base font-black text-slate-900 dark:text-white group-hover:text-white transition-colors duration-300 flex items-baseline gap-1 leading-none">
                                                             {c.total_budget || '0'}
                                                             <span className="text-[10px] text-primary group-hover:text-cyan-300 transition-colors duration-300 font-bold">USDC</span>

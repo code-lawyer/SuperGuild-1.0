@@ -59,7 +59,7 @@ export default function SparkPlazaPage() {
                                 <span className={`material-symbols-outlined !text-[18px] ${stat.accent}`}>{stat.icon}</span>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.label}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.label}</p>
                                 <p className="text-base font-black text-slate-900 dark:text-white font-mono tabular-nums leading-tight">{stat.value}</p>
                             </div>
                         </div>

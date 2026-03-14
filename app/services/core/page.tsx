@@ -40,7 +40,7 @@ export default function CoreServicesPage() {
                     {/* Category Nav — file tree style */}
                     <aside className="w-full md:w-60 shrink-0 border-b md:border-b-0 md:border-r border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/50">
                         <div className="px-4 py-3 border-b border-slate-200 dark:border-zinc-800">
-                            <p className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-[0.2em]">
+                            <p className="text-[10px] font-mono font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-[0.2em]">
                                 // {t.services.core_select_category}
                             </p>
                         </div>
@@ -64,7 +64,7 @@ export default function CoreServicesPage() {
                                         <span className="text-xs font-bold uppercase tracking-tight truncate">{cat.title}</span>
                                     </div>
                                     <div className="mt-0.5 pl-9">
-                                        <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-600">
+                                        <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-600">
                                             {cat.children?.length ?? 0} {t.services.solutions_count}
                                         </span>
                                     </div>
@@ -85,7 +85,7 @@ export default function CoreServicesPage() {
                                     <h2 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white font-mono">
                                         {activeCat.title}
                                     </h2>
-                                    <span className="ml-auto text-[9px] font-mono text-slate-400 dark:text-zinc-600">
+                                    <span className="ml-auto text-[10px] font-mono text-slate-400 dark:text-zinc-600">
                                         {activeCat.children?.length ?? 0} modules
                                     </span>
                                 </div>
@@ -125,12 +125,12 @@ export default function CoreServicesPage() {
                                                             {sol.price > 0 ? `${sol.price} USDC` : t.services.price_negotiable}
                                                         </span>
                                                         {isUnlocked ? (
-                                                            <span className="text-emerald-500 text-[9px] font-bold uppercase flex items-center gap-1">
+                                                            <span className="text-emerald-500 text-[10px] font-bold uppercase flex items-center gap-1">
                                                                 <span className="material-symbols-outlined !text-[11px]">check_circle</span>
                                                                 {t.services.infra_activated}
                                                             </span>
                                                         ) : (
-                                                            <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                                                 {t.services.view_detail} <span className="material-symbols-outlined !text-[11px]">arrow_forward</span>
                                                             </span>
                                                         )}

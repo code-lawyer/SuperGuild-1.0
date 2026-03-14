@@ -72,7 +72,7 @@ export default function ServicesPage() {
 
                             <div className="relative z-10 flex flex-col h-full">
                                 {/* Channel label */}
-                                <div className={`text-[9px] font-mono font-bold ${ch.accentClass} uppercase tracking-[0.25em] mb-5`}>
+                                <div className={`text-[10px] font-mono font-bold ${ch.accentClass} uppercase tracking-[0.25em] mb-5`}>
                                     // CH_{ch.num}
                                 </div>
 

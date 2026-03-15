@@ -7,7 +7,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { createNotification } from './useNotifications';
 import { useT } from '@/lib/i18n';
 
-export type CollabStatus = 'OPEN' | 'PENDING_APPROVAL' | 'LOCKED' | 'ACTIVE' | 'PENDING' | 'SETTLED' | 'DISPUTED' | 'CANCELLED';
+export type CollabStatus = 'OPEN' | 'PENDING_APPROVAL' | 'LOCKED' | 'ACTIVE' | 'PENDING' | 'SETTLED' | 'DISPUTED' | 'CANCELLED' | 'FULLY_BOOKED';
 export type MilestoneStatus = 'INCOMPLETE' | 'SUBMITTED' | 'CONFIRMED';
 
 export interface Collaboration {
@@ -27,6 +27,12 @@ export interface Collaboration {
     status: CollabStatus;
     payment_mode: 'self_managed' | 'guild_managed';
     escrow_address: string | null;
+    category: string;
+    tags: string[];
+    slot_budget: number | null;
+    max_providers: number;
+    slots_taken: number;
+    parent_collab_id: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -152,6 +158,10 @@ export interface CreateCollabInput {
     secret_content?: string;
     secret_attachments?: any[];
     payment_mode?: 'self_managed' | 'guild_managed';
+    category?: string;
+    tags?: string[];
+    slot_budget?: number;
+    max_providers?: number;
     milestones: { title: string; amount_percentage: number }[];
 }
 

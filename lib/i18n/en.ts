@@ -359,6 +359,7 @@ const en = {
         tagsLabel: 'Skill Tags (optional)',
         tagsPlaceholder: 'Press Enter to add tags, e.g. solidity, react...',
         tagsHint: 'Up to 8 tags, 20 chars each',
+        catSquad: 'Squad',
         catDevelopment: 'Development',
         catDesign: 'Design',
         catContent: 'Content',

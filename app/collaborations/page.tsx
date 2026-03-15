@@ -61,6 +61,7 @@ export default function CollaborationsPage() {
 
     const categoryLabel: Record<string, string> = {
         all: t.quests.filterAll,
+        squad: t.quests.catSquad,
         development: t.quests.catDevelopment,
         design: t.quests.catDesign,
         content: t.quests.catContent,
@@ -90,7 +91,9 @@ export default function CollaborationsPage() {
             items = items.filter(c => c.status === filterStatus);
         }
 
-        if (filterCategory !== 'all') {
+        if (filterCategory === 'squad') {
+            items = items.filter(c => c.parent_collab_id !== null);
+        } else if (filterCategory !== 'all') {
             items = items.filter(c => c.category === filterCategory);
         }
 
@@ -221,16 +224,19 @@ export default function CollaborationsPage() {
                                     {t.quests.filterCategory}
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {(['all', ...CATEGORY_KEYS]).map(cat => (
+                                    {(['all', 'squad', ...CATEGORY_KEYS]).map(cat => (
                                         <button
                                             key={cat}
                                             onClick={() => setFilterCategory(cat)}
                                             className={`px-3 py-1 text-[11px] font-bold rounded transition-all ${
                                                 filterCategory === cat
-                                                    ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                                                    ? cat === 'squad'
+                                                        ? 'bg-violet-500 text-white shadow-sm shadow-violet-500/30'
+                                                        : 'bg-primary text-white shadow-sm shadow-primary/30'
                                                     : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
                                             }`}
                                         >
+                                            {cat === 'squad' && <span className="mr-1">⚔</span>}
                                             {categoryLabel[cat]}
                                         </button>
                                     ))}
@@ -299,6 +305,11 @@ export default function CollaborationsPage() {
                                                         <span className="text-[10px] font-mono text-primary/70 font-bold tracking-widest uppercase">
                                                             {c.id.split('-')[0].toUpperCase()}
                                                         </span>
+                                                        {c.parent_collab_id && (
+                                                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-500 border border-violet-500/20 uppercase tracking-wider">
+                                                                ⚔ {t.quests.catSquad}
+                                                            </span>
+                                                        )}
                                                         {c.grade && (
                                                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/10">
                                                                 {c.grade}

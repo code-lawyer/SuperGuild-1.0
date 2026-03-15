@@ -135,40 +135,6 @@ export default function GuildBulletinPage() {
                                                         <Markdown content={b.content} />
                                                     </div>
 
-                                                    {b.category === 'squad_signal' && b.squad_signal_meta && (
-                                                        <div className="mt-3 space-y-2 mb-6">
-                                                            <div className="flex items-center gap-2 text-[11px] font-bold text-primary/70 uppercase tracking-wider">
-                                                                <span className="material-symbols-outlined !text-[14px]">group</span>
-                                                                {t.quests.squadRoles}
-                                                            </div>
-                                                            {(b.squad_signal_meta as any).roles?.map((role: any, i: number) => (
-                                                                <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700">
-                                                                    <div>
-                                                                        <span className="text-[13px] font-semibold text-slate-900 dark:text-white">{role.title}</span>
-                                                                        <div className="flex gap-1 mt-1 flex-wrap">
-                                                                            {(role.tags || []).map((tag: string) => (
-                                                                                <span key={tag} className="text-[10px] font-mono text-slate-400">#{tag}</span>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-right shrink-0 ml-4">
-                                                                        <span className="text-[13px] font-black text-primary">{role.budget} USDC</span>
-                                                                        <p className="text-[10px] text-slate-400">{role.slots} {t.quests.roleSlots}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                            {(b.squad_signal_meta as any).parent_collab_id && (
-                                                                <a
-                                                                    href={`/collaborations/${(b.squad_signal_meta as any).parent_collab_id}`}
-                                                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 mt-1 transition-colors"
-                                                                >
-                                                                    <span className="material-symbols-outlined !text-[12px]">open_in_new</span>
-                                                                    {t.quests.squadSourceTask}：{(b.squad_signal_meta as any).parent_collab_title}
-                                                                </a>
-                                                            )}
-                                                        </div>
-                                                    )}
-
                                                     {hasAttachments && (
                                                         <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                                                             <div className="flex items-center gap-2 mb-2">

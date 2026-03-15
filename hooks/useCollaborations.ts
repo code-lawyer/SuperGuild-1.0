@@ -105,7 +105,7 @@ export function useLobbyCollaborations() {
                 .select('*')
                 .neq('status', 'SETTLED')
                 .neq('status', 'CANCELLED')
-                .is('parent_collab_id', null)
+                .or('parent_collab_id.is.null,status.eq.OPEN')
                 .order('created_at', { ascending: false });
             if (error) throw error;
             return data as Collaboration[];

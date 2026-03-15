@@ -120,28 +120,9 @@ export function useCreateSquadSignal() {
                 })
             );
 
-            // 3. Create squad_signal bulletin
-            const { data: bulletin, error: bulletinErr } = await supabase
-                .from('bulletins')
-                .insert({
-                    title: `组队招募：${input.parentCollabTitle}`,
-                    content: input.description,
-                    category: 'squad_signal',
-                    is_pinned: false,
-                    squad_signal_meta: {
-                        parent_collab_id: input.parentCollabId,
-                        parent_collab_title: input.parentCollabTitle,
-                        roles: rolesWithCollabs,
-                    },
-                })
-                .select('id')
-                .single();
-
-            if (bulletinErr) throw bulletinErr;
-            return bulletin;
+            return rolesWithCollabs;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['bulletins'] });
             queryClient.invalidateQueries({ queryKey: ['collaborations'] });
         },
     });

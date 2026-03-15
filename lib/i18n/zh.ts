@@ -355,6 +355,7 @@ const zh: TranslationKeys = {
         tagsLabel: '技能标签（选填）',
         tagsPlaceholder: '输入标签后按 Enter，例如：solidity、react...',
         tagsHint: '最多 8 个标签，每个不超过 20 字',
+        catSquad: '组队',
         catDevelopment: '开发',
         catDesign: '设计',
         catContent: '内容',

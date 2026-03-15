@@ -56,10 +56,16 @@ export function usePrivilegeNFTs() {
     });
 
     const rpcBalances = data?.[0]?.result as readonly bigint[] | undefined;
+    // Contract call failed at the call level (status='failure') even though
+    // the RPC request itself succeeded — isError stays false in this case,
+    // so we check explicitly for a completed query with no usable result.
+    const rpcCallFailed = !isLoading && data !== undefined && data.length > 0
+        && (data[0].status === 'failure' || rpcBalances === undefined);
 
     // ── Fallback: Alchemy NFT REST API ──────────────────────────────────────
     useEffect(() => {
-        if (!address || !isError || fallbackAttempted.current || fallbackLoading) return;
+        const primaryFailed = isError || rpcCallFailed;
+        if (!address || !primaryFailed || fallbackAttempted.current || fallbackLoading) return;
         fallbackAttempted.current = true;
         setFallbackLoading(true);
 
@@ -100,6 +106,8 @@ export function usePrivilegeNFTs() {
         return refetch();
     }, [refetch]);
 
+    const anyPrimaryFailed = isError || rpcCallFailed;
+
     return {
         hasPioneer,
         hasLantern,
@@ -107,8 +115,8 @@ export function usePrivilegeNFTs() {
         hasJustice,
         hasBeacon,
         balances: balanceNums,
-        isLoading: isLoading || (isError && fallbackLoading),
-        isError: isError && !fallbackLoading && fallbackBalances === null,
+        isLoading: isLoading || (anyPrimaryFailed && fallbackLoading),
+        isError: anyPrimaryFailed && !fallbackLoading && fallbackBalances === null,
         refetch: handleRefetch,
     };
 }

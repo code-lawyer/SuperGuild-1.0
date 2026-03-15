@@ -62,9 +62,14 @@ export function useNFTGate({
         }
     });
 
+    // Contract call failed at the call level (wagmi isError stays false when
+    // the RPC request succeeds but the contract call itself reverts/returns null).
+    const rpcCallFailed = !isLoading && balance === undefined && !isError;
+
     // ── Fallback: Alchemy NFT REST API via server route ─────────────────────
     React.useEffect(() => {
-        if (!isMounted || !address || !isError || fallbackAttempted.current || fallbackLoading) return;
+        const primaryFailed = isError || rpcCallFailed;
+        if (!isMounted || !address || !primaryFailed || fallbackAttempted.current || fallbackLoading) return;
         fallbackAttempted.current = true;
         setFallbackLoading(true);
 
@@ -79,7 +84,7 @@ export function useNFTGate({
             })
             .catch(() => { /* fail-closed: fallbackBalance stays null */ })
             .finally(() => setFallbackLoading(false));
-    }, [isMounted, address, isError, tokenId, fallbackLoading]);
+    }, [isMounted, address, isError, rpcCallFailed, tokenId, fallbackLoading]);
 
     // Reset fallback when address changes
     React.useEffect(() => {
@@ -88,10 +93,11 @@ export function useNFTGate({
     }, [address]);
 
     // ── Combined result ─────────────────────────────────────────────────────
+    const anyPrimaryFailed = isError || rpcCallFailed;
     const effectiveBalance = balance ?? fallbackBalance;
     const hasNFT = isMounted && effectiveBalance !== undefined && effectiveBalance !== null && effectiveBalance > BigInt(0);
-    const stillLoading = !isMounted || isLoading || (isError && fallbackLoading);
-    const bothFailed = isMounted && isError && !fallbackLoading && fallbackBalance === null;
+    const stillLoading = !isMounted || isLoading || (anyPrimaryFailed && fallbackLoading);
+    const bothFailed = isMounted && anyPrimaryFailed && !fallbackLoading && fallbackBalance === null;
 
     return {
         hasNFT,

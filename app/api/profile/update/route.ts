@@ -46,12 +46,22 @@ export async function POST(req: NextRequest) {
 
     // Only encrypt and overwrite PII fields when the user explicitly provides new values.
     // Empty strings mean "leave existing encrypted value intact".
+    // If ENCRYPTION_KEY is not configured (e.g. testnet without env var), skip contact fields
+    // rather than crashing — username/bio/portfolio will still save correctly.
     const contactPatch: Record<string, string | null> = {};
-    if (contact_email?.trim()) {
-        contactPatch.contact_email = encryptPII(contact_email.trim());
+    const canEncrypt = !!process.env.ENCRYPTION_KEY && process.env.ENCRYPTION_KEY.length === 64;
+
+    if (!canEncrypt && (contact_email?.trim() || contact_telegram?.trim())) {
+        console.warn('[profile/update] ENCRYPTION_KEY not configured — contact fields skipped');
     }
-    if (contact_telegram?.trim()) {
-        contactPatch.contact_telegram = encryptPII(contact_telegram.trim());
+
+    if (canEncrypt) {
+        if (contact_email?.trim()) {
+            contactPatch.contact_email = encryptPII(contact_email.trim());
+        }
+        if (contact_telegram?.trim()) {
+            contactPatch.contact_telegram = encryptPII(contact_telegram.trim());
+        }
     }
 
     const { error } = await supabaseAdmin

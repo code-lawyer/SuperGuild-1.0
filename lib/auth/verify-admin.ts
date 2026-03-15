@@ -1,6 +1,7 @@
 import { verifyMessage } from 'viem';
 import { hasPrivilegeNFT } from './verify-nft';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
+import { ADMIN_FALLBACK_WALLET } from '@/constants/admin-config';
 
 /**
  * Verify that a request comes from a Token #3 (First Flame) NFT holder.
@@ -30,13 +31,16 @@ export async function verifyAdmin(body: {
         return { error: 'Invalid signature', status: 403 };
     }
 
-    // 2. Verify Token #3 (First Flame) NFT holding
-    const isAdmin = await hasPrivilegeNFT(
-        address.toLowerCase() as `0x${string}`,
-        PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
-    );
-    if (!isAdmin) {
-        return { error: 'Forbidden: First Flame NFT required', status: 403 };
+    // 2. Verify admin access: fallback wallet bypass OR Token #3 (First Flame) NFT
+    const isFallbackWallet = address.toLowerCase() === ADMIN_FALLBACK_WALLET;
+    if (!isFallbackWallet) {
+        const hasNFT = await hasPrivilegeNFT(
+            address.toLowerCase() as `0x${string}`,
+            PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
+        );
+        if (!hasNFT) {
+            return { error: 'Forbidden: First Flame NFT required', status: 403 };
+        }
     }
 
     return { address: address.toLowerCase() };

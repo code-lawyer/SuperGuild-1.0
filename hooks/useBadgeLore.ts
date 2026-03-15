@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
+import { useAccount, useSignMessage } from 'wagmi';
 
 export interface BadgeLore {
     token_id: number;
@@ -31,12 +32,25 @@ export function useBadgeLore() {
 
 export function useUpdateBadgeLore() {
     const queryClient = useQueryClient();
+    const { address } = useAccount();
+    const { signMessageAsync } = useSignMessage();
+
     return useMutation({
         mutationFn: async (lore: Partial<BadgeLore> & { token_id: number }) => {
-            const { error } = await supabase
-                .from('badge_lore')
-                .upsert({ ...lore, updated_at: new Date().toISOString() }, { onConflict: 'token_id' });
-            if (error) throw error;
+            if (!address) throw new Error('Wallet not connected');
+
+            const action = `upsert-badge-lore:${lore.token_id}`;
+            const message = `SuperGuild Admin Action\nAction: ${action}\nAddress: ${address}`;
+            const signature = await signMessageAsync({ message });
+
+            const res = await fetch('/api/admin/badge-lore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...lore, address, signature }),
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Failed to save badge lore');
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['badge_lore'] });

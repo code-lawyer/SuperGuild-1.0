@@ -6,6 +6,7 @@ import Providers from '@/providers/Web3Providers';
 import Header from '@/components/layout/Header';
 import { I18nProvider } from '@/lib/i18n';
 import { NoiseOverlay } from '@/components/ui/NoiseOverlay';
+import { LogoWatermark } from '@/components/ui/LogoWatermark';
 import { Toaster } from '@/components/ui/toaster';
 
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-display' });
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className="bg-white dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col antialiased">
         <I18nProvider>
           <NoiseOverlay />
+          <LogoWatermark />
           <Providers>
             <div className="relative z-10 flex flex-col min-h-screen">
               <Header />

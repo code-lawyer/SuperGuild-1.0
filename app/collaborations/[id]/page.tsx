@@ -29,6 +29,7 @@ import MintTestUSDC from '@/components/collaborations/MintTestUSDC';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 import { SquareLoader } from '@/components/ui/SquareLoader';
 import { safeHref } from '@/lib/utils';
+import { SquadSignalModal } from '@/components/collaborations/SquadSignalModal';
 
 function useStatusConfig() {
     const t = useT();
@@ -70,6 +71,7 @@ export default function CollaborationDetailPage() {
     const [proofMilestoneSortOrder, setProofMilestoneSortOrder] = useState<number>(0);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
+    const [showSquadModal, setShowSquadModal] = useState(false);
 
     if (isLoading) {
         return (
@@ -157,6 +159,16 @@ export default function CollaborationDetailPage() {
                             <button onClick={() => setShowCancelConfirm(true)} className="ag-btn-secondary text-red-500 hover:bg-red-50 hover:border-red-200">
                                 <span className="material-symbols-outlined !text-[18px]">cancel</span>
                                 {t.quests.cancelQuest}
+                            </button>
+                        )}
+                        {/* Squad Signal — provider can form a squad */}
+                        {isProvider && collab.status === 'ACTIVE' && (
+                            <button
+                                onClick={() => setShowSquadModal(true)}
+                                className="ag-btn-secondary flex items-center gap-2 text-[13px] py-2.5 px-4"
+                            >
+                                <span className="material-symbols-outlined !text-[16px]">group_add</span>
+                                {t.quests.squadSignal}
                             </button>
                         )}
                         {isProvider && ['LOCKED', 'ACTIVE'].includes(collab.status) && (
@@ -496,6 +508,14 @@ export default function CollaborationDetailPage() {
                     onClose={() => setProofMilestoneId(null)}
                     isGuildManaged={isGuildManaged}
                 />
+
+                {showSquadModal && collab && (
+                    <SquadSignalModal
+                        collabId={collab.id}
+                        collabTitle={collab.title}
+                        onClose={() => setShowSquadModal(false)}
+                    />
+                )}
             </div>
         </WalletGatePage>
     );

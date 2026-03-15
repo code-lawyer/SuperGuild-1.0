@@ -76,6 +76,9 @@ const nextConfig = {
                 // Infura (used by some wallet providers internally)
                 "https://*.infura.io",
                 "wss://*.infura.io",
+                // ThirdWeb public RPC (wagmi fallback when Alchemy is unavailable)
+                "https://*.thirdweb.com",
+                "wss://*.thirdweb.com",
                 // sm.ms image upload API
                 "https://sm.ms",
                 // Google Fonts

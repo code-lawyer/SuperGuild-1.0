@@ -9,7 +9,7 @@ const TOKEN_LIST = Object.entries(PRIVILEGE_NFT.tokens)
     .sort(([, a], [, b]) => Number(a.id) - Number(b.id))
     .map(([, token]) => token);
 
-type LoreField = 'origin_zh' | 'origin_en' | 'symbolism_zh' | 'symbolism_en' | 'lore_zh' | 'lore_en';
+type LoreField = 'origin_zh' | 'origin_en';
 
 export default function AdminBadgesPage() {
     const t = useT();
@@ -112,44 +112,36 @@ export default function AdminBadgesPage() {
                         </div>
 
                         {/* Fields */}
-                        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {(
-                                [
-                                    { key: 'origin', label: t.admin.badgeLoreOrigin },
-                                    { key: 'symbolism', label: t.admin.badgeLoreSymbolism },
-                                    { key: 'lore', label: t.admin.badgeLoreLore },
-                                ] as { key: string; label: string }[]
-                            ).map(({ key, label }) => (
-                                <div key={key} className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <p className="lg:col-span-2 text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</p>
-                                    {/* Chinese */}
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">
-                                            {t.admin.badgeLoreZh}
-                                        </label>
-                                        <textarea
-                                            rows={3}
-                                            value={(draft as any)[`${key}_zh`] ?? ''}
-                                            onChange={e => setField(tokenId, `${key}_zh` as LoreField, e.target.value)}
-                                            placeholder={`${label}（中文）`}
-                                            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-colors"
-                                        />
-                                    </div>
-                                    {/* English */}
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">
-                                            {t.admin.badgeLoreEn}
-                                        </label>
-                                        <textarea
-                                            rows={3}
-                                            value={(draft as any)[`${key}_en`] ?? ''}
-                                            onChange={e => setField(tokenId, `${key}_en` as LoreField, e.target.value)}
-                                            placeholder={`${label} (English)`}
-                                            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-colors"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <p className="lg:col-span-2 text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
+                                {t.admin.badgeLoreDescription}
+                            </p>
+                            {/* Chinese */}
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 mb-1">
+                                    {t.admin.badgeLoreZh}
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={draft.origin_zh ?? ''}
+                                    onChange={e => setField(tokenId, 'origin_zh', e.target.value)}
+                                    placeholder="NFT 简介（中文）"
+                                    className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-colors"
+                                />
+                            </div>
+                            {/* English */}
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 mb-1">
+                                    {t.admin.badgeLoreEn}
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={draft.origin_en ?? ''}
+                                    onChange={e => setField(tokenId, 'origin_en', e.target.value)}
+                                    placeholder="NFT description (English)"
+                                    className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-colors"
+                                />
+                            </div>
                         </div>
                     </div>
                 );

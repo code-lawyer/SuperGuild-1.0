@@ -53,14 +53,12 @@ export default function BadgeWall() {
         }, 300);
     };
 
-    // Get lore display text: origin + symbolism from DB, or fallback
+    // Get badge description from DB (stored in origin_zh/origin_en columns)
     function getLoreText(badge: typeof ownedBadges[number]): string {
         const l = badge.lore;
         if (!l) return t.badges.lorePending;
-        const origin = locale === 'zh' ? l.origin_zh : l.origin_en;
-        const symbolism = locale === 'zh' ? l.symbolism_zh : l.symbolism_en;
-        const parts = [origin, symbolism].filter(Boolean);
-        return parts.length > 0 ? parts.join(' · ') : t.badges.lorePending;
+        const text = locale === 'zh' ? l.origin_zh : l.origin_en;
+        return text?.trim() || t.badges.lorePending;
     }
 
     return (

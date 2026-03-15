@@ -379,6 +379,7 @@ const zh: TranslationKeys = {
         noPortfolio: '未提供作品集链接',
         avatarUpdated: '头像已更新',
         avatarUploadFailed: '上传失败',
+        profileUpdated: '档案已保存',
     },
 
     notifications: {
@@ -624,8 +625,9 @@ const zh: TranslationKeys = {
         navBadgeLore: '勋章典藏',
 
         // 勋章典藏编辑器
-        badgeLoreTitle: '勋章典藏编辑器',
-        badgeLoreSubtitle: '为每枚特权 NFT 撰写起源故事与设计寓意。',
+        badgeLoreTitle: '勋章描述编辑器',
+        badgeLoreSubtitle: '为每枚特权 NFT 编写简介，显示在用户档案中。',
+        badgeLoreDescription: 'NFT 简介',
         badgeLoreOrigin: '起源故事',
         badgeLoreSymbolism: '设计寓意',
         badgeLoreLore: '世界观叙述',

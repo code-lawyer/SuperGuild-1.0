@@ -143,11 +143,7 @@ export function useUpdateMyProfile() {
         }) => {
             if (!address) throw new Error(t.errors.connectWallet);
 
-            // Must have username and at least one contact method
             if (!input.username?.trim()) throw new Error(t.errors.usernameRequired);
-            if (!input.contact_email?.trim() && !input.contact_telegram?.trim()) {
-                throw new Error(t.errors.contactRequired);
-            }
 
             // PII fields are encrypted server-side in /api/profile/update
             const token = typeof window !== 'undefined'
@@ -170,6 +166,11 @@ export function useUpdateMyProfile() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
+            queryClient.invalidateQueries({ queryKey: ['profile', address?.toLowerCase()] });
+            toast({ title: t.profile.profileUpdated });
+        },
+        onError: (error: Error) => {
+            toast({ title: t.errors.retryLater, description: error?.message });
         },
     });
 }

@@ -49,17 +49,22 @@ function ProfilePageInner() {
         if (!isOwnProfile || !myProfile) return;
         setForm({
             username: myProfile.username || '',
-            contact_email: myProfile.contact_email || '',
-            contact_telegram: myProfile.contact_telegram || '',
+            // contact fields are AES-encrypted in DB — never pre-fill client-side
+            contact_email: '',
+            contact_telegram: '',
             bio: myProfile.bio || '',
             portfolio: myProfile.portfolio || '',
         });
         setEditing(true);
     };
 
-    const handleSave = () => {
-        updateProfile.mutate(form);
-        setEditing(false);
+    const handleSave = async () => {
+        try {
+            await updateProfile.mutateAsync(form);
+            setEditing(false);
+        } catch {
+            // error already handled in onError toast
+        }
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,8 +153,8 @@ function ProfilePageInner() {
                     </div>
                 )}
 
-                {/* Portfolio link (public profile only, if set) */}
-                {!isOwnProfile && profile?.portfolio && (
+                {/* Portfolio link */}
+                {profile?.portfolio && (
                     <a
                         href={profile.portfolio}
                         target="_blank"

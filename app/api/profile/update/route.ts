@@ -43,17 +43,16 @@ export async function POST(req: NextRequest) {
     if (!username?.trim()) {
         return NextResponse.json({ error: 'username is required' }, { status: 400 });
     }
-    if (!contact_email?.trim() && !contact_telegram?.trim()) {
-        return NextResponse.json({ error: 'At least one contact method is required' }, { status: 400 });
-    }
 
-    // Encrypt PII fields before storage
-    const encryptedEmail = contact_email?.trim()
-        ? encryptPII(contact_email.trim())
-        : null;
-    const encryptedTelegram = contact_telegram?.trim()
-        ? encryptPII(contact_telegram.trim())
-        : null;
+    // Only encrypt and overwrite PII fields when the user explicitly provides new values.
+    // Empty strings mean "leave existing encrypted value intact".
+    const contactPatch: Record<string, string | null> = {};
+    if (contact_email?.trim()) {
+        contactPatch.contact_email = encryptPII(contact_email.trim());
+    }
+    if (contact_telegram?.trim()) {
+        contactPatch.contact_telegram = encryptPII(contact_telegram.trim());
+    }
 
     const { error } = await supabaseAdmin
         .from('profiles')
@@ -61,8 +60,7 @@ export async function POST(req: NextRequest) {
             wallet_address: wallet,
             username: username.trim(),
             bio: bio?.trim() || null,
-            contact_email: encryptedEmail,
-            contact_telegram: encryptedTelegram,
+            ...contactPatch,
             portfolio: portfolio?.trim() || null,
             profile_completed: true,
             ...(avatar_url !== undefined && { avatar_url }),

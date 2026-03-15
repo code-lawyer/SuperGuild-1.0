@@ -384,6 +384,7 @@ const en = {
         noPortfolio: 'No portfolio link provided',
         avatarUpdated: 'Avatar updated',
         avatarUploadFailed: 'Upload failed',
+        profileUpdated: 'Profile saved',
     },
 
     // ── Notifications ──
@@ -634,8 +635,9 @@ const en = {
         navBadgeLore: 'Badge Lore',
 
         // Badge Lore Editor
-        badgeLoreTitle: 'Badge Lore Editor',
-        badgeLoreSubtitle: 'Write the origin stories and symbolism for each Privilege NFT badge.',
+        badgeLoreTitle: 'Badge Description Editor',
+        badgeLoreSubtitle: 'Write a short description for each Privilege NFT, shown on user profiles.',
+        badgeLoreDescription: 'NFT Description',
         badgeLoreOrigin: 'Origin Story',
         badgeLoreSymbolism: 'Design Symbolism',
         badgeLoreLore: 'World Lore',

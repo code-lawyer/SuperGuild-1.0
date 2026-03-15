@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import { useT } from '@/lib/i18n';
 import { useI18n } from '@/lib/i18n';
 import { usePrivilegeNFTs } from '@/hooks/usePrivilegeNFTs';
 import { useBadgeLore } from '@/hooks/useBadgeLore';
 import BadgeShowcaseModal from '@/components/3d/BadgeShowcaseModal';
-import { Canvas } from '@react-three/fiber';
-import { Center, OrbitControls, Environment } from '@react-three/drei';
-import BadgeModel from '@/components/3d/BadgeModel';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -142,33 +139,21 @@ export default function BadgeWall() {
                                         />
 
                                         <div className="flex items-center gap-5 p-4 pl-5">
-                                            {/* 3D Thumbnail */}
-                                            <div className="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800/50">
-                                                <Canvas
-                                                    camera={{ position: [0, 0, 4], fov: 40 }}
-                                                    gl={{ antialias: true, alpha: true }}
-                                                    frameloop="always"
+                                            {/* Badge thumbnail — static glow icon; 3D lives in the modal only */}
+                                            <div
+                                                className="w-16 h-16 flex-shrink-0 rounded-xl flex items-center justify-center border"
+                                                style={{
+                                                    background: `radial-gradient(ellipse at center, ${badge.token.glowColor}22 0%, transparent 80%)`,
+                                                    borderColor: `${badge.token.glowColor}40`,
+                                                    boxShadow: `0 0 16px ${badge.token.glowColor}30`,
+                                                }}
+                                            >
+                                                <span
+                                                    className="material-symbols-outlined !text-[28px]"
+                                                    style={{ color: badge.token.glowColor }}
                                                 >
-                                                    <Suspense fallback={null}>
-                                                        <Environment background={false} preset="apartment" />
-                                                        <ambientLight intensity={0.4} />
-                                                        <directionalLight position={[4, 6, 5]} intensity={1.2} />
-                                                        <Center>
-                                                            <BadgeModel
-                                                                glbPath={badge.token.glbPath}
-                                                                glowColor={badge.token.glowColor}
-                                                                isThumbnail={true}
-                                                            />
-                                                        </Center>
-                                                        <OrbitControls
-                                                            enablePan={false}
-                                                            enableZoom={false}
-                                                            autoRotate
-                                                            autoRotateSpeed={2}
-                                                            enableDamping={true}
-                                                        />
-                                                    </Suspense>
-                                                </Canvas>
+                                                    military_tech
+                                                </span>
                                             </div>
 
                                             {/* Info */}

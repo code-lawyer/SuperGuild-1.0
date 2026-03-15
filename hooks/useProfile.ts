@@ -220,12 +220,6 @@ export function useProfileStats() {
         queryFn: async () => {
             if (!address) return { completed: 0, totalEarned: 0, totalSpent: 0 };
 
-            const { count: completed } = await supabase
-                .from('collaborations')
-                .select('id', { count: 'exact', head: true })
-                .eq('provider_id', address)
-                .eq('status', 'SETTLED');
-
             const { data: earned } = await supabase
                 .from('collaborations')
                 .select('total_budget')
@@ -238,10 +232,11 @@ export function useProfileStats() {
                 .eq('initiator_id', address)
                 .eq('status', 'SETTLED');
 
-            const totalEarned = (earned ?? []).reduce((sum, c) => sum + Number(c.total_budget), 0);
+            const earnedList = earned ?? [];
+            const totalEarned = earnedList.reduce((sum, c) => sum + Number(c.total_budget), 0);
             const totalSpent = (spent ?? []).reduce((sum, c) => sum + Number(c.total_budget), 0);
 
-            return { completed: completed ?? 0, totalEarned, totalSpent };
+            return { completed: earnedList.length, totalEarned, totalSpent };
         },
         enabled: !!address,
     });

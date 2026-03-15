@@ -231,6 +231,111 @@ export function useCreateCollaboration() {
     });
 }
 
+// ── Update collaboration (initiator only, OPEN status only) ──
+export interface UpdateCollabInput {
+    id: string;
+    title: string;
+    description?: string;
+    reference_links?: { label?: string; url: string }[];
+    deadline?: string;
+    delivery_standard?: string;
+    slot_budget?: number;
+    max_providers?: number;
+    total_budget: number;
+    reward_token?: string;
+    grade?: string;
+    secret_content?: string;
+    category?: string;
+    tags?: string[];
+    milestones: { title: string; amount_percentage: number }[];
+}
+
+export function useUpdateCollaboration() {
+    const { address } = useAccount();
+    const { isAuthenticated, signIn } = useAuth();
+    const queryClient = useQueryClient();
+    const t = useT();
+
+    return useMutation({
+        mutationFn: async (input: UpdateCollabInput) => {
+            if (!address) throw new Error(t.errors.connectWallet);
+
+            if (!isAuthenticated) {
+                const ok = await signIn();
+                if (!ok) throw new Error('Authentication required — please sign the message in your wallet');
+            }
+
+            // Verify ownership and status
+            const { data: existing, error: fetchErr } = await supabase
+                .from('collaborations')
+                .select('initiator_id, status')
+                .eq('id', input.id)
+                .single();
+
+            if (fetchErr || !existing) throw new Error(t.quests.editNotFound);
+            if (existing.initiator_id.toLowerCase() !== address.toLowerCase()) throw new Error(t.quests.editNotInitiator);
+            if (existing.status !== 'OPEN') throw new Error(t.quests.editNotOpen);
+
+            // Update collaboration
+            const slotBudget = input.slot_budget ?? input.total_budget;
+            const maxProviders = input.max_providers || 1;
+            const { data: updated, error: updateErr } = await supabase
+                .from('collaborations')
+                .update({
+                    title: input.title,
+                    description: input.description || null,
+                    reference_links: input.reference_links || [],
+                    deadline: input.deadline || null,
+                    delivery_standard: input.delivery_standard || null,
+                    total_budget: slotBudget * maxProviders,
+                    reward_token: input.reward_token || 'USDC',
+                    grade: input.grade || 'E',
+                    category: input.category || 'other',
+                    tags: input.tags || [],
+                    slot_budget: slotBudget,
+                    max_providers: maxProviders,
+                    secret_content: input.secret_content || null,
+                })
+                .eq('id', input.id)
+                .eq('initiator_id', address)
+                .eq('status', 'OPEN')
+                .select('id')
+                .single();
+
+            if (updateErr) throw updateErr;
+            if (!updated) throw new Error(t.quests.editNotOpen);
+
+            // Replace milestones: delete old ones and insert new
+            const { error: delErr } = await supabase
+                .from('milestones')
+                .delete()
+                .eq('collab_id', input.id);
+
+            if (delErr) throw delErr;
+
+            const milestonesPayload = input.milestones.map((m, i) => ({
+                collab_id: input.id,
+                sort_order: i + 1,
+                title: m.title,
+                amount_percentage: m.amount_percentage,
+                status: 'INCOMPLETE',
+            }));
+
+            const { error: msErr } = await supabase
+                .from('milestones')
+                .insert(milestonesPayload);
+
+            if (msErr) throw msErr;
+
+            return { id: input.id };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+            queryClient.invalidateQueries({ queryKey: ['collaboration'] });
+        },
+    });
+}
+
 // ── Apply to accept (sets pending_provider_id, status → PENDING_APPROVAL) ──
 export function useApplyToAccept() {
     const { address } = useAccount();

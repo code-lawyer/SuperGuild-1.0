@@ -88,7 +88,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder={t.council.proposalTitlePlaceholder}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors transition-transform"
                                     maxLength={120}
                                 />
                                 <p className="text-xs text-slate-400 mt-1 text-right">{title.length}/120</p>
@@ -104,7 +104,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                     onChange={(e) => setBody(e.target.value)}
                                     placeholder={t.council.proposalBodyPlaceholder}
                                     rows={8}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-colors transition-transform resize-none"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors transition-transform resize-none"
                                 />
                             </div>
 
@@ -120,7 +120,7 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                                         onChange={(e) => setLinkInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())}
                                         placeholder="https://..."
-                                        className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-colors transition-transform"
+                                        className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors transition-transform"
                                     />
                                     <button
                                         onClick={addLink}
@@ -152,31 +152,31 @@ export function CreateProposalModal({ isOpen, onClose }: CreateProposalModalProp
                         </div>
 
                         {/* Footer */}
-                        <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <span className="material-symbols-outlined !text-[16px]">info</span>
+                        <div className="px-8 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                                <span className="material-symbols-outlined !text-[14px]">info</span>
                                 <span>{t.council.proposalOnchainNote}</span>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex items-center gap-3">
                                 <button
                                     onClick={onClose}
-                                    className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                                 >
                                     {t.common.cancel}
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isPending || !title.trim() || !body.trim()}
-                                    className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-5 py-2 bg-primary hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                                 >
                                     {isPending ? (
                                         <>
-                                            <span className="material-symbols-outlined !text-[16px] animate-spin">progress_activity</span>
+                                            <span className="material-symbols-outlined !text-[14px] animate-spin">progress_activity</span>
                                             {t.council.submitting}
                                         </>
                                     ) : (
                                         <>
-                                            <span className="material-symbols-outlined !text-[16px]">bolt</span>
+                                            <span className="material-symbols-outlined !text-[14px]">bolt</span>
                                             {t.council.submitProposal}
                                         </>
                                     )}

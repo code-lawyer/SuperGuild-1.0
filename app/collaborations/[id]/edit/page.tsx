@@ -1,20 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useT } from '@/lib/i18n';
-import { useCreateCollaboration } from '@/hooks/useCollaborations';
+import { useCollaborationDetail, useUpdateCollaboration } from '@/hooks/useCollaborations';
 import { useAuth } from '@/providers/AuthProvider';
+import { useAccount } from 'wagmi';
 import { toast } from '@/components/ui/use-toast';
 import Link from 'next/link';
 import { WalletGatePage } from '@/components/ui/WalletGatePage';
 import { GRADE_CONFIG, CATEGORIES, useDeliveryPresets, type MilestoneInput, type ReferenceLink } from '@/lib/collaborations/quest-form';
 
-export default function CreateCollaborationPage() {
+export default function EditCollaborationPage() {
     const t = useT();
     const router = useRouter();
-    const createCollab = useCreateCollaboration();
+    const params = useParams();
+    const collabId = params.id as string;
+    const { address } = useAccount();
     const { isAuthenticated, signIn, isAuthenticating } = useAuth();
+    const { data: detail, isLoading: detailLoading } = useCollaborationDetail(collabId);
+    const updateCollab = useUpdateCollaboration();
     const DELIVERY_PRESETS = useDeliveryPresets();
 
     const [title, setTitle] = useState('');
@@ -35,6 +40,57 @@ export default function CreateCollaborationPage() {
     const [milestones, setMilestones] = useState<MilestoneInput[]>([
         { title: '', amount_percentage: 100 },
     ]);
+    const [initialized, setInitialized] = useState(false);
+
+    // Populate form with existing data
+    useEffect(() => {
+        if (!detail || initialized) return;
+        const c = detail.collaboration;
+        const ms = detail.milestones;
+
+        setTitle(c.title || '');
+        setDescription(c.description || '');
+        setGrade(c.grade || 'E');
+        setRewardToken(c.reward_token || 'USDC');
+        setSecretContent(c.secret_content || '');
+        setReferenceLinks(
+            (c.reference_links || []).map(r => ({ label: r.label || '', url: r.url || '' }))
+        );
+        setDeadline(c.deadline ? c.deadline.split('T')[0] : '');
+        setCategory(c.category || 'other');
+        setTags(c.tags || []);
+        setPaymentMode(c.payment_mode || 'self_managed');
+        setSlotBudget(String(c.slot_budget ?? c.total_budget));
+        setMaxProviders(c.max_providers || 1);
+
+        // Delivery standard: check if it matches a preset
+        const ds = c.delivery_standard || '';
+        const matchedPreset = DELIVERY_PRESETS.find(p => p.value === ds);
+        if (matchedPreset) {
+            setDeliveryStandard(ds);
+            setCustomDelivery('');
+        } else if (ds) {
+            setDeliveryStandard('custom');
+            setCustomDelivery(ds);
+        }
+
+        // Milestones
+        if (ms.length > 0) {
+            setMilestones(
+                ms
+                    .sort((a, b) => a.sort_order - b.sort_order)
+                    .map(m => ({ title: m.title || '', amount_percentage: m.amount_percentage }))
+            );
+        }
+
+        setInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [detail, initialized]);
+
+    // Access control checks
+    const collab = detail?.collaboration;
+    const isInitiator = collab && address && collab.initiator_id.toLowerCase() === address.toLowerCase();
+    const isOpen = collab?.status === 'OPEN';
 
     const gradeConf = GRADE_CONFIG[grade];
     const budgetMeetsGrade = Number(slotBudget) >= gradeConf.minBudget;
@@ -52,7 +108,7 @@ export default function CreateCollaborationPage() {
         totalPercentage === 100 &&
         milestones.every((m: MilestoneInput) => m.title.trim()) &&
         finalDelivery.trim() &&
-        paymentMode === 'self_managed'; // MVP: guild_managed not yet open
+        paymentMode === 'self_managed';
 
     const addMilestone = () => setMilestones([...milestones, { title: '', amount_percentage: 0 }]);
     const removeMilestone = (i: number) => {
@@ -97,7 +153,6 @@ export default function CreateCollaborationPage() {
     const handleSubmit = async () => {
         if (!isValid) return;
 
-        // Ensure user is authenticated before writing
         if (!isAuthenticated) {
             const ok = await signIn();
             if (!ok) {
@@ -107,10 +162,11 @@ export default function CreateCollaborationPage() {
         }
 
         try {
-            const result = await createCollab.mutateAsync({
+            await updateCollab.mutateAsync({
+                id: collabId,
                 title: title.trim(),
                 description: description.trim(),
-                grade: grade,
+                grade,
                 reward_token: rewardToken,
                 total_budget: Number(slotBudget) * maxProviders,
                 slot_budget: Number(slotBudget),
@@ -118,23 +174,71 @@ export default function CreateCollaborationPage() {
                 category,
                 tags,
                 secret_content: secretContent.trim(),
-                payment_mode: paymentMode,
                 reference_links: referenceLinks.filter((r: ReferenceLink) => r.url.trim()),
                 deadline: deadline || undefined,
                 delivery_standard: finalDelivery.trim(),
                 milestones,
             });
-            router.push(`/collaborations/${result.id}`);
+            toast({ title: t.quests.editSuccess });
+            router.push(`/collaborations/${collabId}`);
         } catch (e: any) {
-            console.error('Failed to create collaboration:', e);
-            toast({ title: t.quests.createFailed, description: e?.message ?? 'Unknown error', variant: 'destructive' });
+            console.error('Failed to update collaboration:', e);
+            toast({ title: t.quests.editFailed, description: e?.message ?? 'Unknown error', variant: 'destructive' });
         }
     };
+
+    // Loading state
+    if (detailLoading) {
+        return (
+            <WalletGatePage>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400 gap-4">
+                    <span className="material-symbols-outlined animate-spin !text-[40px] text-primary">progress_activity</span>
+                </div>
+            </WalletGatePage>
+        );
+    }
+
+    // Error states
+    if (!collab) {
+        return (
+            <WalletGatePage>
+                <div className="max-w-[640px] mx-auto px-6 py-16 text-center">
+                    <span className="material-symbols-outlined !text-[48px] text-slate-300 mb-4">error</span>
+                    <p className="text-sm font-semibold text-slate-500">{t.quests.editNotFound}</p>
+                    <Link href="/collaborations/manage" className="text-primary text-sm font-bold mt-4 inline-block">{t.quests.backToList}</Link>
+                </div>
+            </WalletGatePage>
+        );
+    }
+
+    if (!isInitiator) {
+        return (
+            <WalletGatePage>
+                <div className="max-w-[640px] mx-auto px-6 py-16 text-center">
+                    <span className="material-symbols-outlined !text-[48px] text-red-300 mb-4">lock</span>
+                    <p className="text-sm font-semibold text-slate-500">{t.quests.editNotInitiator}</p>
+                    <Link href={`/collaborations/${collabId}`} className="text-primary text-sm font-bold mt-4 inline-block">{t.quests.backToList}</Link>
+                </div>
+            </WalletGatePage>
+        );
+    }
+
+    if (!isOpen) {
+        return (
+            <WalletGatePage>
+                <div className="max-w-[640px] mx-auto px-6 py-16 text-center">
+                    <span className="material-symbols-outlined !text-[48px] text-amber-300 mb-4">block</span>
+                    <p className="text-sm font-semibold text-slate-500">{t.quests.editNotOpen}</p>
+                    <Link href={`/collaborations/${collabId}`} className="text-primary text-sm font-bold mt-4 inline-block">{t.quests.viewDetail}</Link>
+                </div>
+            </WalletGatePage>
+        );
+    }
 
     return (
         <WalletGatePage>
             <div className="max-w-[640px] mx-auto px-6 py-16">
-                <Link href="/collaborations" className="inline-flex items-center gap-2 text-[14px] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:text-white transition-colors duration-200 mb-10 font-medium">
+                <Link href={`/collaborations/${collabId}`} className="inline-flex items-center gap-2 text-[14px] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:text-white transition-colors duration-200 mb-10 font-medium">
                     <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
                     {t.quests.backToList}
                 </Link>
@@ -143,11 +247,12 @@ export default function CreateCollaborationPage() {
                     {/* Header */}
                     <div className="fade-up">
                         <h1 className="text-[clamp(28px,4vw,36px)] font-[450] text-slate-900 dark:text-white tracking-[-0.02em] mb-2">
-                            {t.quests.createNewQuest}
+                            {t.quests.editQuest}
                         </h1>
-                        <p className="text-slate-400 dark:text-slate-500 text-[15px] font-medium">{t.quests.createNewQuestDesc}</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-[15px] font-medium">{t.quests.editQuestDesc}</p>
                     </div>
 
+                    {/* Grade */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.grade} <span className="text-red-500">*</span>
@@ -249,7 +354,7 @@ export default function CreateCollaborationPage() {
                     </div>
 
                     {/* Title */}
-                    <div className="fade-up fade-up-delay-1">
+                    <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.questTitleLabel} <span className="text-red-500">*</span>
                         </label>
@@ -263,7 +368,7 @@ export default function CreateCollaborationPage() {
                     </div>
 
                     {/* Description */}
-                    <div className="fade-up fade-up-delay-2">
+                    <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.questDescLabel} <span className="text-red-500">*</span>
                         </label>
@@ -365,7 +470,7 @@ export default function CreateCollaborationPage() {
                         )}
                     </div>
 
-                    {/* Budget — slot_budget × max_providers */}
+                    {/* Budget */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
                             {t.quests.slotBudgetLabel} <span className="text-red-500">*</span>
@@ -384,7 +489,7 @@ export default function CreateCollaborationPage() {
                                     <span className="text-[14px] font-black text-slate-400">USDC</span>
                                 </div>
                             </div>
-                            <div className="pt-3.5 text-[18px] font-black text-slate-300 select-none">×</div>
+                            <div className="pt-3.5 text-[18px] font-black text-slate-300 select-none">&times;</div>
                             <div className="w-24">
                                 <input
                                     type="number"
@@ -425,55 +530,20 @@ export default function CreateCollaborationPage() {
                         />
                     </div>
 
-                    {/* Payment Mode */}
+                    {/* Payment Mode (read-only display since it can't change) */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
-                            {t.payment.modeTitle} <span className="text-red-500">*</span>
+                            {t.payment.modeTitle}
                         </label>
-                        <p className="text-[13px] text-slate-400 dark:text-slate-500 mb-3">{t.payment.modeSectionDesc}</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {/* Self-Managed — selectable */}
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMode('self_managed')}
-                                className={`p-4 rounded-2xl border text-left transition-all duration-200 ${
-                                    paymentMode === 'self_managed'
-                                        ? 'ring-2 ring-primary border-primary bg-primary/5'
-                                        : 'bg-white border-slate-200 dark:border-slate-700 hover:border-primary/40'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[14px] font-bold text-slate-900 dark:text-white">{t.payment.selfManaged}</span>
-                                    <span className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                                        {t.payment.selfManagedVcp}
-                                    </span>
-                                </div>
-                                <p className="text-[12px] text-slate-400 dark:text-slate-500">{t.payment.selfManagedDesc}</p>
-                            </button>
-
-                            {/* Guild Managed — disabled (Coming Soon) */}
-                            <div
-                                className="p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-[#F8F9FC] opacity-50 cursor-not-allowed relative"
-                                title={t.payment.comingSoonTooltip}
-                            >
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[14px] font-bold text-slate-400 dark:text-slate-500">{t.payment.guildManaged}</span>
-                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 bg-[#E8EAF0] px-2 py-0.5 rounded-full">
-                                        {t.payment.comingSoon}
-                                    </span>
-                                </div>
-                                <p className="text-[12px] text-[#B8BACA]">{t.payment.guildManagedDesc}</p>
+                        <div className="p-4 rounded-2xl border border-primary bg-primary/5 ring-2 ring-primary">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[14px] font-bold text-slate-900 dark:text-white">{t.payment.selfManaged}</span>
+                                <span className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                    {t.payment.selfManagedVcp}
+                                </span>
                             </div>
+                            <p className="text-[12px] text-slate-400 dark:text-slate-500">{t.payment.selfManagedDesc}</p>
                         </div>
-
-                        {/* Risk warning */}
-                        {paymentMode === 'self_managed' && (
-                            <div className="mt-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20">
-                                <p className="text-[12px] text-amber-700 leading-relaxed">
-                                    {t.payment.selfManagedWarning}
-                                </p>
-                            </div>
-                        )}
                     </div>
 
                     {/* Milestones */}
@@ -532,15 +602,15 @@ export default function CreateCollaborationPage() {
                     {/* Submit */}
                     <button
                         onClick={handleSubmit}
-                        disabled={!isValid || createCollab.isPending}
+                        disabled={!isValid || updateCollab.isPending}
                         className="ag-btn-primary w-full py-4 text-[14px] font-bold"
                     >
-                        {createCollab.isPending ? (
+                        {updateCollab.isPending ? (
                             <>
                                 <span className="material-symbols-outlined !text-[18px] animate-spin">progress_activity</span>
-                                {t.quests.creating}
+                                {t.quests.saving}
                             </>
-                        ) : t.quests.publishQuest}
+                        ) : t.quests.saveChanges}
                     </button>
 
                     {totalPercentage !== 100 && milestones.length > 0 && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient, useSignMessage } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient, useSignMessage, useSwitchChain } from 'wagmi';
 import { keccak256, toBytes, parseUnits, getAddress, type BaseError } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
@@ -96,6 +96,7 @@ export function useGovernorStats() {
                 chainId: SPARK_GOVERNOR.chainId,
             },
         ] : [],
+        query: { staleTime: 60_000, gcTime: 300_000 },
     });
 
     // VCP totalSupply 独立查询（不依赖 Governor 合约是否可用）
@@ -104,7 +105,7 @@ export function useGovernorStats() {
         abi: vcpAbi,
         functionName: 'totalSupply',
         chainId: VCP_TOKEN.chainId,
-        query: { enabled: true },
+        query: { enabled: true, staleTime: 60_000, gcTime: 300_000 },
     });
 
     return {
@@ -239,9 +240,10 @@ export function useProposalCosigners(proposalId: string | undefined) {
 
 /** 创建提案 (USDC approve → createProposal → Supabase 记录) */
 export function useCreateProposal() {
-    const { address } = useAccount();
+    const { address, chainId: currentChainId } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const { switchChainAsync } = useSwitchChain();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
     const t = useT();
 
@@ -250,6 +252,11 @@ export function useCreateProposal() {
             if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
             if (!MOCK_USDC.address) throw new Error('USDC 合约未配置');
+
+            // 0. 确保钱包切换到正确的链
+            if (currentChainId !== SPARK_GOVERNOR.chainId) {
+                await switchChainAsync({ chainId: SPARK_GOVERNOR.chainId });
+            }
 
             // 1. 先存入 Supabase，获取 proposalId
             const { data: dbRecord, error: dbError } = await supabase
@@ -322,9 +329,10 @@ export function useCreateProposal() {
 
 /** 附议联署 */
 export function useCosign() {
-    const { address } = useAccount();
+    const { address, chainId: currentChainId } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const { switchChainAsync } = useSwitchChain();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
     const t = useT();
 
@@ -332,6 +340,10 @@ export function useCosign() {
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
             if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
+
+            if (currentChainId !== SPARK_GOVERNOR.chainId) {
+                await switchChainAsync({ chainId: SPARK_GOVERNOR.chainId });
+            }
 
             // 读取联署人的 VCP 余额
             let vcpAmount = 0;
@@ -376,9 +388,10 @@ export function useCosign() {
 
 /** 链上投票（自动检查 delegate） */
 export function useCastVote() {
-    const { address } = useAccount();
+    const { address, chainId: currentChainId } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const { switchChainAsync } = useSwitchChain();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
     const t = useT();
 
@@ -386,6 +399,10 @@ export function useCastVote() {
         mutationFn: async (params: { proposalDbId: string; onchainId: number; support: boolean }) => {
             if (!address) throw new Error(t.errors.connectWallet);
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
+
+            if (currentChainId !== SPARK_GOVERNOR.chainId) {
+                await switchChainAsync({ chainId: SPARK_GOVERNOR.chainId });
+            }
 
             // 检查投票权重，如果为 0 则自动 delegate 给自己
             if (publicClient) {
@@ -473,14 +490,20 @@ export function useWithdrawProposal() {
 
 /** 结算提案（同步 Supabase 状态） */
 export function useFinalizeProposal() {
+    const { chainId: currentChainId } = useAccount();
     const queryClient = useQueryClient();
     const { writeContractAsync } = useWriteContract();
+    const { switchChainAsync } = useSwitchChain();
     const publicClient = usePublicClient({ chainId: SPARK_GOVERNOR.chainId });
     const t = useT();
 
     return useMutation({
         mutationFn: async (params: { proposalDbId: string; onchainId: number }) => {
             if (!SPARK_GOVERNOR.address) throw new Error('SparkGovernor 合约未配置');
+
+            if (currentChainId !== SPARK_GOVERNOR.chainId) {
+                await switchChainAsync({ chainId: SPARK_GOVERNOR.chainId });
+            }
 
             const tx = await writeContractAsync({
                 address: SPARK_GOVERNOR.address,

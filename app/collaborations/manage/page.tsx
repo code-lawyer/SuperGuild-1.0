@@ -255,6 +255,17 @@ export default function MyDeskPage() {
                                                     </div>
 
                                                     <div className="flex items-center gap-2">
+                                                        {/* Edit button — only for initiator on OPEN collabs */}
+                                                        {c.status === 'OPEN' && isInitiator(c) && (
+                                                            <Link
+                                                                href={`/collaborations/${c.id}/edit`}
+                                                                className="px-3 py-2 bg-primary/5 text-primary text-xs font-bold rounded-lg hover:bg-primary/10 transition-colors flex items-center gap-1 border border-primary/20"
+                                                            >
+                                                                <span className="material-symbols-outlined !text-[14px]">edit</span>
+                                                                {t.common.edit}
+                                                            </Link>
+                                                        )}
+
                                                         {/* Delete button — only for initiator on cancelled collabs */}
                                                         {isCancelled(c) && isInitiator(c) && (
                                                             <button

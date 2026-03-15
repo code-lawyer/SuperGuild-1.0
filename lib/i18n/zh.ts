@@ -390,6 +390,16 @@ const zh: TranslationKeys = {
         squadFilled: '已满员',
         squadSlotTitlePrefix: '[组队岗位]',
         squadSlotDescPrefix: '来源于组队信号。岗位：',
+        // 编辑任务
+        editQuest: '编辑任务',
+        editQuestDesc: '修改任务详情。仅 OPEN 状态的任务可编辑。',
+        saveChanges: '保存修改',
+        saving: '保存中…',
+        editSuccess: '任务信息已更新',
+        editFailed: '编辑失败',
+        editNotOpen: '仅 OPEN 状态的任务可编辑',
+        editNotInitiator: '仅发布人可编辑任务',
+        editNotFound: '未找到该任务',
     },
 
     profile: {
@@ -557,6 +567,7 @@ const zh: TranslationKeys = {
         votePower: '投票权重',
         initiateProposal: '发起议案',
         access: '进入',
+        governanceStatus: '治理状态',
         arbitrationConnectDesc: '请先连接钱包以访问公义之手仲裁庭。',
         arbitrationNFTRequired: '需持有公义之手 NFT 方可进入',
         arbitrationNFTRequiredDesc: '去中心化仲裁殿堂。只有持有公义之手印记者才能进入仲裁庭审阅案卷并裁决争议。',

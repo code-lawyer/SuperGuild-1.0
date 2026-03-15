@@ -394,6 +394,16 @@ const en = {
         squadFilled: 'Filled',
         squadSlotTitlePrefix: '[Squad Slot]',
         squadSlotDescPrefix: 'Sourced from squad signal. Role:',
+        // Edit quest
+        editQuest: 'Edit Quest',
+        editQuestDesc: 'Modify quest details. Only OPEN quests can be edited.',
+        saveChanges: 'Save Changes',
+        saving: 'Saving…',
+        editSuccess: 'Quest updated successfully',
+        editFailed: 'Failed to update quest',
+        editNotOpen: 'Only OPEN quests can be edited',
+        editNotInitiator: 'Only the initiator can edit this quest',
+        editNotFound: 'Quest not found',
     },
 
     // ── Profile ──
@@ -567,6 +577,7 @@ const en = {
         votePower: 'Voting Power',
         initiateProposal: 'Initiate Proposal',
         access: 'Access',
+        governanceStatus: 'Governance',
         arbitrationConnectDesc: 'Connect your wallet to access the Hand of Justice arbitration court.',
         arbitrationNFTRequired: 'HAND OF JUSTICE NFT REQUIRED TO ENTER',
         arbitrationNFTRequiredDesc: 'The realm of decentralized arbitration. Only those who bear the Hand of Justice may enter the grand court to oversee and judge disputes.',

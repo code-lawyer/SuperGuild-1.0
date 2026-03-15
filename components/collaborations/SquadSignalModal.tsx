@@ -34,7 +34,7 @@ export function SquadSignalModal({ collabId, collabTitle, onClose }: Props) {
 
     const updateRole = (i: number, field: keyof SquadRole, val: unknown) => {
         const updated = [...roles];
-        (updated[i] as Record<string, unknown>)[field] = val;
+        (updated[i] as unknown as Record<string, unknown>)[field] = val;
         setRoles(updated);
     };
 

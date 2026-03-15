@@ -4,9 +4,7 @@ import { useT } from '@/lib/i18n';
 import { useNFTGate } from '@/hooks/useNFTGate';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-
-// Fallback admin wallet — bypasses NFT gate when Token #3 cannot be verified.
-const ADMIN_FALLBACK_WALLET = '0xe358b67c35810312e7afdc9adbe5c14e66baec6';
+import { ADMIN_FALLBACK_WALLET } from '@/constants/admin-config';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const t = useT();

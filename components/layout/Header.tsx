@@ -11,6 +11,7 @@ import { useUnreadCount } from '@/hooks/useNotifications';
 import { useNFTGate } from '@/hooks/useNFTGate';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
 import LogoMark from '@/components/ui/LogoMark';
+import { ADMIN_FALLBACK_WALLET } from '@/constants/admin-config';
 
 export default function Header() {
     const pathname = usePathname();
@@ -21,10 +22,11 @@ export default function Header() {
     const { locale, setLocale } = useI18n();
     const t = useT();
     const { data: unreadCount } = useUnreadCount();
-    const { hasNFT: isAdmin } = useNFTGate({
+    const { hasNFT: hasAdminNFT } = useNFTGate({
         contractAddress: PRIVILEGE_NFT.address,
         tokenId: PRIVILEGE_NFT.tokens.FIRST_FLAME.id,
     });
+    const isAdmin = hasAdminNFT || address?.toLowerCase() === ADMIN_FALLBACK_WALLET;
 
     useEffect(() => setMounted(true), []);
 

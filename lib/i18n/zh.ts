@@ -388,6 +388,8 @@ const zh: TranslationKeys = {
         squadSourceTask: '来源任务',
         squadRecruiting: '招募中',
         squadFilled: '已满员',
+        squadSlotTitlePrefix: '[组队岗位]',
+        squadSlotDescPrefix: '来源于组队信号。岗位：',
     },
 
     profile: {

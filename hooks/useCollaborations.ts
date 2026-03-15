@@ -105,6 +105,7 @@ export function useLobbyCollaborations() {
                 .select('*')
                 .neq('status', 'SETTLED')
                 .neq('status', 'CANCELLED')
+                .neq('status', 'FULLY_BOOKED')
                 .or('parent_collab_id.is.null,status.eq.OPEN')
                 .order('created_at', { ascending: false });
             if (error) throw error;
@@ -796,14 +797,12 @@ export function useApproveApplication() {
                     if (msErr) throw msErr;
                 }
 
-                // 3. Increment parent slots_taken
-                const newSlotsTaken = (collabInfo.slots_taken || 0) + 1;
-                const parentNextStatus = newSlotsTaken >= collabInfo.max_providers ? 'FULLY_BOOKED' : 'OPEN';
-
-                await supabase
-                    .from('collaborations')
-                    .update({ slots_taken: newSlotsTaken, status: parentNextStatus })
-                    .eq('id', collabId);
+                // 3. Atomically increment parent slots_taken via RPC (fixes race condition)
+                const { error: rpcErr } = await supabase.rpc('increment_collab_slot', {
+                    p_collab_id: collabId,
+                    p_max_providers: collabInfo.max_providers,
+                });
+                if (rpcErr) throw rpcErr;
 
             } else {
                 // ── Single slot: original behavior ──

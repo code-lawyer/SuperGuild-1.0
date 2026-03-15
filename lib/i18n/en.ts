@@ -392,6 +392,8 @@ const en = {
         squadSourceTask: 'Source Task',
         squadRecruiting: 'Recruiting',
         squadFilled: 'Filled',
+        squadSlotTitlePrefix: '[Squad Slot]',
+        squadSlotDescPrefix: 'Sourced from squad signal. Role:',
     },
 
     // ── Profile ──

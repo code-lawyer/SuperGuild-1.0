@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
+import { useAccount } from 'wagmi';
 
 export interface BulletinAttachment {
     id: string;
@@ -73,21 +74,36 @@ export interface CreateSquadSignalInput {
     parentCollabTitle: string;
     description: string;
     roles: SquadRole[];
+    /** i18n-aware title prefix, e.g. "[Squad Slot]" */
+    slotTitlePrefix?: string;
+    /** i18n-aware description prefix, e.g. "Sourced from squad signal. Role:" */
+    slotDescPrefix?: string;
 }
 
 export function useCreateSquadSignal() {
     const queryClient = useQueryClient();
+    const { address } = useAccount();
 
     return useMutation({
         mutationFn: async (input: CreateSquadSignalInput) => {
-            // 1. Fetch parent collab info
+            if (!address) throw new Error('Wallet not connected');
+
+            // 1. Fetch parent collab info (also used for auth check)
             const { data: parent } = await supabase
                 .from('collaborations')
-                .select('initiator_id, grade, category, payment_mode, deadline, reference_links, reward_token')
+                .select('initiator_id, provider_id, grade, category, payment_mode, deadline, reference_links, reward_token')
                 .eq('id', input.parentCollabId)
                 .single();
 
             if (!parent) throw new Error('Parent collab not found');
+
+            // Only the provider of the parent collab can create squad signals
+            if (parent.provider_id?.toLowerCase() !== address.toLowerCase()) {
+                throw new Error('Only the task provider can create squad signals');
+            }
+
+            const titlePrefix = input.slotTitlePrefix ?? '[Squad Slot]';
+            const descPrefix = input.slotDescPrefix ?? 'Sourced from squad signal. Role:';
 
             // 2. Create one child collab per role
             const rolesWithCollabs = await Promise.all(
@@ -96,8 +112,8 @@ export function useCreateSquadSignal() {
                         .from('collaborations')
                         .insert({
                             initiator_id: parent.initiator_id,
-                            title: `[组队岗位] ${role.title} — ${input.parentCollabTitle}`,
-                            description: `来源于组队信号。岗位：${role.title}`,
+                            title: `${titlePrefix} ${role.title} — ${input.parentCollabTitle}`,
+                            description: `${descPrefix} ${role.title}`,
                             grade: parent.grade || 'E',
                             category: parent.category || 'other',
                             tags: role.tags,

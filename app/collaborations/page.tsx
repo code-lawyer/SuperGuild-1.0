@@ -34,6 +34,7 @@ export default function CollaborationsPage() {
         LOCKED: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
         CANCELLED: 'bg-red-500/10 text-red-500 border-red-500/20',
         DISPUTED: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+        FULLY_BOOKED: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
     };
 
     const statusLabel: Record<string, string> = {
@@ -43,6 +44,7 @@ export default function CollaborationsPage() {
         LOCKED: t.common.locked,
         CANCELLED: t.quests.cancelledQuests,
         DISPUTED: t.common.disputed,
+        FULLY_BOOKED: t.quests.fullyBooked,
     };
 
     const statusFilters = [
@@ -59,7 +61,7 @@ export default function CollaborationsPage() {
         high: t.quests.budgetHigh,
     };
 
-    const categoryLabel: Record<string, string> = {
+    const categoryLabel = useMemo<Record<string, string>>(() => ({
         all: t.quests.filterAll,
         squad: t.quests.catSquad,
         development: t.quests.catDevelopment,
@@ -69,7 +71,7 @@ export default function CollaborationsPage() {
         operations: t.quests.catOperations,
         research: t.quests.catResearch,
         other: t.quests.catOther,
-    };
+    }), [t]);
 
     const filtered = useMemo(() => {
         let items = lobbyCollabs ?? [];
@@ -236,7 +238,7 @@ export default function CollaborationsPage() {
                                                     : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
                                             }`}
                                         >
-                                            {cat === 'squad' && <span className="mr-1">⚔</span>}
+                                            {cat === 'squad' && <span className="material-symbols-outlined !text-[12px] mr-0.5 align-middle">groups</span>}
                                             {categoryLabel[cat]}
                                         </button>
                                     ))}
@@ -306,8 +308,9 @@ export default function CollaborationsPage() {
                                                             {c.id.split('-')[0].toUpperCase()}
                                                         </span>
                                                         {c.parent_collab_id && (
-                                                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-500 border border-violet-500/20 uppercase tracking-wider">
-                                                                ⚔ {t.quests.catSquad}
+                                                            <span className="inline-flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-500 border border-violet-500/20 uppercase tracking-wider">
+                                                                <span className="material-symbols-outlined !text-[11px]">groups</span>
+                                                                {t.quests.catSquad}
                                                             </span>
                                                         )}
                                                         {c.grade && (

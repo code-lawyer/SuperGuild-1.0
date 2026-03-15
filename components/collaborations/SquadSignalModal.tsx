@@ -39,7 +39,7 @@ export function SquadSignalModal({ collabId, collabTitle, onClose }: Props) {
     };
 
     const addRoleTag = (i: number, raw: string) => {
-        const tag = raw.trim().toLowerCase().slice(0, 20);
+        const tag = raw.trim().toLowerCase().replace(/[^a-z0-9\-_\u4e00-\u9fff]/g, '').slice(0, 20);
         if (tag && !roles[i].tags.includes(tag) && roles[i].tags.length < 5) {
             updateRole(i, 'tags', [...roles[i].tags, tag]);
         }
@@ -62,6 +62,8 @@ export function SquadSignalModal({ collabId, collabTitle, onClose }: Props) {
                 parentCollabTitle: collabTitle,
                 description: description.trim(),
                 roles,
+                slotTitlePrefix: t.quests.squadSlotTitlePrefix,
+                slotDescPrefix: t.quests.squadSlotDescPrefix,
             });
             toast({ title: t.quests.squadSignalSuccess });
             onClose();

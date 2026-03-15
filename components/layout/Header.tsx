@@ -198,7 +198,7 @@ export default function Header() {
                         </div>
 
                         {/* Admin Link */}
-                        {isAdmin && (
+                        {mounted && isAdmin && (
                             <Link href="/admin" className="min-w-[44px] min-h-[44px] rounded-full ring-2 ring-amber-400/40 bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center hover:ring-amber-400/70 transition-all" title="Admin Panel" aria-label="Admin Panel">
                                 <span className="material-symbols-outlined !text-[18px] text-amber-500 pointer-events-none">admin_panel_settings</span>
                             </Link>

@@ -7,4 +7,4 @@
  * Both AdminGuard (page protection) and Header (nav icon) must use this constant
  * so the two gates stay in sync.
  */
-export const ADMIN_FALLBACK_WALLET = '0xe358b67c35810312e7afdc9adbe5c14e66baec6';
+export const ADMIN_FALLBACK_WALLET = '0xe358b67c35810312e7afdce9adbe5c14e66baec6';

@@ -15,6 +15,7 @@ import { SquareLoader } from '@/components/ui/SquareLoader';
 
 const GRADES = ['S', 'A', 'B', 'C', 'D', 'E'] as const;
 const BUDGET_RANGES = ['all', 'low', 'mid', 'high'] as const;
+const CATEGORY_KEYS = ['development', 'design', 'content', 'audit', 'operations', 'research', 'other'] as const;
 
 export default function CollaborationsPage() {
     const t = useT();
@@ -24,6 +25,7 @@ export default function CollaborationsPage() {
     const [filterGrade, setFilterGrade] = useState<string>('all');
     const [filterBudget, setFilterBudget] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [filterCategory, setFilterCategory] = useState<string>('all');
 
     const statusStyle: Record<string, string> = {
         OPEN: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -57,6 +59,17 @@ export default function CollaborationsPage() {
         high: t.quests.budgetHigh,
     };
 
+    const categoryLabel: Record<string, string> = {
+        all: t.quests.filterAll,
+        development: t.quests.catDevelopment,
+        design: t.quests.catDesign,
+        content: t.quests.catContent,
+        audit: t.quests.catAudit,
+        operations: t.quests.catOperations,
+        research: t.quests.catResearch,
+        other: t.quests.catOther,
+    };
+
     const filtered = useMemo(() => {
         let items = lobbyCollabs ?? [];
 
@@ -77,8 +90,12 @@ export default function CollaborationsPage() {
             items = items.filter(c => c.status === filterStatus);
         }
 
+        if (filterCategory !== 'all') {
+            items = items.filter(c => c.category === filterCategory);
+        }
+
         return items;
-    }, [lobbyCollabs, filterGrade, filterBudget, filterStatus]);
+    }, [lobbyCollabs, filterGrade, filterBudget, filterStatus, filterCategory]);
 
     return (
         <WalletGatePage>
@@ -119,9 +136,9 @@ export default function CollaborationsPage() {
                                     {t.quests.filterStatus.replace(':', '')} &amp; {t.quests.filterGrade.replace(':', '')} &amp; {t.quests.filterBudget.replace(':', '')}
                                 </span>
                             </div>
-                            {(filterStatus !== 'all' || filterGrade !== 'all' || filterBudget !== 'all') && (
+                            {(filterStatus !== 'all' || filterGrade !== 'all' || filterBudget !== 'all' || filterCategory !== 'all') && (
                                 <button
-                                    onClick={() => { setFilterStatus('all'); setFilterGrade('all'); setFilterBudget('all'); }}
+                                    onClick={() => { setFilterStatus('all'); setFilterGrade('all'); setFilterBudget('all'); setFilterCategory('all'); }}
                                     className="text-[10px] font-bold text-zinc-400 hover:text-primary transition-colors flex items-center gap-1"
                                 >
                                     <span className="material-symbols-outlined !text-[12px]">close</span>
@@ -197,6 +214,28 @@ export default function CollaborationsPage() {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Category */}
+                            <div className="flex items-center gap-4 px-5 py-3">
+                                <span className="w-14 shrink-0 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                                    {t.quests.filterCategory}
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {(['all', ...CATEGORY_KEYS]).map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setFilterCategory(cat)}
+                                            className={`px-3 py-1 text-[11px] font-bold rounded transition-all ${
+                                                filterCategory === cat
+                                                    ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-primary border border-zinc-200 dark:border-zinc-700 hover:border-primary/40 bg-white dark:bg-zinc-900'
+                                            }`}
+                                        >
+                                            {categoryLabel[cat]}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -212,7 +251,7 @@ export default function CollaborationsPage() {
 
                     {/* Content Grid */}
                     <PerspectiveTransition
-                        id={`lobby-${filterGrade}-${filterBudget}-${filterStatus}`}
+                        id={`lobby-${filterGrade}-${filterBudget}-${filterStatus}-${filterCategory}`}
                         direction={0}
                         className="flex-grow pb-24"
                     >
@@ -282,20 +321,37 @@ export default function CollaborationsPage() {
                                                 </p>
 
                                                 {/* Footer */}
-                                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 group-hover:border-white/20 transition-colors duration-300 flex items-center justify-between gap-2">
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[10px] text-slate-400 group-hover:text-white/50 transition-colors duration-300 uppercase tracking-wider font-bold">{t.quests.budget}</span>
-                                                        <span className="text-base font-black text-slate-900 dark:text-white group-hover:text-white transition-colors duration-300 flex items-baseline gap-1 leading-none">
-                                                            {c.total_budget || '0'}
-                                                            <span className="text-[10px] text-primary group-hover:text-cyan-300 transition-colors duration-300 font-bold">USDC</span>
-                                                        </span>
+                                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 group-hover:border-white/20 transition-colors duration-300 flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="text-[10px] text-slate-400 group-hover:text-white/50 transition-colors duration-300 uppercase tracking-wider font-bold">{t.quests.budget}</span>
+                                                            <span className="text-base font-black text-slate-900 dark:text-white group-hover:text-white transition-colors duration-300 flex items-baseline gap-1 leading-none">
+                                                                {c.total_budget || '0'}
+                                                                <span className="text-[10px] text-primary group-hover:text-cyan-300 transition-colors duration-300 font-bold">USDC</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-white/50 transition-colors duration-300">
+                                                            <span className="material-symbols-outlined !text-[14px]">schedule</span>
+                                                            <span className="text-[10px] font-medium">
+                                                                {new Date(c.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-white/50 transition-colors duration-300">
-                                                        <span className="material-symbols-outlined !text-[14px]">schedule</span>
-                                                        <span className="text-[10px] font-medium">
-                                                            {new Date(c.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                                        </span>
-                                                    </div>
+                                                    {/* Category + Tags */}
+                                                    {(c.category && c.category !== 'other' || (c.tags && c.tags.length > 0)) && (
+                                                        <div className="flex flex-wrap gap-1 pt-2 border-t border-slate-100 dark:border-slate-800/60 group-hover:border-white/20 transition-colors">
+                                                            {c.category && c.category !== 'other' && (
+                                                                <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded group-hover:bg-white/10 group-hover:text-white/60 transition-colors">
+                                                                    {categoryLabel[c.category] || c.category}
+                                                                </span>
+                                                            )}
+                                                            {(c.tags || []).slice(0, 3).map(tag => (
+                                                                <span key={tag} className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 dark:text-slate-500 group-hover:text-white/40 transition-colors">
+                                                                    #{tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </Link>

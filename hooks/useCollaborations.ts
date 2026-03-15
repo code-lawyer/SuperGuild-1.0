@@ -105,6 +105,7 @@ export function useLobbyCollaborations() {
                 .select('*')
                 .neq('status', 'SETTLED')
                 .neq('status', 'CANCELLED')
+                .is('parent_collab_id', null)
                 .order('created_at', { ascending: false });
             if (error) throw error;
             return data as Collaboration[];
@@ -726,40 +727,111 @@ export function useApproveApplication() {
 
     return useMutation({
         mutationFn: async ({ collabId, applicationId, applicantId }: { collabId: string; applicationId: string; applicantId: string }) => {
-            // Check payment_mode to determine next status
             const { data: collabInfo } = await supabase
                 .from('collaborations')
-                .select('payment_mode')
+                .select(`
+                    payment_mode, title, description, grade, category, tags,
+                    slot_budget, total_budget, max_providers, slots_taken,
+                    initiator_id, deadline, delivery_standard, reference_links,
+                    secret_content, reward_token
+                `)
                 .eq('id', collabId)
                 .single();
 
-            // Self-managed skips LOCKED (no on-chain escrow), goes straight to ACTIVE
-            const nextStatus = collabInfo?.payment_mode === 'self_managed' ? 'ACTIVE' : 'LOCKED';
+            if (!collabInfo) throw new Error('Collaboration not found');
 
-            // 1. Update collaboration state
-            const { error: collabErr } = await supabase
-                .from('collaborations')
-                .update({
-                    provider_id: applicantId,
-                    status: nextStatus,
-                })
-                .eq('id', collabId);
+            const isMultiSlot = (collabInfo.max_providers || 1) > 1;
+            const nextStatus = collabInfo.payment_mode === 'self_managed' ? 'ACTIVE' : 'LOCKED';
 
-            if (collabErr) throw collabErr;
+            if (isMultiSlot) {
+                // ── Multi-slot: create child collab instance ──
+                const slotBudget = collabInfo.slot_budget ?? collabInfo.total_budget;
 
-            // 2. Update application states (one accepted, others rejected or left as is)
+                // 1. Create child collaboration
+                const { data: childCollab, error: childErr } = await supabase
+                    .from('collaborations')
+                    .insert({
+                        initiator_id: collabInfo.initiator_id,
+                        provider_id: applicantId,
+                        title: collabInfo.title,
+                        description: collabInfo.description,
+                        grade: collabInfo.grade,
+                        category: collabInfo.category || 'other',
+                        tags: collabInfo.tags || [],
+                        total_budget: slotBudget,
+                        slot_budget: slotBudget,
+                        max_providers: 1,
+                        slots_taken: 1,
+                        reward_token: collabInfo.reward_token || 'USDC',
+                        payment_mode: collabInfo.payment_mode,
+                        deadline: collabInfo.deadline,
+                        delivery_standard: collabInfo.delivery_standard,
+                        reference_links: collabInfo.reference_links || [],
+                        secret_content: collabInfo.secret_content,
+                        parent_collab_id: collabId,
+                        status: nextStatus,
+                    })
+                    .select()
+                    .single();
+
+                if (childErr) throw childErr;
+
+                // 2. Fetch parent milestones and clone to child
+                const { data: parentMilestones } = await supabase
+                    .from('milestones')
+                    .select('sort_order, title, amount_percentage')
+                    .eq('collab_id', collabId)
+                    .order('sort_order', { ascending: true });
+
+                if (parentMilestones && parentMilestones.length > 0) {
+                    const { error: msErr } = await supabase
+                        .from('milestones')
+                        .insert(parentMilestones.map((m: any) => ({
+                            collab_id: childCollab.id,
+                            sort_order: m.sort_order,
+                            title: m.title,
+                            amount_percentage: m.amount_percentage,
+                            status: 'INCOMPLETE',
+                        })));
+                    if (msErr) throw msErr;
+                }
+
+                // 3. Increment parent slots_taken
+                const newSlotsTaken = (collabInfo.slots_taken || 0) + 1;
+                const parentNextStatus = newSlotsTaken >= collabInfo.max_providers ? 'FULLY_BOOKED' : 'OPEN';
+
+                await supabase
+                    .from('collaborations')
+                    .update({ slots_taken: newSlotsTaken, status: parentNextStatus })
+                    .eq('id', collabId);
+
+            } else {
+                // ── Single slot: original behavior ──
+                const { error: collabErr } = await supabase
+                    .from('collaborations')
+                    .update({
+                        provider_id: applicantId,
+                        status: nextStatus,
+                    })
+                    .eq('id', collabId);
+
+                if (collabErr) throw collabErr;
+
+                // Reject all other applications for single-slot
+                await supabase
+                    .from('collaboration_applications')
+                    .update({ status: 'REJECTED' })
+                    .eq('collab_id', collabId)
+                    .neq('id', applicationId);
+            }
+
+            // Mark this application accepted
             await supabase
                 .from('collaboration_applications')
                 .update({ status: 'ACCEPTED' })
                 .eq('id', applicationId);
 
-            await supabase
-                .from('collaboration_applications')
-                .update({ status: 'REJECTED' })
-                .eq('collab_id', collabId)
-                .neq('id', applicationId);
-
-            // 3. Notify the approved provider
+            // Notify the approved provider
             const { data: collab } = await supabase.from('collaborations').select('title').eq('id', collabId).single();
             if (collab) {
                 await createNotification({

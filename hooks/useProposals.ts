@@ -183,7 +183,7 @@ export function useUserProposalState(onchainId: number | null) {
 // Supabase 查询
 // ═══════════════════════════════════════
 
-/** 获取提案列表 */
+/** 获取提案列表（默认排除已撤回/取消的提案） */
 export function useProposalsList(status?: string) {
     return useQuery({
         queryKey: ['proposals', status],
@@ -195,6 +195,8 @@ export function useProposalsList(status?: string) {
 
             if (status) {
                 query = query.eq('status', status);
+            } else {
+                query = query.neq('status', 'CANCELLED');
             }
 
             const { data, error } = await query;

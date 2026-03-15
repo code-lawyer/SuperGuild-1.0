@@ -31,7 +31,10 @@ export function ProposalCard({ proposal, threshold, index = 0 }: ProposalCardPro
     const withdrawMutation = useWithdrawProposal();
     const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
 
-    const effectiveStatus = onchainStatus ?? 0;
+    // DB status is authoritative for proposals not yet on-chain (onchain_id = null)
+    // If DB says CANCELLED, treat as cancelled regardless of on-chain fallback
+    const dbCancelled = proposal.status === 'CANCELLED';
+    const effectiveStatus = dbCancelled ? ProposalStatus.Canceled : (onchainStatus ?? 0);
     const isSignaling = effectiveStatus === ProposalStatus.Signaling;
     const isActive = effectiveStatus === ProposalStatus.Active;
     const thresholdMet = totalVCPSignaled >= threshold && threshold > 0;

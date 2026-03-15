@@ -60,7 +60,7 @@ export function usePrivilegeNFTs() {
     // the RPC request itself succeeded — isError stays false in this case,
     // so we check explicitly for a completed query with no usable result.
     const rpcCallFailed = !isLoading && data !== undefined && data.length > 0
-        && (data[0].status === 'failure' || rpcBalances === undefined);
+        && (data[0]?.status === 'failure' || rpcBalances === undefined);
 
     // ── Fallback: Alchemy NFT REST API ──────────────────────────────────────
     useEffect(() => {

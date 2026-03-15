@@ -10,6 +10,7 @@ import NotificationDrawer from '@/components/ui/NotificationDrawer';
 import { useUnreadCount } from '@/hooks/useNotifications';
 import { useNFTGate } from '@/hooks/useNFTGate';
 import { PRIVILEGE_NFT } from '@/constants/nft-config';
+import LogoMark from '@/components/ui/LogoMark';
 
 export default function Header() {
     const pathname = usePathname();
@@ -74,11 +75,19 @@ export default function Header() {
             <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-bg-dark/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
                 <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-3 group cursor-pointer relative z-10 transition-transform active:scale-95">
-                        <div className="text-primary transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(var(--primary),0.5)]">
-                            <span className="material-symbols-outlined !text-[32px] font-light">token</span>
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2.5 group cursor-pointer relative z-10 active:scale-95 transition-transform duration-150 select-none"
+                        aria-label="SuperGuild home"
+                    >
+                        {/* SVG emblem — guild-knot motif */}
+                        <div className="text-primary transition-all duration-500 ease-out group-hover:scale-110 group-hover:[filter:drop-shadow(0_0_10px_#137fec80)]">
+                            <LogoMark size={30} />
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">SuperGuild</h1>
+                        {/* Wordmark */}
+                        <span className="text-[17px] font-black tracking-[-0.02em] text-slate-900 dark:text-white leading-none">
+                            SuperGuild
+                        </span>
                     </Link>
 
                     {/* Desktop Nav Links */}

@@ -28,6 +28,16 @@ const GRADE_CONFIG: Record<string, { minBudget: number; vcp: number; minMileston
     E: { minBudget: 0, vcp: 10, minMilestones: 1, color: 'text-slate-400', bg: 'bg-slate-400/5', border: 'border-slate-400/20' },
 };
 
+const CATEGORIES = [
+    { value: 'development', icon: 'code' },
+    { value: 'design', icon: 'palette' },
+    { value: 'content', icon: 'article' },
+    { value: 'audit', icon: 'security' },
+    { value: 'operations', icon: 'campaign' },
+    { value: 'research', icon: 'science' },
+    { value: 'other', icon: 'more_horiz' },
+] as const;
+
 function useDeliveryPresets() {
     const t = useT();
     return [
@@ -50,19 +60,24 @@ export default function CreateCollaborationPage() {
     const [description, setDescription] = useState('');
     const [grade, setGrade] = useState('E');
     const [rewardToken, setRewardToken] = useState('USDC');
-    const [totalBudget, setTotalBudget] = useState('');
     const [secretContent, setSecretContent] = useState('');
     const [referenceLinks, setReferenceLinks] = useState<ReferenceLink[]>([]);
     const [deadline, setDeadline] = useState('');
     const [deliveryStandard, setDeliveryStandard] = useState('');
     const [customDelivery, setCustomDelivery] = useState('');
     const [paymentMode, setPaymentMode] = useState<'self_managed' | 'guild_managed'>('self_managed');
+    const [category, setCategory] = useState('other');
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState('');
+    const [slotBudget, setSlotBudget] = useState('');
+    const [maxProviders, setMaxProviders] = useState(1);
     const [milestones, setMilestones] = useState<MilestoneInput[]>([
         { title: '', amount_percentage: 100 },
     ]);
 
     const gradeConf = GRADE_CONFIG[grade];
-    const budgetMeetsGrade = Number(totalBudget) >= gradeConf.minBudget;
+    const budgetMeetsGrade = Number(slotBudget) >= gradeConf.minBudget;
+    const totalBudgetDisplay = Number(slotBudget) * maxProviders;
     const milestonesMeetGrade = milestones.length >= gradeConf.minMilestones;
 
     const totalPercentage = milestones.reduce((sum: number, m: MilestoneInput) => sum + m.amount_percentage, 0);
@@ -70,7 +85,7 @@ export default function CreateCollaborationPage() {
     const isValid =
         title.trim() &&
         description.trim() &&
-        Number(totalBudget) > 0 &&
+        Number(slotBudget) > 0 &&
         budgetMeetsGrade &&
         milestonesMeetGrade &&
         totalPercentage === 100 &&
@@ -98,6 +113,26 @@ export default function CreateCollaborationPage() {
         setReferenceLinks(updated);
     };
 
+    const addTag = (raw: string) => {
+        const tag = raw.trim().toLowerCase().replace(/[^a-z0-9\-_\u4e00-\u9fff]/g, '').slice(0, 20);
+        if (tag && !tags.includes(tag) && tags.length < 8) {
+            setTags([...tags, tag]);
+        }
+        setTagInput('');
+    };
+
+    const removeTag = (tag: string) => setTags(tags.filter(t => t !== tag));
+
+    const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTag(tagInput);
+        }
+        if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
+            setTags(tags.slice(0, -1));
+        }
+    };
+
     const handleSubmit = async () => {
         if (!isValid) return;
 
@@ -116,7 +151,11 @@ export default function CreateCollaborationPage() {
                 description: description.trim(),
                 grade: grade,
                 reward_token: rewardToken,
-                total_budget: Number(totalBudget),
+                total_budget: Number(slotBudget) * maxProviders,
+                slot_budget: Number(slotBudget),
+                max_providers: maxProviders,
+                category,
+                tags,
                 secret_content: secretContent.trim(),
                 payment_mode: paymentMode,
                 reference_links: referenceLinks.filter((r: ReferenceLink) => r.url.trim()),
@@ -183,12 +222,69 @@ export default function CreateCollaborationPage() {
                                 {gradeConf.minMilestones > 1 && <> · {t.quests.gradeMinMilestones}: {gradeConf.minMilestones}</>}
                             </p>
                         )}
-                        {Number(totalBudget) > 0 && !budgetMeetsGrade && (
-                            <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeBudgetTooLow}</p>
-                        )}
                         {gradeConf.minMilestones > 1 && milestones.length > 1 && !milestonesMeetGrade && (
                             <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeMilestoneTooFew}</p>
                         )}
+                    </div>
+
+                    {/* Category */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
+                            {t.quests.categoryLabel} <span className="text-red-500">*</span>
+                        </label>
+                        <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                            {CATEGORIES.map((cat) => {
+                                const labelKey = `cat${cat.value.charAt(0).toUpperCase() + cat.value.slice(1)}` as keyof typeof t.quests;
+                                return (
+                                    <button
+                                        key={cat.value}
+                                        type="button"
+                                        onClick={() => setCategory(cat.value)}
+                                        className={`p-2.5 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                                            category === cat.value
+                                                ? 'ring-2 ring-primary border-primary bg-primary/5'
+                                                : 'bg-white border-slate-200 dark:border-slate-700 hover:border-primary/40'
+                                        }`}
+                                    >
+                                        <span className={`material-symbols-outlined !text-[18px] ${category === cat.value ? 'text-primary' : 'text-slate-400'}`}>
+                                            {cat.icon}
+                                        </span>
+                                        <span className={`text-[10px] font-bold ${category === cat.value ? 'text-primary' : 'text-slate-500'}`}>
+                                            {t.quests[labelKey as keyof typeof t.quests] as string}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="fade-up">
+                        <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
+                            {t.quests.tagsLabel}
+                        </label>
+                        <div className="min-h-[48px] w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 flex flex-wrap gap-2 items-center focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/8 transition-colors">
+                            {tags.map(tag => (
+                                <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary text-[12px] font-bold rounded-full">
+                                    {tag}
+                                    <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                                        <span className="material-symbols-outlined !text-[12px]">close</span>
+                                    </button>
+                                </span>
+                            ))}
+                            {tags.length < 8 && (
+                                <input
+                                    type="text"
+                                    value={tagInput}
+                                    onChange={e => setTagInput(e.target.value)}
+                                    onKeyDown={handleTagKeyDown}
+                                    onBlur={() => tagInput && addTag(tagInput)}
+                                    placeholder={tags.length === 0 ? t.quests.tagsPlaceholder : ''}
+                                    className="flex-1 min-w-[120px] bg-transparent text-[13px] text-slate-900 dark:text-white placeholder:text-slate-300 focus:outline-none"
+                                />
+                            )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1.5">{t.quests.tagsHint}</p>
                     </div>
 
                     {/* Title */}
@@ -308,24 +404,46 @@ export default function CreateCollaborationPage() {
                         )}
                     </div>
 
-                    {/* Budget */}
+                    {/* Budget — slot_budget × max_providers */}
                     <div className="fade-up">
                         <label className="block text-[12px] font-bold text-slate-400 dark:text-slate-500 mb-2.5 uppercase tracking-wider">
-                            {t.quests.rewardAmount} <span className="text-red-500">*</span>
+                            {t.quests.slotBudgetLabel} <span className="text-red-500">*</span>
                         </label>
-                        <div className="relative">
-                            <input
-                                type="number"
-                                value={totalBudget}
-                                onChange={(e) => setTotalBudget(e.target.value)}
-                                placeholder="500"
-                                min="0"
-                                className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors transition-transform duration-200 tabular-nums shadow-sm"
-                            />
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                <span className="text-[14px] font-black text-slate-400">USDC</span>
+                        <div className="flex gap-3 items-start">
+                            <div className="flex-1 relative">
+                                <input
+                                    type="number"
+                                    value={slotBudget}
+                                    onChange={(e) => setSlotBudget(e.target.value)}
+                                    placeholder="500"
+                                    min="0"
+                                    className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-colors duration-200 tabular-nums shadow-sm"
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <span className="text-[14px] font-black text-slate-400">USDC</span>
+                                </div>
+                            </div>
+                            <div className="pt-3.5 text-[18px] font-black text-slate-300 select-none">×</div>
+                            <div className="w-24">
+                                <input
+                                    type="number"
+                                    value={maxProviders}
+                                    onChange={(e) => setMaxProviders(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                                    min="1"
+                                    max="20"
+                                    className="w-full bg-white border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3.5 text-[14px] text-center text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 tabular-nums shadow-sm"
+                                />
+                                <p className="text-[10px] text-slate-400 text-center mt-1">{t.quests.maxProvidersLabel}</p>
                             </div>
                         </div>
+                        {Number(slotBudget) > 0 && maxProviders > 1 && (
+                            <p className="text-[12px] text-primary font-semibold mt-2">
+                                {t.quests.totalBudgetHint.replace('{total}', totalBudgetDisplay.toString())}
+                            </p>
+                        )}
+                        {Number(slotBudget) > 0 && !budgetMeetsGrade && (
+                            <p className="text-[12px] text-red-500 font-medium mt-1">{t.quests.gradeBudgetTooLow}</p>
+                        )}
                     </div>
 
                     {/* Secret Details */}
@@ -428,9 +546,9 @@ export default function CreateCollaborationPage() {
                                                 className="w-24 bg-[#F8F9FC] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-slate-900 dark:text-white focus:outline-none focus:border-primary tabular-nums"
                                             />
                                             <span className="text-[12px] text-slate-400 dark:text-slate-500 font-bold">%</span>
-                                            {Number(totalBudget) > 0 && (
+                                            {Number(slotBudget) > 0 && (
                                                 <span className="text-[13px] text-slate-400 dark:text-slate-500 ml-2 tabular-nums">
-                                                    ≈ {((Number(totalBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
+                                                    ≈ {((Number(slotBudget) * ms.amount_percentage) / 100).toFixed(0)} USDC
                                                 </span>
                                             )}
                                         </div>

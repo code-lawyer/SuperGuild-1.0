@@ -80,7 +80,9 @@ export async function GET(request: Request) {
     const limited = limiter.check(request);
     if (limited) return limited;
 
-    const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_ID || '';
+    // Prefer a server-only key (no NEXT_PUBLIC_ prefix) to avoid sharing
+    // the same rate-limit budget as client-side RPC calls.
+    const alchemyKey = process.env.ALCHEMY_SERVER_KEY || process.env.NEXT_PUBLIC_ALCHEMY_ID || '';
     if (!alchemyKey) {
         return NextResponse.json(
             { error: 'Alchemy API key not configured' },

@@ -99,6 +99,20 @@ const RPC_URL = process.env.RPC_URL || DEFAULT_RPC[CHAIN_ID] || DEFAULT_RPC[4216
 
 // ── Clients ─────────────────────────────────────────────────────────────────
 
+// ── Mainnet safety checks ────────────────────────────────────────────────────
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+if (CHAIN_ID === 42161) {
+    if (DIRECT_PAY_ADDRESS.toLowerCase() === ZERO_ADDRESS) {
+        console.error('[resolver-bot] FATAL: Running on mainnet (42161) but DIRECT_PAY_ADDRESS is zero address.');
+        console.error('[resolver-bot] Set DIRECT_PAY_ADDRESS env var to the mainnet DirectPay contract before starting.');
+        process.exit(1);
+    }
+    if (GUILD_ESCROW_ADDRESS.toLowerCase() === ZERO_ADDRESS) {
+        console.error('[resolver-bot] FATAL: Running on mainnet (42161) but GUILD_ESCROW_ADDRESS is zero address.');
+        process.exit(1);
+    }
+}
+
 const account = privateKeyToAccount(RESOLVER_PRIVATE_KEY);
 console.log(`[resolver-bot] Wallet: ${account.address}`);
 

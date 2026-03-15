@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount, useReadContract, useReadContracts, useWriteContract, usePublicClient, useSignMessage } from 'wagmi';
-import { keccak256, toBytes, parseUnits, getAddress } from 'viem';
+import { keccak256, toBytes, parseUnits, getAddress, type BaseError } from 'viem';
 import { supabase } from '@/utils/supabase/client';
 import { SPARK_GOVERNOR, MOCK_USDC, VCP_TOKEN } from '@/constants/nft-config';
 import sparkGovernorAbi from '@/constants/SparkGovernor.json';
@@ -135,10 +135,19 @@ export function useProposalOnchain(onchainId: number | null) {
         query: { enabled: !!onchainId && !!SPARK_GOVERNOR.address },
     });
 
-    const parsed = proposal as any;
+    type OnchainProposal = {
+        proposer?: string;
+        totalVCPSignaled?: bigint;
+        votesFor?: bigint;
+        votesAgainst?: bigint;
+        status?: number;
+        cosignerCount?: bigint;
+        activatedAt?: bigint;
+    };
+    const parsed = proposal as OnchainProposal | undefined;
 
     return {
-        proposer: parsed?.proposer as string | undefined,
+        proposer: parsed?.proposer,
         totalVCPSignaled: parsed?.totalVCPSignaled ? Number(parsed.totalVCPSignaled) : 0,
         votesFor: parsed?.votesFor ? Number(parsed.votesFor) : 0,
         votesAgainst: parsed?.votesAgainst ? Number(parsed.votesAgainst) : 0,
@@ -305,8 +314,8 @@ export function useCreateProposal() {
             toast({ title: t.council.proposalCreated });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
-        onError: (error: any) => {
-            toast({ title: t.council.proposalCreateFailed, description: error?.shortMessage || error?.message });
+        onError: (error: BaseError | Error) => {
+            toast({ title: t.council.proposalCreateFailed, description: ((error as BaseError)?.shortMessage ?? error?.message) });
         },
     });
 }
@@ -359,8 +368,8 @@ export function useCosign() {
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
             queryClient.invalidateQueries({ queryKey: ['proposal-cosigners'] });
         },
-        onError: (error: any) => {
-            toast({ title: t.council.cosignFailed, description: error?.shortMessage || error?.message });
+        onError: (error: BaseError | Error) => {
+            toast({ title: t.council.cosignFailed, description: ((error as BaseError)?.shortMessage ?? error?.message) });
         },
     });
 }
@@ -423,8 +432,8 @@ export function useCastVote() {
             toast({ title: t.council.voteSuccess });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
-        onError: (error: any) => {
-            toast({ title: t.council.voteFailed, description: error?.shortMessage || error?.message });
+        onError: (error: BaseError | Error) => {
+            toast({ title: t.council.voteFailed, description: ((error as BaseError)?.shortMessage ?? error?.message) });
         },
     });
 }
@@ -456,7 +465,7 @@ export function useWithdrawProposal() {
             toast({ title: t.council.proposalWithdrawn });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
-        onError: (error: any) => {
+        onError: (error: BaseError | Error) => {
             toast({ title: t.council.withdrawFailed, description: error?.message });
         },
     });
@@ -504,8 +513,8 @@ export function useFinalizeProposal() {
             toast({ title: t.council.proposalFinalized });
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
         },
-        onError: (error: any) => {
-            toast({ title: t.council.finalizeFailed, description: error?.shortMessage || error?.message });
+        onError: (error: BaseError | Error) => {
+            toast({ title: t.council.finalizeFailed, description: ((error as BaseError)?.shortMessage ?? error?.message) });
         },
     });
 }

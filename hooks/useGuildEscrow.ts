@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useAccount, usePublicClient, useWriteContract, useReadContract } from 'wagmi';
-import { keccak256, toHex, parseUnits } from 'viem';
+import { keccak256, toHex, parseUnits, type BaseError } from 'viem';
 import { GUILD_ESCROW, MOCK_USDC } from '@/constants/nft-config';
 import GuildEscrowABI from '@/constants/GuildEscrow.json';
 
@@ -113,9 +113,9 @@ export function useGuildEscrow() {
 
             setStep('done');
             return receipt;
-        } catch (err: any) {
+        } catch (err: unknown) {
             setStep('error');
-            setError(err.shortMessage || err.message);
+            setError((err as BaseError)?.shortMessage ?? (err instanceof Error ? err.message : String(err)));
             throw err;
         }
     }, [writeContractAsync, publicClient, chainId]);
@@ -142,9 +142,9 @@ export function useGuildEscrow() {
 
             setStep('done');
             return receipt;
-        } catch (err: any) {
+        } catch (err: unknown) {
             setStep('error');
-            setError(err.shortMessage || err.message);
+            setError((err as BaseError)?.shortMessage ?? (err instanceof Error ? err.message : String(err)));
             throw err;
         }
     }, [writeContractAsync, publicClient, chainId]);
@@ -170,9 +170,9 @@ export function useGuildEscrow() {
 
             setStep('done');
             return receipt;
-        } catch (err: any) {
+        } catch (err: unknown) {
             setStep('error');
-            setError(err.shortMessage || err.message);
+            setError((err as BaseError)?.shortMessage ?? (err instanceof Error ? err.message : String(err)));
             throw err;
         }
     }, [writeContractAsync, publicClient, chainId]);
@@ -198,9 +198,9 @@ export function useGuildEscrow() {
 
             setStep('done');
             return receipt;
-        } catch (err: any) {
+        } catch (err: unknown) {
             setStep('error');
-            setError(err.shortMessage || err.message);
+            setError((err as BaseError)?.shortMessage ?? (err instanceof Error ? err.message : String(err)));
             throw err;
         }
     }, [writeContractAsync, publicClient, chainId]);
@@ -223,9 +223,9 @@ export function useGuildEscrow() {
 
             setStep('done');
             return receipt;
-        } catch (err: any) {
+        } catch (err: unknown) {
             setStep('error');
-            setError(err.shortMessage || err.message);
+            setError((err as BaseError)?.shortMessage ?? (err instanceof Error ? err.message : String(err)));
             throw err;
         }
     }, [writeContractAsync, publicClient, chainId]);

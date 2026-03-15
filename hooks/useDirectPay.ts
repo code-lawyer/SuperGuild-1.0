@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAccount, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
-import { parseUnits } from 'viem';
+import { parseUnits, type BaseError } from 'viem';
 import { DIRECT_PAY_ADDRESS, DIRECT_PAY_ABI, ERC20_APPROVE_ABI } from '@/constants/direct-pay-config';
 import { MOCK_USDC } from '@/constants/nft-config';
 import { PRIMARY_CHAIN_ID } from '@/constants/chain-config';
@@ -77,8 +77,8 @@ export function useDirectPay() {
             }
 
             setStep('done');
-        } catch (e: any) {
-            setError(e?.shortMessage ?? e?.message ?? 'Unknown error');
+        } catch (e: unknown) {
+            setError((e as BaseError)?.shortMessage ?? (e instanceof Error ? e.message : 'Unknown error'));
             setStep('error');
         }
     }

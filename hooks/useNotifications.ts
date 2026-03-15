@@ -124,7 +124,8 @@ export function useDeleteNotification() {
     });
 }
 
-// ── Helper: create a notification (used by other hooks) ──
+// ── Helper: create a notification via server-side API (service_role only) ──
+// Direct client INSERT is disabled (RLS policy removed for security).
 export async function createNotification(input: {
     user_address: string;
     type: string;
@@ -132,11 +133,23 @@ export async function createNotification(input: {
     body?: string;
     metadata?: Record<string, any>;
 }) {
-    await supabase.from('notifications').insert({
-        user_address: input.user_address,
-        type: input.type,
-        title: input.title,
-        body: input.body || null,
-        metadata: input.metadata || {},
+    const token = typeof window !== 'undefined'
+        ? localStorage.getItem('superguild_auth_token')
+        : null;
+
+    await fetch('/api/notifications/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+            user_address: input.user_address,
+            type: input.type,
+            title: input.title,
+            body: input.body,
+            metadata: input.metadata,
+        }),
     });
+    // Silently ignore failures — notifications are best-effort
 }

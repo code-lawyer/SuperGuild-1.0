@@ -6,8 +6,9 @@ import { useAccount } from 'wagmi';
 import { toast } from '@/components/ui/use-toast';
 import { useT } from '@/lib/i18n';
 
-// TODO: contact_email and contact_telegram are stored in plaintext.
-// Before mainnet, encrypt at-rest or move to a separate encrypted table.
+// contact_email and contact_telegram are encrypted at rest via AES-256-GCM.
+// Writes go through /api/profile/update (server-side encryption).
+// Reads return encrypted values — only collaboration partners should decrypt via API.
 export interface Profile {
     wallet_address: string;
     username: string | null;
@@ -148,20 +149,24 @@ export function useUpdateMyProfile() {
                 throw new Error(t.errors.contactRequired);
             }
 
-            const { error } = await supabase
-                .from('profiles')
-                .upsert({
-                    wallet_address: address.toLowerCase(),
-                    username: input.username.trim(),
-                    bio: input.bio?.trim() || null,
-                    contact_email: input.contact_email?.trim() || null,
-                    contact_telegram: input.contact_telegram?.trim() || null,
-                    portfolio: input.portfolio?.trim() || null,
-                    profile_completed: true,
-                    ...(input.avatar_url !== undefined && { avatar_url: input.avatar_url }),
-                });
+            // PII fields are encrypted server-side in /api/profile/update
+            const token = typeof window !== 'undefined'
+                ? localStorage.getItem('superguild_auth_token')
+                : null;
 
-            if (error) throw error;
+            const res = await fetch('/api/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(input),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || t.errors.retryLater);
+            }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
@@ -200,7 +205,7 @@ export function useUploadAvatar() {
             queryClient.invalidateQueries({ queryKey: ['profile', address] });
             toast({ title: t.profile.avatarUpdated });
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast({ title: t.profile.avatarUploadFailed, description: error?.message || t.errors.retryLater });
         },
     });
